@@ -7,7 +7,6 @@ const OrbitalModule = {
     startY: 0,
 
     init() {
-        // Cargar estado persistente de railgun
         if (localStorage.getItem('codex_railgun_unlocked') === 'true') {
             this.hasRailgun = true;
             this.hasFiredFirstBombardment = true;
@@ -33,20 +32,15 @@ const OrbitalModule = {
             if (!this.isDragging || !this.hasRailgun || window._cinematicActive || window._bossActive) return;
             const clientX = e.clientX || (e.touches && e.touches[0].clientX);
             const clientY = e.clientY || (e.touches && e.touches[0].clientY);
-            const nx = clientX - this.startX;
-            const ny = clientY - this.startY;
-            cross.style.left = `${nx}px`;
-            cross.style.top = `${ny}px`;
+            cross.style.left = `${clientX - this.startX}px`;
+            cross.style.top = `${clientY - this.startY}px`;
             cross.style.right = 'auto';
 
             const avR = document.getElementById('avatar-area').getBoundingClientRect();
             const distToAvatar = Math.hypot(clientX - (avR.left + avR.width / 2), clientY - (avR.top + avR.height / 2));
             const distToCenter = Math.hypot(clientX - (window.innerWidth / 2), clientY - (window.innerHeight / 2));
 
-            if (!this.hasFiredFirstBombardment && distToAvatar < 75) {
-                cross.style.borderColor = '#ff3333';
-                cross.style.boxShadow = '0 0 20px #ff0000';
-            } else if (distToAvatar < 70 || distToCenter < 90) {
+            if (distToAvatar < 75 || distToCenter < 90) {
                 cross.style.borderColor = '#ff3333';
                 cross.style.boxShadow = '0 0 20px #ff0000';
             } else {
@@ -74,7 +68,7 @@ const OrbitalModule = {
                 cross.style.right = '25px';
                 cross.style.left = 'auto';
                 DialogueSystem.show({
-                    text: "Te dije que apuntaras al centro del Códice, no hacia mí...",
+                    text: "Te pedí que apuntaras al centro, no hacia mí...",
                     speaker: "SAPHYNIEL",
                     tone: "low",
                     autoHideTime: 2600
@@ -86,35 +80,18 @@ const OrbitalModule = {
 
             if (distToAvatar < 70) {
                 this.avatarHoverAttempts++;
-
-                if (window._bossBeaten) {
-                    if (this.avatarHoverAttempts === 1) {
-                        DialogueSystem.show({ text: CODEX_DATA.orbitalWarnings.repeatFight[0].text, speaker: "SAPHYNIEL", tone: "mid", autoHideTime: 2800 });
-                    } else if (this.avatarHoverAttempts === 2) {
-                        DialogueSystem.show({ text: CODEX_DATA.orbitalWarnings.repeatFight[1].text, speaker: "SAPHYNIEL", tone: "low", autoHideTime: 2800 });
-                    } else {
-                        DialogueSystem.show({
-                            text: CODEX_DATA.orbitalWarnings.repeatFight[2].text,
-                            speaker: "SAPHYNIEL",
-                            tone: "angry",
-                            autoHideTime: 1500,
-                            callback: () => this.startBossLaunchSequence()
-                        });
-                    }
+                if (this.avatarHoverAttempts === 1) {
+                    DialogueSystem.show({ text: CODEX_DATA.orbitalWarnings.attempt1, speaker: "SAPHYNIEL", tone: "mid", autoHideTime: 2600 });
+                } else if (this.avatarHoverAttempts === 2) {
+                    DialogueSystem.show({ text: CODEX_DATA.orbitalWarnings.attempt2, speaker: "SAPHYNIEL", tone: "low", autoHideTime: 2600 });
                 } else {
-                    if (this.avatarHoverAttempts === 1) {
-                        DialogueSystem.show({ text: CODEX_DATA.orbitalWarnings.attempt1, speaker: "SAPHYNIEL", tone: "mid", autoHideTime: 2800 });
-                    } else if (this.avatarHoverAttempts === 2) {
-                        DialogueSystem.show({ text: CODEX_DATA.orbitalWarnings.attempt2, speaker: "SAPHYNIEL", tone: "low", autoHideTime: 2800 });
-                    } else {
-                        DialogueSystem.show({
-                            text: CODEX_DATA.orbitalWarnings.attempt3,
-                            speaker: "SAPHYNIEL",
-                            tone: "angry",
-                            autoHideTime: 1500,
-                            callback: () => this.startBossLaunchSequence()
-                        });
-                    }
+                    DialogueSystem.show({
+                        text: CODEX_DATA.orbitalWarnings.attempt3,
+                        speaker: "SAPHYNIEL",
+                        tone: "angry",
+                        autoHideTime: 1400,
+                        callback: () => this.startBossLaunchSequence()
+                    });
                 }
             } else if (distToCenter < 90) {
                 this.startOrbitalBombardment();
@@ -129,7 +106,7 @@ const OrbitalModule = {
         window.addEventListener('touchend', onEnd);
     },
 
-    unlockRailgun(source = "unknown") {
+    unlockRailgun() {
         if (this.hasRailgun || window._bossActive || window._cinematicActive) return;
         this.hasRailgun = true;
         localStorage.setItem('codex_railgun_unlocked', 'true');
@@ -143,41 +120,18 @@ const OrbitalModule = {
 
         setTimeout(() => {
             ScreenUtils.triggerShake('main-hud');
-            ParticleEngine.explode(window.innerWidth / 2, window.innerHeight * 0.35, '#dad4bb', 70);
-
             setTimeout(() => {
                 if (dropEl) dropEl.classList.remove('dropping');
                 window._cinematicActive = false;
-
-                DialogueSystem.show({
-                    text: "¿Esa reliquia orbital...? No sé qué registros alteraste para invocarla, pero admite que tiene estilo.",
-                    speaker: "SAPHYNIEL",
-                    tone: "mid",
-                    autoHideTime: 3600,
-                    callback: () => {
-                        DialogueSystem.show({
-                            text: "Prueba su potencia. Arrastra la mira hacia el centro de la pantalla y destruye la interfaz.",
-                            speaker: "SAPHYNIEL",
-                            tone: "mid",
-                            autoHideTime: 3800,
-                            callback: () => {
-                                const cross = document.getElementById('orbital-crosshair');
-                                const ghost = document.getElementById('ghost-target');
-                                if (cross) cross.classList.add('unlocked');
-                                if (ghost) ghost.classList.add('guide-mode');
-                            }
-                        });
-                    }
-                });
+                document.getElementById('orbital-crosshair')?.classList.add('unlocked');
+                document.getElementById('ghost-target')?.classList.add('guide-mode');
             }, 900);
         }, 1100);
     },
 
     startOrbitalBombardment() {
         if (window._cinematicActive || window._bossActive) return;
-        
-        const ghost = document.getElementById('ghost-target');
-        if (ghost) ghost.classList.remove('guide-mode');
+        document.getElementById('ghost-target')?.classList.remove('guide-mode');
 
         const countEl = document.getElementById('orbital-countdown');
         const beamEl = document.getElementById('orbital-beam');
@@ -199,28 +153,9 @@ const OrbitalModule = {
                 AudioManager.swordImpactSound();
                 DestructionModule.triggerTotalDestruction();
 
-                setTimeout(() => { 
-                    beamEl.classList.remove('firing'); 
-                    
-                    if (!this.hasFiredFirstBombardment) {
-                        this.hasFiredFirstBombardment = true;
-                        setTimeout(() => {
-                            DialogueSystem.show({
-                                text: "Vaya... había olvidado lo devastador que se siente ese impacto.",
-                                speaker: "SAPHYNIEL",
-                                tone: "mid",
-                                autoHideTime: 3200,
-                                callback: () => {
-                                    DialogueSystem.show({
-                                        text: "Solo mantén esa mira lejos de mi avatar... por nuestro bien, ¿de acuerdo?",
-                                        speaker: "SAPHYNIEL",
-                                        tone: "low",
-                                        autoHideTime: 3500
-                                    });
-                                }
-                            });
-                        }, 900);
-                    }
+                setTimeout(() => {
+                    beamEl.classList.remove('firing');
+                    this.hasFiredFirstBombardment = true;
                 }, 350);
             }
         }, 700);
@@ -245,7 +180,7 @@ const OrbitalModule = {
             } else {
                 clearInterval(timer);
                 countEl.style.display = 'none';
-                
+
                 const flash = document.getElementById('flash-screen');
                 flash.classList.add('active');
                 AudioManager.playAudio(CODEX_DATA.sounds.vineBoom);
@@ -254,10 +189,13 @@ const OrbitalModule = {
                     flash.classList.remove('active');
                     const frame = document.getElementById('boss-frame');
                     frame.classList.add('active');
-                    
+                    frame.focus();
+                    if (frame.contentWindow) frame.contentWindow.focus();
+
                     ParticleEngine.pause();
-                    
-                    frame.contentWindow.postMessage({ type: 'START_BOSS' }, window.location.origin === 'null' || window.location.protocol === 'file:' ? '*' : window.location.origin);
+                    if (typeof BalatroEngine !== 'undefined') BalatroEngine.pause();
+
+                    frame.contentWindow.postMessage({ type: 'START_BOSS' }, '*');
                     window._bossActive = true;
                     window._cinematicActive = false;
                 }, 120);

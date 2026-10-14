@@ -30,10 +30,8 @@ const TerminalModule = {
                         }
                     }
                 } else if (v === 'RESET') {
-                    localStorage.removeItem('codex_railgun_unlocked');
-                    localStorage.removeItem('codex_boss_beaten');
-                    localStorage.removeItem('codex_score');
-                    this.log("[SISTEMA] MEMORIA PURGADA. RECARGANDO...", "err");
+                    localStorage.clear();
+                    this.log("[SISTEMA] MEMORIA PURGADA POR COMPLETO. RECARGANDO...", "err");
                     setTimeout(() => window.location.reload(), 1000);
                 } else if (v === 'BLESS') {
                     ParticleEngine.rainBlessing();

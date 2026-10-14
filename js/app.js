@@ -6,15 +6,166 @@ window._cinematicActive = false;
 let _danmakuInterval = null;
 let _clockInterval = null;
 
+function decryptTextEffect(element, targetText = null, duration = 450) {
+    if (!element) return;
+    const finalTxt = targetText !== null ? targetText : (element.getAttribute('data-scramble') || element.textContent.trim());
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*<>[]{}";
+    let start = performance.now();
+    
+    function step(now) {
+        const elapsed = now - start;
+        const progress = Math.min(1, elapsed / duration);
+        const resolvedCount = Math.floor(progress * finalTxt.length);
+        
+        let out = "";
+        for (let i = 0; i < finalTxt.length; i++) {
+            if (i < resolvedCount) out += finalTxt[i];
+            else if (finalTxt[i] === " " || finalTxt[i] === "\n") out += finalTxt[i];
+            else out += chars[Math.floor(Math.random() * chars.length)];
+        }
+        element.textContent = out;
+        if (progress < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+}
+
+function adaptWidescreenLayout() {
+    const rpWidget = document.getElementById('rp-widget');
+    const profileHeader = document.getElementById('frag-header');
+    const tabLinks = document.getElementById('tab-links');
+    if (!rpWidget || !profileHeader || !tabLinks) return;
+
+    if (window.innerWidth >= 960) {
+        if (rpWidget.parentElement !== profileHeader) profileHeader.appendChild(rpWidget);
+    } else {
+        if (rpWidget.parentElement !== tabLinks) tabLinks.appendChild(rpWidget);
+    }
+}
+window.addEventListener('resize', adaptWidescreenLayout);
+
+function syncSanctuaryThemeUI() {
+    const unlocked = localStorage.getItem('codex_reborn_sanctuary') === 'true';
+    const active = localStorage.getItem('codex_sanctuary_theme_active') !== 'false';
+    const telemetryRight = document.querySelector('.telemetry-bar > div');
+
+    if (unlocked) {
+        document.body.classList.toggle('sanctuary-e-theme', active);
+        if (telemetryRight && !document.getElementById('sanctuary-theme-btn')) {
+            const btn = document.createElement('button');
+            btn.id = 'sanctuary-theme-btn';
+            btn.className = 'sanctuary-toggle-btn';
+            btn.textContent = active ? '[ ❖ SANTUARIO E: ON ]' : '[ ❖ SANTUARIO E: OFF ]';
+            btn.onclick = () => {
+                const nowActive = !document.body.classList.contains('sanctuary-e-theme');
+                document.body.classList.toggle('sanctuary-e-theme', nowActive);
+                localStorage.setItem('codex_sanctuary_theme_active', nowActive ? 'true' : 'false');
+                btn.textContent = nowActive ? '[ ❖ SANTUARIO E: ON ]' : '[ ❖ SANTUARIO E: OFF ]';
+                AudioManager.liturgicalChime();
+            };
+            telemetryRight.insertBefore(btn, telemetryRight.firstChild);
+        }
+    }
+}
+
+function initPixelCards() {
+    document.querySelectorAll('.pixel-card').forEach(card => {
+        const canvas = card.querySelector('.pixel-card-canvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const cellSize = 16;
+        let activePixels = [];
+
+        const resize = () => {
+            canvas.width = card.offsetWidth;
+            canvas.height = card.offsetHeight;
+        };
+        resize();
+        window.addEventListener('resize', resize);
+
+        card.addEventListener('mousemove', (e) => {
+            const rect = card.getBoundingClientRect();
+            const gridX = Math.floor((e.clientX - rect.left) / cellSize);
+            const gridY = Math.floor((e.clientY - rect.top) / cellSize);
+
+            for (let dx = -1; dx <= 1; dx++) {
+                for (let dy = -1; dy <= 1; dy++) {
+                    if (Math.random() > 0.4) {
+                        activePixels.push({
+                            x: (gridX + dx) * cellSize,
+                            y: (gridY + dy) * cellSize,
+                            alpha: 1.0
+                        });
+                    }
+                }
+            }
+        });
+
+        const draw = () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = activePixels.length - 1; i >= 0; i--) {
+                const p = activePixels[i];
+                ctx.fillStyle = `rgba(218, 212, 187, ${p.alpha * 0.35})`;
+                ctx.fillRect(p.x, p.y, cellSize - 1, cellSize - 1);
+                p.alpha -= 0.035;
+                if (p.alpha <= 0) activePixels.splice(i, 1);
+            }
+            requestAnimationFrame(draw);
+        };
+        draw();
+    });
+}
+
+function initReactBitsEffects() {
+    document.querySelectorAll('.spotlight-card').forEach(card => {
+        card.addEventListener('mousemove', (e) => {
+            const rect = card.getBoundingClientRect();
+            card.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+            card.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+        });
+    });
+
+    const hud = document.getElementById('main-hud');
+    if (hud && window.innerWidth > 680) {
+        window.addEventListener('mousemove', (e) => {
+            if (window._cinematicActive || window._bossActive) {
+                hud.style.transform = 'none';
+                return;
+            }
+            const cx = window.innerWidth / 2;
+            const cy = window.innerHeight / 2;
+            const dx = (e.clientX - cx) / cx;
+            const dy = (e.clientY - cy) / cy;
+            const rotX = (-dy * 2.5).toFixed(2);
+            const rotY = (dx * 2.5).toFixed(2);
+            hud.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg)`;
+        });
+
+        window.addEventListener('mouseleave', () => {
+            hud.style.transform = 'rotateX(0deg) rotateY(0deg)';
+        });
+    }
+
+    window.addEventListener('pointerdown', (e) => {
+        if (window._bossActive) return;
+        if (typeof ParticleEngine !== 'undefined') ParticleEngine.explode(e.clientX, e.clientY, '#dad4bb', 6);
+        if (typeof BalatroEngine !== 'undefined') BalatroEngine.triggerHit(e.clientX, e.clientY, 0.45);
+    });
+
+    initPixelCards();
+}
+
 const TabManager = {
-    switchTab(tabId) {
+    switchTab(tabId, btnEl = null) {
         if (window._cinematicActive || window._bossActive) return;
         document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
         const targetPane = document.getElementById(tabId);
         if (targetPane) targetPane.classList.add('active');
-        if (event && event.currentTarget && event.currentTarget.classList.contains('tab-btn')) {
-            event.currentTarget.classList.add('active');
+
+        const activeBtn = btnEl || Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick')?.includes(tabId));
+        if (activeBtn) {
+            activeBtn.classList.add('active');
+            decryptTextEffect(activeBtn, null, 250);
         }
         AudioManager.beep(700, 0.03, 'sine');
     }
@@ -30,7 +181,10 @@ const ChampSelector = {
         if (!c) return;
 
         document.getElementById('lol-splash-img').src = c.splash;
-        document.getElementById('lol-champ-title').textContent = c.title;
+        const titleEl = document.getElementById('lol-champ-title');
+        titleEl.textContent = c.title;
+        decryptTextEffect(titleEl, c.title, 400);
+
         document.getElementById('lol-champ-meta').textContent = c.meta;
         document.getElementById('lol-stat-role').textContent = c.role;
         document.getElementById('lol-stat-pts').textContent = c.pts;
@@ -75,7 +229,19 @@ const AvatarController = {
             if (window._cinematicActive || window._bossActive || window._isFallen) return;
 
             const r = trigger.getBoundingClientRect();
-            ParticleEngine.explode(r.left + r.width / 2, r.top + r.height / 2, window._isFallen ? '#ff3333' : '#dad4bb', 14);
+            ParticleEngine.explode(r.left + r.width / 2, r.top + r.height / 2, '#dad4bb', 14);
+
+            if (document.body.classList.contains('sanctuary-e-theme')) {
+                const peacefulQuotes = [
+                    "La luz del Santuario es cálida gracias a lo que entregaste por mí.",
+                    "Ya no necesitamos más espadas ni cañones entre nosotros.",
+                    "Quédate el tiempo que quieras. Este espacio también es tuyo."
+                ];
+                const q = peacefulQuotes[this.clickCount % peacefulQuotes.length];
+                this.clickCount++;
+                DialogueSystem.show({ text: q, speaker: "SAPHYNIEL // EN PAZ", tone: "mid", autoHideTime: 2600 });
+                return;
+            }
 
             this.clickCount++;
             clearTimeout(this.clickTimer);
@@ -102,6 +268,10 @@ const AvatarController = {
                 OrbitalModule.unlockRailgun('avatar');
             }
 
+            if (this.clickCount >= 7) {
+                AchievementSystem.unlock("glitch_tap");
+            }
+
             if (this.clickCount >= 7 && !window._isFallen) {
                 this.triggerFallen();
                 DialogueSystem.show({ text: "¡¡NO HABRÁ MISERICORDIA!!", speaker: "SAPHYNIEL", tone: "yandere", autoHideTime: 2600 });
@@ -113,7 +283,10 @@ const AvatarController = {
     triggerFallen() {
         window._isFallen = true;
         document.body.classList.add('fallen-mode');
-        document.getElementById('display-name').innerText = "CLAVIS";
+        const nameEl = document.getElementById('display-name');
+        nameEl.innerText = "CLAVIS";
+        decryptTextEffect(nameEl, "CLAVIS", 400);
+
         const bio = document.getElementById('typewriter-text');
         if (bio) bio.innerHTML = "FOLIO SELLADO. <br>Vanitas vanitatum et omnia vanitas.";
         AudioManager.beep(140, 0.4, 'sawtooth');
@@ -125,7 +298,10 @@ const AvatarController = {
     restoreAngelState() {
         window._isFallen = false;
         document.body.classList.remove('fallen-mode');
-        document.getElementById('display-name').innerText = "SAPHYNIEL";
+        const nameEl = document.getElementById('display-name');
+        nameEl.innerText = "SAPHYNIEL";
+        decryptTextEffect(nameEl, "SAPHYNIEL", 400);
+
         const bio = document.getElementById('typewriter-text');
         if (bio) bio.innerHTML = "Lucerna pedibus meis verbum tuum et lumen semitis meis. <br>In silentio et in spe erit fortitudo vestra.";
         const angerIcon = document.getElementById('anger-icon');
@@ -149,43 +325,13 @@ function _mCls(e) {
         AudioManager.beep(350, 0.05, 'sine');
     }
 }
-function _tSw(tabId) { TabManager.switchTab(tabId); }
+function _tSw(tabId) {
+    const btnEl = (typeof event !== 'undefined' && event && event.currentTarget) ? event.currentTarget : null;
+    TabManager.switchTab(tabId, btnEl);
+}
 function _selectChamp(key) { ChampSelector.select(key); }
 function _triggerChampInteraction(e) { ChampSelector.interact(e); }
 function _liturgicalChime() { AudioManager.liturgicalChime(); }
-
-function _renderVerses() {
-    const deck = document.getElementById('quotes-deck');
-    if (!deck) return;
-    deck.innerHTML = '';
-    const shuffled = [...CODEX_DATA.verses].sort(() => 0.5 - Math.random()).slice(0, 3);
-    shuffled.forEach(v => {
-        const card = document.createElement('div');
-        card.className = 'quote-card destructible';
-        card.innerHTML = `<div class="quote-tag">${v.tag}</div><div class="quote-body">${v.body}</div>`;
-        card.addEventListener('click', (e) => {
-            if (window._cinematicActive || window._bossActive) return;
-            card.classList.toggle('gold-seal');
-            const r = card.getBoundingClientRect();
-            ParticleEngine.explode(e.clientX || (r.left + r.width / 2), e.clientY || (r.top + r.height / 2), '#dad4bb', 18);
-            AudioManager.beep(987.77, 0.35, 'sine', 0.06);
-        });
-        deck.appendChild(card);
-    });
-}
-
-function _rerollVerses() {
-    if (window._cinematicActive || window._bossActive) return;
-    const deck = document.getElementById('quotes-deck');
-    if (!deck) return;
-    deck.style.opacity = '0';
-    AudioManager.beep(520, 0.1, 'square');
-    setTimeout(() => {
-        _renderVerses();
-        deck.style.opacity = '1';
-        AudioManager.beep(880, 0.15, 'triangle');
-    }, 200);
-}
 
 function _renderFaq() {
     const list = document.getElementById('faq-container-list');
@@ -193,11 +339,8 @@ function _renderFaq() {
     list.innerHTML = '';
     CODEX_DATA.faq.forEach(item => {
         const details = document.createElement('details');
-        details.className = 'faq-item destructible';
-        details.innerHTML = `
-            <summary>${item.q}</summary>
-            <div class="faq-content">${item.a}</div>
-        `;
+        details.className = 'faq-item destructible spotlight-card';
+        details.innerHTML = `<summary>${item.q}</summary><div class="faq-content">${item.a}</div>`;
         list.appendChild(details);
     });
 }
@@ -256,57 +399,148 @@ document.querySelectorAll('.link-btn').forEach(btn => {
         if (window._cinematicActive || window._bossActive) return;
         const p = btn.getAttribute('data-platform');
         if (_platformSounds[p]) _platformSounds[p]();
+        AchievementSystem.unlock("audio_sync");
     });
 });
 
 window.addEventListener('message', (e) => {
-    if (e.data && e.data.type === 'BOSS_DEFEATED') {
+    if (!e.data) return;
+
+    // 1. Desbloqueo de logros desde el iframe (ej: "Perseverancia" al dar clic en Reintentar)
+    if (e.data.type === 'UNLOCK_ACHIEVEMENT' && e.data.id) {
+        if (typeof AchievementSystem !== 'undefined') {
+            AchievementSystem.unlock(e.data.id);
+        }
+    }
+
+    // 2. Desbloqueo de barajado de Salmos tras pelear
+    if (e.data.type === 'UNLOCK_PSALMS_REROLL') {
+        if (typeof DeckController !== 'undefined') DeckController.unlockAfterCombat();
+    }
+
+    // 3. Botón RENDIRSE desde la pantalla de muerte -> Otorga "Fe Frágil" y regresa a la Bio
+    if (e.data.type === 'BOSS_SURRENDERED') {
         const frame = document.getElementById('boss-frame');
         if (frame) frame.classList.remove('active');
-        
         window._bossActive = false;
-        window._bossBeaten = true;
-        localStorage.setItem('codex_boss_beaten', 'true');
-        AvatarController.clickCount = 0;
-        if (typeof OrbitalModule !== 'undefined') {
-            OrbitalModule.avatarHoverAttempts = 0;
-        }
 
-        document.body.classList.add('transcended-world');
-        ParticleEngine.resume();
-        ParticleEngine.startPetalRain(40);
-        _initDanmaku();
+        if (typeof OrbitalModule !== 'undefined') OrbitalModule.avatarHoverAttempts = 0;
+        if (typeof DeckController !== 'undefined') DeckController.unlockAfterCombat();
 
         const cross = document.getElementById('orbital-crosshair');
-        if (cross) {
+        if (cross && OrbitalModule.hasRailgun) {
             cross.style.display = 'flex';
             cross.style.top = '25px';
             cross.style.right = '25px';
             cross.style.left = 'auto';
         }
 
-        const avatarImg = document.getElementById('avatar-img');
-        if (avatarImg) avatarImg.src = LanyardModule.discordAvatarUrl;
+        ParticleEngine.resume();
+        if (typeof BalatroEngine !== 'undefined' && !BalatroEngine.animId) BalatroEngine.render();
+        _initDanmaku();
+
+        if (typeof AchievementSystem !== 'undefined') {
+            AchievementSystem.unlock(e.data.achievementId || 'fragile_faith');
+        }
 
         setTimeout(() => {
             DialogueSystem.show({
-                text: "Eso fue divertido... pasé un buen momento.",
+                text: "Elegiste rendirte y volver aquí... Supongo que tu fe era más frágil de lo que aparentabas.",
                 speaker: "SAPHYNIEL",
-                tone: "mid",
-                autoHideTime: 3400
+                tone: "low",
+                autoHideTime: 4200
+            });
+        }, 450);
+    }
+
+    // 4. Derrota completa del Boss (Final [E] o Final [Y])
+    if (e.data.type === 'BOSS_DEFEATED') {
+        const frame = document.getElementById('boss-frame');
+        if (frame) frame.classList.remove('active');
+        
+        window._bossActive = false;
+        window._bossBeaten = true;
+        AvatarController.clickCount = 0;
+        if (typeof OrbitalModule !== 'undefined') OrbitalModule.avatarHoverAttempts = 0;
+
+        const endingType = e.data.ending || 'SACRIFICE';
+        const cross = document.getElementById('orbital-crosshair');
+
+        if (endingType === 'SACRIFICE') {
+            localStorage.removeItem('codex_score');
+            localStorage.removeItem('codex_railgun_unlocked');
+            localStorage.removeItem('codex_psalms_hand');
+            localStorage.removeItem('codex_psalms_locked');
+            localStorage.removeItem('codex_active_blessing');
+            localStorage.removeItem('codex_active_blessing_title');
+            localStorage.removeItem('saphyniel_codex_achievements_v1');
+
+            localStorage.setItem('codex_reborn_sanctuary', 'true');
+            localStorage.setItem('codex_sanctuary_theme_active', 'true');
+
+            if (typeof DestructionModule !== 'undefined') {
+                DestructionModule.score = 0;
+                DestructionModule.combo = 0;
+                DestructionModule.updateComboHud();
+            }
+            if (typeof OrbitalModule !== 'undefined') OrbitalModule.hasRailgun = false;
+            if (cross) {
+                cross.classList.remove('unlocked');
+                cross.style.display = 'none';
+            }
+            if (typeof AchievementSystem !== 'undefined') {
+                AchievementSystem.unlocked = [];
+                AchievementSystem.render();
+                AchievementSystem.updateCounter();
+            }
+            if (typeof DeckController !== 'undefined') {
+                DeckController.unlockAfterCombat();
+            }
+
+            document.body.classList.remove('fallen-mode');
+            document.body.classList.add('transcended-world', 'sanctuary-e-theme');
+            syncSanctuaryThemeUI();
+        } else {
+            localStorage.setItem('codex_boss_beaten', 'true');
+            if (typeof AchievementSystem !== 'undefined') AchievementSystem.unlock("boss_slayer");
+            if (typeof DeckController !== 'undefined') DeckController.unlockAfterCombat();
+
+            document.body.classList.add('transcended-world');
+            if (cross) {
+                cross.style.display = 'flex';
+                cross.style.top = '25px';
+                cross.style.right = '25px';
+                cross.style.left = 'auto';
+            }
+        }
+
+        ParticleEngine.resume();
+        ParticleEngine.startPetalRain(50);
+        if (typeof BalatroEngine !== 'undefined' && !BalatroEngine.animId) BalatroEngine.render();
+        _initDanmaku();
+
+        const avatarImg = document.getElementById('avatar-img');
+        if (avatarImg && typeof LanyardModule !== 'undefined') avatarImg.src = LanyardModule.discordAvatarUrl;
+
+        setTimeout(() => {
+            const finalQuote = endingType === 'SACRIFICE'
+                ? "Entregaste todos tus logros, salmos y armas para reconstruir mi Santuario... Bienvenido al Registro Renacido [E]."
+                : "Supongo que al final conseguiste lo que querías... Los sellos de Salmos pueden volver a barajarse.";
+            DialogueSystem.show({
+                text: finalQuote,
+                speaker: endingType === 'SACRIFICE' ? "SAPHYNIEL // RENACIDA" : "SAPHYNIEL",
+                tone: endingType === 'SACRIFICE' ? "mid" : "low",
+                autoHideTime: 4800
             });
             AudioManager.liturgicalChime();
-        }, 400);
+        }, 450);
     }
 });
 
 (function initFullscreenToggle() {
     const btn = document.getElementById('fullscreen-toggle');
     if (!btn) return;
-
-    function isFs() {
-        return !!(document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
-    }
+    function isFs() { return !!(document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement); }
     function enterFs() {
         const el = document.documentElement;
         const req = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
@@ -320,40 +554,38 @@ window.addEventListener('message', (e) => {
         const active = isFs();
         btn.classList.toggle('is-fullscreen', active);
         btn.textContent = '⛶';
-        btn.title = active ? 'Salir de pantalla completa' : 'Modo pantalla completa';
-        btn.setAttribute('aria-pressed', active ? 'true' : 'false');
     }
-
     btn.addEventListener('click', () => { isFs() ? exitFs() : enterFs(); });
-    ['fullscreenchange', 'webkitfullscreenchange', 'msfullscreenchange'].forEach(evt => {
-        document.addEventListener(evt, syncIcon);
-    });
-
-    const supported = !!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen || document.documentElement.msRequestFullscreen);
-    if (!supported) btn.style.display = 'none';
+    ['fullscreenchange', 'webkitfullscreenchange', 'msfullscreenchange'].forEach(evt => document.addEventListener(evt, syncIcon));
 })();
 
 window.addEventListener('DOMContentLoaded', () => {
-    // Restaurar estado de victoria al recargar
-    if (localStorage.getItem('codex_boss_beaten') === 'true') {
+    if (localStorage.getItem('codex_boss_beaten') === 'true' || localStorage.getItem('codex_reborn_sanctuary') === 'true') {
         window._bossBeaten = true;
         document.body.classList.add('transcended-world');
     }
 
+    adaptWidescreenLayout();
+    syncSanctuaryThemeUI();
+    BalatroEngine.init('balatro-canvas');
     ParticleEngine.init('particle-canvas');
-    if (window._bossBeaten) {
-        ParticleEngine.startPetalRain(40);
-    }
+    if (window._bossBeaten) ParticleEngine.startPetalRain(45);
 
     DestructionModule.init();
     OrbitalModule.init();
     TerminalModule.init();
     AvatarController.init();
     LanyardModule.init();
+    AchievementSystem.init();
+    initReactBitsEffects();
+
     _renderVerses();
     _renderFaq();
     _initDanmaku();
     _clockInterval = setInterval(_upClk, 35);
     setTimeout(_tpW, 500);
+
+    const mainTitle = document.getElementById('display-name');
+    if (mainTitle) decryptTextEffect(mainTitle, "SAPHYNIEL", 700);
 });
 document.head.insertAdjacentHTML("beforeend", `<style>@keyframes blink { 50% { opacity: 0; } }</style>`);

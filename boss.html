@@ -9,6 +9,8 @@
     <link rel="stylesheet" href="css/boss.css">
 </head>
 <body>
+    <canvas id="balatro-canvas"></canvas>
+
     <div id="bg-camera-container">
         <div class="phase-2-fire"></div>
         <div class="phase-3-divine-bg"></div>
@@ -16,28 +18,21 @@
         <div class="speed-lines"></div>
     </div>
 
-    <!-- Filtros Cinemáticos -->
     <div class="cinematic-darkness" id="cinematic-darkness"></div>
-    
-    <!-- Contenedor de Subtítulos Reactivos -->
     <div id="lyrics-container" class="mv-lyrics-background"></div>
 
     <div class="cinema-bar cinema-top"></div>
     <div class="cinema-bar cinema-bot"></div>
     <div class="anime-impact-frame" id="anime-impact-frame"></div>
     
-    <!-- Lienzos de Partículas y Flashback -->
+    <!-- Lienzos de Combate, Balas, Nave y Flashback -->
     <canvas id="particle-canvas"></canvas>
     <canvas id="flashback-canvas"></canvas>
 
-    <!-- SILENCIO OVERLAY (Fase 2 Fin) -->
     <div id="silencio-overlay" class="silencio-overlay">SILENCIO</div>
-
-    <!-- Overlays Plastic Horse y Carton Sword -->
     <div id="plastic-horse-overlay" class="plastic-horse-overlay"></div>
     <div id="carton-sword-overlay" class="carton-sword-overlay"></div>
 
-    <!-- Cinemática del Cañón y Textos Épicos Grandes -->
     <div id="orbital-cannon-drop" class="cinematic-orbital">
         <img src="img/icons/Orbitalcannon.png" alt="Cannon">
     </div>
@@ -46,19 +41,40 @@
     <div id="hero-text" class="cinematic-text-blood">HERO</div>
     <div id="uno-text" class="cinematic-text-blood">UNO</div>
 
-    <!-- Destello de Cuenta Regresiva 1, 2, 3, 4 -->
     <div class="countdown-flash" id="countdown-flash"></div>
 
+    <!-- NOTIFICACIÓN DE LOGRO DENTRO DEL COMBATE -->
+    <div id="boss-ach-toast" class="boss-ach-toast">
+        <span style="font-size: 1.2rem; color: #e5c158;">◈</span>
+        <div>
+            <div style="font-size: 0.62rem; color: #dad4bb; letter-spacing: 1px;">LOGRO DESBLOQUEADO</div>
+            <div id="boss-ach-toast-title" style="font-size: 0.78rem; font-weight: bold; color: #f7f5ed;">PERSEVERANCIA</div>
+        </div>
+    </div>
+
+    <!-- HUD DEL JUGADOR Y BARRAS DE HABILIDADES (ESCUDO + RAILGUN) -->
     <div class="player-hud" id="player-hud">
-        <span class="player-heart" id="heart-1">❤</span>
-        <span class="player-heart" id="heart-2">❤</span>
-        <span class="player-heart" id="heart-3">❤</span>
+        <div class="hearts-row" id="hearts-row">
+            <span class="player-heart" id="heart-1">❤</span>
+            <span class="player-heart" id="heart-2">❤</span>
+            <span class="player-heart" id="heart-3">❤</span>
+        </div>
+        <div class="skills-hud-row">
+            <button type="button" class="hud-skill-box" id="hud-shield-btn" title="Tecla ESPACIO">
+                <span class="skill-label">ESCUDO [ESPACIO]</span>
+                <div class="skill-bar-track"><div class="skill-bar-fill shield-fill" id="shield-bar-fill"></div></div>
+            </button>
+            <button type="button" class="hud-skill-box" id="hud-railgun-btn" title="Tecla E">
+                <span class="skill-label" id="railgun-label">RAILGUN [E] 0%</span>
+                <div class="skill-bar-track"><div class="skill-bar-fill railgun-fill" id="railgun-bar-fill"></div></div>
+            </button>
+        </div>
     </div>
 
     <div class="boss-hud-floating" id="boss-hud">
         <div class="boss-header-floating">
             <img id="boss-hp-eye" class="boss-hp-eye" src="img/icons/eye.png" alt="Eye">
-            <span class="boss-name-text" id="boss-title-name">SAPHYNIEL // DEIDAD TRANSCENDENTE</span>
+            <span class="boss-name-text shiny-text" id="boss-title-name">SAPHYNIEL // DEIDAD TRANSCENDENTE</span>
             <span class="boss-hp-number-text" id="boss-hp-num">[100%]</span>
         </div>
         <div class="boss-bar-chassis">
@@ -77,14 +93,28 @@
         <div class="boss-wings"></div>
         <div class="sacred-wheel-1"></div>
         <div class="sacred-wheel-2"></div>
-        <button type="button" class="boss-core-btn" id="core-trigger">
+        <button type="button" class="boss-core-btn" id="core-trigger" aria-label="Núcleo">
             <img class="boss-core-img" id="boss-core-img" src="img/boss/core.png" alt="Core">
         </button>
     </div>
 
-    <div class="shield-crystal" id="shield-crystal">
-        <div class="crystal-hp-bar"><div class="crystal-hp-fill" id="crystal-hp-fill"></div></div>
-        <div class="crystal-body">❖</div>
+    <!-- CONTROLES TÁCTILES MÓVILES (JOYSTICK + BOTONES DE ACCIÓN) -->
+    <div class="mobile-controls-layer" id="mobile-controls">
+        <div class="joystick-zone" id="joystick-zone">
+            <div class="joystick-base" id="joystick-base">
+                <div class="joystick-stick" id="joystick-stick"></div>
+            </div>
+        </div>
+        <div class="mobile-action-buttons">
+            <button type="button" class="mob-action-btn mob-shield-btn" id="mob-shield-btn">
+                <span>ESCUDO</span>
+                <small id="mob-shield-state">LISTO</small>
+            </button>
+            <button type="button" class="mob-action-btn mob-railgun-btn" id="mob-railgun-btn">
+                <span>RAILGUN</span>
+                <small id="mob-railgun-state">0%</small>
+            </button>
+        </div>
     </div>
 
     <!-- OVERLAYS DE FINAL Y CRÉDITOS NIER -->
@@ -98,10 +128,19 @@
 
     <div class="end-record-final" id="end-record-final">SAPHYNIEL //</div>
 
+    <!-- PANTALLA CINEMÁTICA DE DERROTA CON OPCIÓN DE REINTENTAR O RENDIRSE -->
     <div class="ending-screen bad-ending-screen" id="game-over-screen">
-        <div class="ending-title game-over-title">BAD ENDING</div>
-        <div class="ending-number" id="game-over-subtext">Registro Corrompido // Tu fe ha colapsado</div>
-        <button type="button" class="retry-btn" id="retry-btn">[ REINTENTAR ]</button>
+        <div class="game-over-panel">
+            <div class="game-over-telemetry">// CAJA NEGRA YORHA: SEÑAL VITAL PERDIDA //</div>
+            <div class="ending-title game-over-title">FE QUEBRANTADA</div>
+            <p class="ending-number" id="game-over-subtext">
+                Tu nave se ha desintegrado en el vacío mientras el eco de la risa de Saphyniel resuena entre las cenizas.
+            </p>
+            <div class="game-over-actions" id="game-over-actions">
+                <button type="button" class="retry-btn visible" id="retry-btn">[ ↻ REINTENTAR // PERSEVERAR ]</button>
+                <button type="button" class="surrender-btn visible" id="surrender-btn">[ 🏳️ RENDIRSE // ABANDONAR ]</button>
+            </div>
+        </div>
     </div>
 
     <!-- P5 DIALOGUE BOX -->
@@ -118,12 +157,19 @@
     </div>
 
     <script src="js/config/subtitles.js"></script>
+    <script src="js/core/shaders.js"></script>
     <script src="js/core/audio.js"></script>
     <script src="js/core/particles.js"></script>
     <script src="js/core/dialogue.js"></script>
-    <script src="js/boss/boss-attacks.js"></script>
-    <script src="js/boss/boss-flow.js"></script>
     <script src="js/creditos.js"></script>
+    <script src="js/boss/boss-attacks.js"></script>
+    <script src="js/boss/fsm/boss-engine.js"></script>
+    <script src="js/boss/phases/phase-1.js"></script>
+    <script src="js/boss/phases/phase-2.js"></script>
+    <script src="js/boss/phases/phase-3/subphase-flashback.js"></script>
+    <script src="js/boss/phases/phase-3/subphase-orbital-fall.js"></script>
+    <script src="js/boss/phases/phase-3/subphase-survival.js"></script>
+    <script src="js/boss/phases/phase-3/p3-controller.js"></script>
     <script src="js/boss.js"></script>
 </body>
 </html>

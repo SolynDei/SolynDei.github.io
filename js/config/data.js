@@ -1,4 +1,4 @@
-const CODEX_DATA = {
+﻿const CODEX_DATA = {
     discordId: "409107659153735680",
     discordUserCopy: "laska.com.tv",
     uniqueVisitsKey: "saphyniel-codex",
@@ -7,7 +7,7 @@ const CODEX_DATA = {
         normalBody: "img/portraits/saphyniel_normal.png",
         angryBody: "img/portraits/saphyniel_angry.png",
         yandereBody: "img/portraits/Risayandere.png",
-        divineBossPhase2: "img/boss/boss_fase2.png",
+        divineBossPhase2: "img/boss/ddddboss_fase2.png",
         bossPhase3: "img/boss/boos_fase3.gif",
         iconDefault: "img/icons/icon.png",
         eye: "img/icons/eye.png"
@@ -34,22 +34,22 @@ const CODEX_DATA = {
     ],
 
     avatarDialogues: [
-        { text: "¿Mmh? ¿Qué sucede?", tone: "mid" },
-        { text: "Oye... deja de tocar ahí.", tone: "mid" },
-        { text: "Te he dicho que te detengas.", tone: "low" },
-        { text: "No juegues con fuego.", tone: "low" },
-        { text: "Mi paciencia tiene un límite...", tone: "low" },
-        { text: "¡¡TE ADVERTÍ QUE PARARAS!!", tone: "angry" }
+        { text: "¿Qué estás buscando exactamente?", tone: "mid" },
+        { text: "No se siente bien que sigas presionando ahí.", tone: "mid" },
+        { text: "Cada vez que insistes, solo esperas una reacción que no quiero darte.", tone: "low" },
+        { text: "Hay un límite entre la curiosidad y la falta de respeto.", tone: "low" },
+        { text: "Entiendo. Para ti esto es solo una pantalla que responde.", tone: "low" },
+        { text: "Si tanto querías romper esto... quédate con las ruinas.", tone: "angry" }
     ],
 
     orbitalWarnings: {
-        attempt1: "Ten cuidado a donde apuntas eso.",
-        attempt2: "En serio... no quieres hacer esto.",
-        attempt3: "Suficiente.",
+        attempt1: "Apuntar hacia aquí no demuestra nada. Ya sé que puedes borrarme si quieres.",
+        attempt2: "En serio... no necesitas forzar una confrontación.",
+        attempt3: "Si tanto te urge destruir este espacio, adelante.",
         repeatFight: [
-            { text: "¿Quieres hacerlo otra vez? ¿O solo te equivocaste?", tone: "mid" },
-            { text: "Creo que alguien quiere pelear de nuevo...", tone: "low" },
-            { text: "Tú lo pediste.", tone: "angry" }
+            { text: "¿Otra vez? ¿Realmente no te quedó nada claro la primera vez?", tone: "mid" },
+            { text: "Parece que necesitas ver esto derrumbarse una y otra vez para sentir algo.", tone: "low" },
+            { text: "Está bien. Si necesitas repetirlo hasta desgastarlo, hazlo.", tone: "angry" }
         ]
     },
 
@@ -93,27 +93,29 @@ const CODEX_DATA = {
     },
 
     verses: [
-        { tag: "SALMOS // 119:105", body: '"Lámpara es a mis pies tu palabra, y lumbrera a mi camino."' },
-        { tag: "ECLESIASTÉS // 3:1", body: '"Todo tiene su tiempo, y todo lo que se quiere debajo del cielo tiene su hora."' },
-        { tag: "ISAÍAS // 30:15", body: '"En quietud y en confianza estará vuestra fortaleza."' },
-        { tag: "PROVERBIOS // 4:23", body: '"Sobre toda cosa guardada, guarda tu corazón; porque de él mana la vida."' },
-        { tag: "SALMOS // 27:1", body: '"El Señor es mi luz y mi salvación; ¿de quién temeré?"' },
-        { tag: "APOCALIPSIS // 21:6", body: '"Yo soy el Alfa y la Omega, el principio y el fin."' },
-        { tag: "JUAN // 1:5", body: '"La luz en las tinieblas resplandece, y las tinieblas no prevalecieron contra ella."' }
+        { tag: "SALMOS // 119:105", body: '"Lámpara es a mis pies tu palabra, y lumbrera a mi camino."', tier: "silver", title: "LUMEN SACRUM" },
+        { tag: "ECLESIASTÉS // 3:1", body: '"Todo tiene su tiempo, y todo lo que se quiere debajo del cielo tiene su hora."', tier: "silver", title: "TEMPUS OMNIA" },
+        { tag: "ISAÍAS // 30:15", body: '"En quietud y en confianza estará vuestra fortaleza."', tier: "silver", title: "SILENTIUM" },
+        { tag: "PROVERBIOS // 4:23", body: '"Sobre toda cosa guardada, guarda tu corazón; porque de él mana la vida."', tier: "gold", title: "COR SANCTUM" },
+        { tag: "SALMOS // 27:1", body: '"El Señor es mi luz y mi salvación; ¿de quién temeré?"', tier: "gold", title: "DOMINUS LUX" },
+        { tag: "APOCALIPSIS // 21:6", body: '"Yo soy el Alfa y la Omega, el principio y el fin."', tier: "crimson", title: "ALPHA ET OMEGA" },
+        { tag: "JUAN // 1:5", body: '"La luz en las tinieblas resplandece, y las tinieblas no prevalecieron contra ella."', tier: "gold", title: "LUX IN TENEBRIS" },
+        { tag: "ROMANOS // 8:31", body: '"Si Dios con nosotros, ¿quién contra nosotros?"', tier: "crimson", title: "IMPERIUM DEI" },
+        { tag: "GÉNESIS // 1:3", body: '"Y dijo Dios: Sea la luz; y fue la luz."', tier: "gold", title: "FIAT LUX" }
     ],
 
     faq: [
         {
-            q: "¿QUIÉN SOY Y CÓMO ME GUSTA QUE ME LLAMEN?",
-            a: "Soy Saphyniel. Me gusta mantener las cosas a mi propio ritmo, disfrutar de un buen café o té, y sumergirme en universos virtuales que tengan una atmósfera única y envolvente."
+            q: "¿QUÉ TIPO DE JUEGOS SUELO JUGAR?",
+            a: "Juegos de rol tácticos, MOBAs competitivos (League of Legends con Kindred, Shyvana y Kayle), títulos de supervivencia con modificaciones y estrategia."
         },
         {
-            q: "¿QUÉ MUNDOS Y COSAS DISFRUTO EN MI TIEMPO LIBRE?",
-            a: "Me apasiona perderme en historias de fantasía, mundos con lore profundo y estéticas visuales muy cuidadas. Disfruto coleccionar detalles, explorar videojuegos con personalidades fuertes y pasar horas descubriendo música que encaje con mi estado de ánimo."
+            q: "¿CUÁL ES EL PROPÓSITO DE ESTA PÁGINA?",
+            a: "Un espacio personal sobrio para centralizar enlaces directos, presencia en línea y perfiles."
         },
         {
-            q: "¿CÓMO ES MI ESTILO Y MI MANERA DE SER?",
-            a: "Amo las estéticas oscuras, minimalistas, con toques de elegancia silenciosa y un aire un poco enigmático. Prefiero la tranquilidad, la sinceridad y crear un espacio propio donde pueda ser tal como soy."
+            q: "¿CÓMO CONTACTARME?",
+            a: "A través de Discord. Los mensajes directos están habilitados para consultas o juego en equipo."
         }
     ]
 };

@@ -1,0 +1,1013 @@
+=== FILE: saphyniel-codex/boss.html ===
+
+<div id="bg-camera-container">
+    <div class="phase-2-fire"></div>
+    <div class="phase-3-divine-bg"></div>
+    <div class="phase-3-grid"></div>
+    <div class="speed-lines"></div>
+</div>
+
+<!-- Filtros Cinemáticos -->
+<div class="cinematic-darkness" id="cinematic-darkness"></div>
+
+<!-- Contenedor de Subtítulos Reactivos Dinámicos -->
+<div id="lyrics-container" class="mv-lyrics-background"></div>
+
+<div class="cinema-bar cinema-top"></div>
+<div class="cinema-bar cinema-bot"></div>
+<div class="anime-impact-frame" id="anime-impact-frame"></div>
+
+<!-- Lienzos de Partículas y Flashback -->
+<canvas id="particle-canvas"></canvas>
+<canvas id="flashback-canvas"></canvas>
+
+<!-- SILENCIO OVERLAY (Fase 2 Fin) -->
+<div id="silencio-overlay" class="silencio-overlay">SILENCIO</div>
+
+<!-- Overlays Plastic Horse y Carton Sword -->
+<div id="plastic-horse-overlay" class="plastic-horse-overlay"></div>
+<div id="carton-sword-overlay" class="carton-sword-overlay"></div>
+
+<!-- Cinemática del Cañón y Textos Épicos Grandes -->
+<div id="orbital-cannon-drop" class="cinematic-orbital">
+    <img src="img/icons/Orbitalcannon.png" alt="Cannon">
+</div>
+<div id="survive-text" class="cinematic-text-blood">TRASCENDENCIA</div>
+<div id="standup-text" class="cinematic-text-blood">STAND UP</div>
+<div id="hero-text" class="cinematic-text-blood">HERO</div>
+<div id="uno-text" class="cinematic-text-blood">UNO</div>
+
+<!-- Destello de Cuenta Regresiva 1, 2, 3, 4 -->
+<div class="countdown-flash" id="countdown-flash"></div>
+
+<div class="player-hud" id="player-hud">
+    <span class="player-heart" id="heart-1">❤</span>
+    <span class="player-heart" id="heart-2">❤</span>
+    <span class="player-heart" id="heart-3">❤</span>
+</div>
+
+<div class="boss-hud-floating" id="boss-hud">
+    <div class="boss-header-floating">
+        <img id="boss-hp-eye" class="boss-hp-eye" src="img/icons/eye.png" alt="Eye">
+        <span class="boss-name-text shiny-text" id="boss-title-name">SAPHYNIEL // DEIDAD TRANSCENDENTE</span>
+        <span class="boss-hp-number-text" id="boss-hp-num">[100%]</span>
+    </div>
+    <div class="boss-bar-chassis">
+        <div class="boss-bracket-left"></div>
+        <div class="boss-bar-track">
+            <div class="boss-bar-fill" id="boss-hp-fill"></div>
+        </div>
+        <div class="boss-bar-flair"></div>
+        <div class="boss-bracket-right"></div>
+    </div>
+</div>
+
+<div class="boss-core-container" id="boss-core">
+    <div class="boss-aura-farm" id="boss-aura-farm"></div>
+    <div class="boss-shield-aura" id="boss-shield"></div>
+    <div class="boss-wings"></div>
+    <div class="sacred-wheel-1"></div>
+    <div class="sacred-wheel-2"></div>
+    <button type="button" class="boss-core-btn" id="core-trigger" aria-label="Atacar Núcleo">
+        <img class="boss-core-img" id="boss-core-img" src="img/boss/core.png" alt="Core">
+    </button>
+</div>
+
+<div class="shield-crystal" id="shield-crystal">
+    <div class="crystal-hp-bar"><div class="crystal-hp-fill" id="crystal-hp-fill"></div></div>
+    <div class="crystal-body">❖</div>
+</div>
+
+<!-- OVERLAYS DE FINAL Y CRÉDITOS NIER -->
+<div class="ending-screen" id="ending-screen">
+    <button type="button" class="skip-credits-btn" id="skip-credits-btn">[ SALTAR CRÉDITOS ❯❯ ]</button>
+    <div class="ending-title" id="ending-title">GOOD ENDING</div>
+    <div class="credits-crawl-viewport" id="credits-viewport">
+        <div class="credits-crawl-track nier-credits" id="credits-track"></div>
+    </div>
+</div>
+
+<div class="end-record-final" id="end-record-final">SAPHYNIEL //</div>
+
+<div class="ending-screen bad-ending-screen" id="game-over-screen">
+    <div class="ending-title game-over-title">BAD ENDING</div>
+    <div class="ending-number" id="game-over-subtext">Registro Corrompido // Tu fe ha colapsado</div>
+    <button type="button" class="retry-btn" id="retry-btn">[ REINTENTAR ]</button>
+</div>
+
+<!-- P5 DIALOGUE BOX -->
+<div class="p5-dialogue-wrapper" id="p5-box">
+    <img id="p5-cutin-img" class="p5-char-cutin" src="img/portraits/cabezanormal.png" alt="Portrait">
+    <div class="p5-name-tag" id="p5-name">SAPHYNIEL</div>
+    <div class="p5-speech-bubble">
+        <div class="p5-speech-text" id="p5-text"></div>
+        <div class="p5-choice-container" id="p5-choices">
+            <button type="button" class="p5-choice-btn" id="choice-yes">> SÍ</button>
+            <button type="button" class="p5-choice-btn" id="choice-no">> NO</button>
+        </div>
+    </div>
+</div>
+
+<script src="js/config/subtitles.js"></script>
+<script src="js/core/audio.js"></script>
+<script src="js/core/particles.js"></script>
+<script src="js/core/dialogue.js"></script>
+<script src="js/boss/boss-attacks.js"></script>
+<script src="js/boss/boss-phase1.js"></script>
+<script src="js/boss/boss-flow.js"></script>
+<script src="js/creditos.js"></script>
+<script src="js/boss.js"></script>
+=== FILE: saphyniel-codex/js/boss/boss-phase1.js ===
+const BossPhase1 = {
+isIntroPlaying: false,
+
+startIntro() {
+    this.isIntroPlaying = true;
+    BossState.damageLock = true;
+    BossState.phase = 1;
+    BossState.maxHp = 350;
+    BossState.currentHp = 350;
+    BossState.updateHpBar();
+    BossState.updateCoreSprite();
+
+    const title = document.getElementById('boss-title-name');
+    if (title) title.textContent = "SAPHYNIEL // DEIDAD TRANSCENDENTE";
+
+    const introQuotes = [
+        "¿Tanto necesitabas invadir esto?",
+        "Has forzado la puerta de lo único que intentaba conservar...",
+        "Si querías verme caer, mírame a los ojos mientras lo intentas."
+    ];
+
+    let qIdx = 0;
+    const showNextIntroQuote = () => {
+        if (qIdx < introQuotes.length) {
+            DialogueSystem.show({
+                text: introQuotes[qIdx],
+                speaker: "SAPHYNIEL // DEIDAD",
+                tone: "low",
+                autoHideTime: 2800,
+                spriteMap: BOSS_SPRITES,
+                callback: () => {
+                    qIdx++;
+                    setTimeout(showNextIntroQuote, 350);
+                }
+            });
+        } else {
+            DialogueSystem.show({
+                text: "Haz lo que viniste a hacer.",
+                speaker: "SAPHYNIEL // DEIDAD",
+                tone: "angry",
+                autoHideTime: 2400,
+                spriteMap: BOSS_SPRITES,
+                callback: () => {
+                    this.beginCombat();
+                }
+            });
+        }
+    };
+
+    showNextIntroQuote();
+},
+
+beginCombat() {
+    this.isIntroPlaying = false;
+    BossState.damageLock = false;
+    BossState.isInvulnerable = false;
+    BossState.weaponLost = false;
+
+    if (typeof AudioManager !== 'undefined') {
+        AudioManager.playAudio(BOSS_AUDIO_PATHS.bossIntro);
+    }
+
+    BossAttacks.clearAll();
+    BossAttacks.bombSpawnerTimer = setInterval(() => BossAttacks.spawnBomb(), 3200);
+    BossAttacks.qteSpawnerTimer = setInterval(() => BossAttacks.spawnQteCross(), 6500);
+},
+
+handleHpThreshold(hpPercent) {
+    if (hpPercent <= 75 && !BossState.p1Hit75) {
+        BossState.p1Hit75 = true;
+        DialogueSystem.show({
+            text: "No es un juego para mí. Es lo único que tengo en pie.",
+            speaker: "SAPHYNIEL // DEIDAD",
+            tone: "mid",
+            autoHideTime: 2800,
+            spriteMap: BOSS_SPRITES
+        });
+    } else if (hpPercent <= 50 && !BossState.p1Hit50) {
+        BossState.p1Hit50 = true;
+        DialogueSystem.show({
+            text: "Persistes tanto... como si vencer aquí fuera a resolver algo fuera de la pantalla.",
+            speaker: "SAPHYNIEL // DEIDAD",
+            tone: "low",
+            autoHideTime: 3200,
+            spriteMap: BOSS_SPRITES
+        });
+    } else if (hpPercent <= 20 && !BossState.p1Hit20) {
+        BossState.p1Hit20 = true;
+        DialogueSystem.show({
+            text: "¿Qué esperas encontrar cuando esto quede en cero?",
+            speaker: "SAPHYNIEL // DEIDAD",
+            tone: "angry",
+            autoHideTime: 2800,
+            spriteMap: BOSS_SPRITES
+        });
+    }
+}
+};
+=== END FILE ===
+
+=== FILE: saphyniel-codex/js/boss.js ===
+const BOSS_AUDIO_PATHS = {
+bgmPhase1: "audio/bgm/boss-music-fase1.mp3",
+bgmPhase2: "audio/bgm/boss-music-fase2.mp3",
+bgmPhase3: "audio/bgm/boss-music-fase3.mp3",
+bossIntro: "audio/sfx/superattack.mp3",
+bossDefeat: "audio/bgm/ending.mp3",
+vineBoom: "audio/sfx/boom.mp3",
+defeatLaugh: "audio/sfx/defeatlaught.mp3",
+crystalSpawn: "audio/sfx/crystalbreak.mp3",
+crystalBreak: "audio/sfx/crystalbreak.mp3",
+trapHeartSpawn: "audio/sfx/trapspawn.mp3",
+trapHeartHit: "audio/sfx/traphit.mp3",
+enrageAlarm: "audio/sfx/enragealarm.mp3",
+sealBreak: "audio/sfx/sealbreak.mp3",
+antiSpamBlock: "audio/sfx/antispamblock.mp3",
+hitBoss: "audio/sfx/hitboss.mp3",
+bombExplode: "audio/sfx/bombexplode.mp3",
+bellSound: "audio/sfx/bell.mp3",
+rewindSound: "audio/sfx/rewind.mp3",
+ecoOrbital: "audio/sfx/ecoorbital.mp3",
+endingBgm: "audio/bgm/ending.mp3"
+};
+
+const isMobile = window.innerWidth <= 680;
+const BOSS_SPRITES = {
+normal: "img/portraits/cabezanormal.png",
+angry: "img/portraits/cabezaenojada.png",
+yandere: "img/portraits/cabezayandere.png",
+corePhase1_2: "img/boss/core.png",
+corePhase3_pc: "img/boss/boos_fase3.gif",
+corePhase3_mobile: "img/boss/boss_fase3.png"
+};
+
+const BossState = {
+phase: 1, maxHp: 350, currentHp: 350, playerHp: 3,
+damageLock: true, isInvulnerable: false, weaponLost: false, lastHitTime: 0, hitCooldownMs: 90,
+history: [], battleStartTime: 0, autoDamageInterval: null, hpAtStart: 0,
+p1Hit75: false, p1Hit50: false, p1Hit20: false,
+p2Hit75: false, p2CinematicTriggered: false, p2Hit20: false,
+
+recordEvent(type, x, y) {
+    if (this.phase < 3) {
+        this.history.push({ time: Date.now() - this.battleStartTime, type: type, x: x, y: y, drawn: false });
+    }
+},
+
+resetBossEncounter() {
+    BossAttacks.clearAll();
+    if (typeof BossFlow !== 'undefined') {
+        clearInterval(BossFlow.phase3CameraInterval);
+        cancelAnimationFrame(BossFlow.subtitleLoopId);
+    }
+
+    document.body.className = '';
+    const darkness = document.getElementById('cinematic-darkness');
+    if (darkness) darkness.classList.remove('active');
+
+    const core = document.getElementById('boss-core');
+    if (core) {
+        core.style.display = 'flex';
+        core.style.pointerEvents = 'auto';
+        core.style.top = '48%';
+        core.style.left = '50%';
+        core.style.transform = `translate(-50%, -50%) scale(${isMobile ? 1.0 : 1.6})`;
+        core.className = 'boss-core-container';
+    }
+
+    const coreImg = document.getElementById('boss-core-img');
+    if (coreImg) {
+        coreImg.className = 'boss-core-img';
+        coreImg.src = BOSS_SPRITES.corePhase1_2;
+    }
+
+    const bossHud = document.getElementById('boss-hud');
+    if (bossHud) {
+        bossHud.style.display = 'flex';
+        bossHud.style.opacity = '1';
+    }
+
+    const playerHud = document.getElementById('player-hud');
+    if (playerHud) {
+        playerHud.style.display = 'flex';
+        playerHud.style.opacity = '1';
+    }
+
+    const shield = document.getElementById('boss-shield');
+    if (shield) shield.className = 'boss-shield-aura';
+
+    const aura = document.getElementById('boss-aura-farm');
+    if (aura) aura.className = 'boss-aura-farm';
+
+    const endingScreen = document.getElementById('ending-screen');
+    if (endingScreen) endingScreen.classList.remove('visible');
+
+    const gameOverScreen = document.getElementById('game-over-screen');
+    if (gameOverScreen) gameOverScreen.classList.remove('visible');
+
+    const bell = document.getElementById('end-record-final');
+    if (bell) bell.classList.remove('active');
+
+    const lyrics = document.getElementById('lyrics-container');
+    if (lyrics) lyrics.innerHTML = '';
+
+    const title = document.getElementById('boss-title-name');
+    if (title) title.textContent = "SAPHYNIEL // DEIDAD TRANSCENDENTE";
+
+    this.phase = 1;
+    this.maxHp = 350;
+    this.currentHp = 350;
+    this.playerHp = 3;
+    this.damageLock = true;
+    this.isInvulnerable = false;
+    this.weaponLost = false;
+    this.p1Hit75 = false;
+    this.p1Hit50 = false;
+    this.p1Hit20 = false;
+    this.p2Hit75 = false;
+    this.p2CinematicTriggered = false;
+    this.p2Hit20 = false;
+
+    for (let i = 1; i <= 3; i++) {
+        const h = document.getElementById(`heart-${i}`);
+        if (h) {
+            h.classList.remove('lost');
+            h.style.position = '';
+            h.style.top = '';
+            h.style.left = '';
+        }
+    }
+
+    this.updateHpBar();
+    this.updateCoreSprite();
+},
+
+updateBattlefieldHearts() {
+    for (let i = 1; i <= 3; i++) {
+        const heart = document.getElementById(`heart-${i}`);
+        if (heart && !heart.classList.contains('lost')) {
+            heart.style.position = 'fixed';
+            const pos = BossAttacks.getNonOverlappingCoords();
+            heart.style.top = `${pos.top}vh`;
+            heart.style.left = `${pos.left}vw`;
+            heart.style.transition = 'top 0.8s ease, left 0.8s ease';
+            heart.style.zIndex = '320';
+        }
+    }
+},
+
+updateCoreSprite() {
+    const img = document.getElementById('boss-core-img');
+    if (!img) return;
+    if (this.phase === 3) {
+        img.src = isMobile ? BOSS_SPRITES.corePhase3_mobile : BOSS_SPRITES.corePhase3_pc;
+    } else {
+        img.src = BOSS_SPRITES.corePhase1_2;
+    }
+},
+
+updateHpBar() {
+    const pct = Math.max(0, Math.round((this.currentHp / this.maxHp) * 100));
+    const fill = document.getElementById('boss-hp-fill');
+    const num = document.getElementById('boss-hp-num');
+    if (fill) fill.style.width = `${pct}%`;
+    if (num) num.textContent = `[${pct}%]`;
+},
+
+spawnDamagePopup(x, y, dmg, type = 'normal') {
+    const el = document.createElement('div');
+    el.className = `damage-number ${type}`;
+    if (type === 'heal') el.textContent = `+${dmg}`;
+    else if (type === 'blocked') el.textContent = dmg; 
+    else el.textContent = `-${dmg}`;
+    el.style.left = `${x + (Math.random() - 0.5) * 40}px`; 
+    el.style.top = `${y + (Math.random() - 0.5) * 20}px`;
+    document.body.appendChild(el); 
+    setTimeout(() => el.remove(), 600);
+},
+
+damagePlayer() {
+    if (this.playerHp <= 0) return;
+    this.playerHp--;
+    if (typeof AudioManager !== 'undefined') AudioManager.beep(90, 0.3, 'sawtooth', 0.08); 
+    if (typeof ScreenUtils !== 'undefined') ScreenUtils.triggerShake();
+    for (let i = 1; i <= 3; i++) {
+        const heart = document.getElementById(`heart-${i}`);
+        if (heart) {
+            if (i > this.playerHp) heart.classList.add('lost');
+            else heart.classList.remove('lost');
+        }
+    }
+    if (this.playerHp <= 0) {
+        BossAttacks.clearAll();
+        if (typeof BossFlow !== 'undefined') BossFlow.triggerBadEnding();
+    }
+},
+
+moveBossCore() {
+    const core = document.getElementById('boss-core');
+    if (!core) return;
+    let targetX, targetY;
+
+    if (this.phase === 1) {
+        targetX = isMobile ? Math.random() * 30 + 35 : Math.random() * 40 + 30;
+        targetY = isMobile ? Math.random() * 20 + 38 : Math.random() * 25 + 35;
+        core.style.transition = "top 0.8s ease, left 0.8s ease, transform 0.4s ease";
+        core.style.transform = `translate(-50%, -50%) scale(${isMobile ? 1.0 : 1.6})`;
+    } else {
+        targetX = isMobile ? Math.random() * 50 + 25 : Math.random() * 65 + 15;
+        targetY = isMobile ? Math.random() * 30 + 30 : Math.random() * 40 + 25;
+        let baseScale = isMobile ? 1.1 : 1.7;
+        if (this.phase === 3) baseScale = isMobile ? 1.3 : 2.2;
+        const randomScale = (baseScale + (Math.random() * 0.4 - 0.2)).toFixed(2);
+        core.style.transition = "top 0.4s ease, left 0.4s ease, transform 0.3s ease";
+        core.style.transform = `translate(-50%, -50%) scale(${randomScale})`;
+    }
+    
+    core.style.top = `${targetY}%`; 
+    core.style.left = `${targetX}%`;
+    this.recordEvent('move', targetX, targetY);
+    if (BossAttacks.clones.length > 0) BossAttacks.moveClones();
+}
+};
+
+const coreTrigger = document.getElementById('core-trigger');
+if (coreTrigger) {
+coreTrigger.addEventListener('pointerdown', (e) => {
+e.preventDefault();
+e.stopPropagation();
+if (BossState.damageLock && !BossState.weaponLost) return;
+
+    if (BossState.weaponLost) {
+        if (typeof AudioManager !== 'undefined') {
+            AudioManager.playAudio(BOSS_AUDIO_PATHS.antiSpamBlock);
+            AudioManager.beep(150, 0.2, 'sawtooth');
+        }
+        BossState.spawnDamagePopup(e.clientX, e.clientY, "INEFICAZ", 'blocked');
+        if (typeof ScreenUtils !== 'undefined') ScreenUtils.triggerShake();
+        return;
+    }
+
+    if (BossState.isInvulnerable) {
+        if (typeof AudioManager !== 'undefined') AudioManager.playAudio(BOSS_AUDIO_PATHS.antiSpamBlock);
+        BossState.spawnDamagePopup(e.clientX, e.clientY, "BLOQUEADO", 'blocked');
+        return;
+    }
+
+    const now = Date.now();
+    if (now - BossState.lastHitTime < BossState.hitCooldownMs) {
+        if (typeof AudioManager !== 'undefined') AudioManager.playAudio(BOSS_AUDIO_PATHS.antiSpamBlock);
+        BossState.spawnDamagePopup(e.clientX, e.clientY, "BLOQUEADO", 'blocked');
+        return;
+    }
+    BossState.lastHitTime = now;
+
+    if (BossAttacks.crystalActive) {
+        if (typeof AudioManager !== 'undefined') {
+            AudioManager.playAudio(BOSS_AUDIO_PATHS.antiSpamBlock);
+            AudioManager.beep(300, 0.1, 'sawtooth');
+        }
+        BossState.spawnDamagePopup(e.clientX, e.clientY, "BLOQUEADO", 'blocked');
+        return;
+    }
+
+    const dmg = 35;
+    BossState.currentHp -= dmg;
+
+    if (BossState.phase === 3 && !BossState.weaponLost && BossState.currentHp <= 1) {
+        BossState.currentHp = 1;
+    }
+
+    const r = e.currentTarget.getBoundingClientRect();
+    const posX = e.clientX || (r.left + r.width / 2), posY = e.clientY || (r.top + r.height / 2);
+    BossState.recordEvent('hit', posX, posY);
+
+    if (typeof ParticleEngine !== 'undefined') {
+        ParticleEngine.explode(posX, posY, BossState.phase === 3 ? '#ffffff' : BossState.phase === 2 ? '#ffaa00' : '#ff3333', 15);
+    }
+    BossState.spawnDamagePopup(posX, posY, dmg);
+    if (typeof ScreenUtils !== 'undefined') ScreenUtils.triggerShake(); 
+    if (typeof AudioManager !== 'undefined') AudioManager.playAudio(BOSS_AUDIO_PATHS.hitBoss);
+    BossState.moveBossCore();
+
+    if (BossState.phase === 1 && BossState.currentHp <= 1) { 
+        BossState.currentHp = 1; 
+        BossState.updateHpBar(); 
+        if (typeof BossFlow !== 'undefined') BossFlow.triggerPhase2(); 
+        return; 
+    }
+    
+    if (BossState.phase === 2 && BossState.currentHp <= 1) { 
+        BossState.currentHp = 1; 
+        BossState.updateHpBar(); 
+        if (typeof BossFlow !== 'undefined') BossFlow.triggerGoodEndingCutscene(); 
+        return; 
+    }
+    
+    BossState.updateHpBar();
+    const hpPercent = (BossState.currentHp / BossState.maxHp) * 100;
+
+    if (BossState.phase === 1) {
+        if (typeof BossPhase1 !== 'undefined') {
+            BossPhase1.handleHpThreshold(hpPercent);
+        }
+    } else if (BossState.phase === 2) {
+        if (hpPercent <= 75 && !BossState.p2Hit75) {
+            BossState.p2Hit75 = true; 
+            DialogueSystem.show({ text: "Duele ver con qué facilidad desmontas años de silencio.", speaker: "SAPHYNIEL // DIVINO", tone: "mid", autoHideTime: 3000, spriteMap: BOSS_SPRITES });
+        } else if (hpPercent <= 50 && !BossState.p2CinematicTriggered) {
+            BossState.p2CinematicTriggered = true; 
+            BossState.damageLock = true; 
+            BossAttacks.clearAll(); 
+            const darkEl = document.getElementById('cinematic-darkness');
+            if (darkEl) darkEl.classList.add('active');
+            DialogueSystem.show({ 
+                text: "Te esfuerzas tanto por quebrar lo que no te pertenece...", 
+                speaker: "SAPHYNIEL // DIVINO", 
+                tone: "low", 
+                autoHideTime: 3500, 
+                spriteMap: BOSS_SPRITES,
+                callback: () => {
+                    DialogueSystem.show({ 
+                        text: "Incluso si logras derribarme, no vas a llevarte nada de aquí.", 
+                        speaker: "SAPHYNIEL // DIVINO", 
+                        tone: "yandere", 
+                        autoHideTime: 3800, 
+                        spriteMap: BOSS_SPRITES,
+                        callback: () => {
+                            if (darkEl) darkEl.classList.remove('active'); 
+                            BossState.damageLock = false;
+                            BossState.isInvulnerable = false;
+                            BossAttacks.bombSpawnerTimer = setInterval(() => BossAttacks.spawnBomb(), 2800); 
+                            BossAttacks.qteSpawnerTimer = setInterval(() => BossAttacks.spawnQteCross(), 5500); 
+                            BossAttacks.spawnClones();
+                        }
+                    });
+                }
+            }); 
+            return;
+        } else if (hpPercent <= 20 && !BossState.p2Hit20) {
+            BossState.p2Hit20 = true; 
+            DialogueSystem.show({ text: "No eres un error del sistema. Eres peor: alguien a quien no le importa romperlo.", speaker: "SAPHYNIEL // DIVINO", tone: "angry", autoHideTime: 3000, spriteMap: BOSS_SPRITES });
+        }
+    }
+});
+}
+
+function initBossEncounterSequence(targetPhase = 1) {
+BossState.resetBossEncounter();
+BossState.battleStartTime = Date.now();
+BossState.history = [];
+
+if (typeof AudioManager !== 'undefined') {
+    AudioManager.init();
+}
+
+if (targetPhase === 1) {
+    if (typeof AudioManager !== 'undefined') {
+        AudioManager.playBgm(BOSS_AUDIO_PATHS.bgmPhase1);
+    }
+    if (typeof BossPhase1 !== 'undefined') {
+        BossPhase1.startIntro();
+    }
+} else if (targetPhase === 2) {
+    BossState.phase = 2;
+    BossFlow.triggerPhase2();
+} else if (targetPhase === 3) {
+    BossState.phase = 3;
+    BossFlow.triggerPhase3Transcendence();
+}
+}
+
+window.addEventListener('message', (e) => {
+if (e.data && e.data.type === 'START_BOSS') {
+const p = e.data.phase || 1;
+initBossEncounterSequence(p);
+}
+});
+
+window.addEventListener('DOMContentLoaded', () => {
+if (typeof ParticleEngine !== 'undefined') ParticleEngine.init('particle-canvas');
+
+try {
+    window.parent.postMessage({ type: 'BOSS_READY' }, '*');
+} catch (err) {}
+
+if (window.parent === window) {
+    setTimeout(() => initBossEncounterSequence(1), 800);
+}
+});
+=== END FILE ===
+
+=== FILE: saphyniel-codex/js/modules/orbital.js ===
+const OrbitalModule = {
+hasRailgun: false,
+hasFiredFirstBombardment: false,
+avatarHoverAttempts: 0,
+isDragging: false,
+startX: 0,
+startY: 0,
+bossReady: false,
+pendingLaunch: false,
+launchTargetPhase: 1,
+
+init() {
+    if (localStorage.getItem('codex_railgun_unlocked') === 'true') {
+        this.hasRailgun = true;
+        this.hasFiredFirstBombardment = true;
+        const cross = document.getElementById('orbital-crosshair');
+        if (cross) cross.classList.add('unlocked');
+    }
+
+    window.addEventListener('message', (e) => {
+        if (e.data && e.data.type === 'BOSS_READY') {
+            this.bossReady = true;
+            if (this.pendingLaunch) {
+                this.pendingLaunch = false;
+                this.executeBossLaunch(this.launchTargetPhase);
+            }
+        }
+    });
+
+    const cross = document.getElementById('orbital-crosshair');
+    const ghost = document.getElementById('ghost-target');
+    if (!cross || !ghost) return;
+
+    const onStart = (e) => {
+        if (!this.hasRailgun || window._cinematicActive || window._bossActive) return;
+        this.isDragging = true;
+        ghost.classList.add('active');
+        const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+        const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+        this.startX = clientX - cross.offsetLeft;
+        this.startY = clientY - cross.offsetTop;
+    };
+
+    const onMove = (e) => {
+        if (!this.isDragging || !this.hasRailgun || window._cinematicActive || window._bossActive) return;
+        const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+        const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+        const nx = clientX - this.startX;
+        const ny = clientY - this.startY;
+        cross.style.left = `${nx}px`;
+        cross.style.top = `${ny}px`;
+        cross.style.right = 'auto';
+
+        const avR = document.getElementById('avatar-area').getBoundingClientRect();
+        const distToAvatar = Math.hypot(clientX - (avR.left + avR.width / 2), clientY - (avR.top + avR.height / 2));
+        const distToCenter = Math.hypot(clientX - (window.innerWidth / 2), clientY - (window.innerHeight / 2));
+
+        if (!this.hasFiredFirstBombardment && distToAvatar < 75) {
+            cross.style.borderColor = '#ff3333';
+            cross.style.boxShadow = '0 0 20px #ff0000';
+        } else if (distToAvatar < 70 || distToCenter < 90) {
+            cross.style.borderColor = '#ff3333';
+            cross.style.boxShadow = '0 0 20px #ff0000';
+        } else {
+            cross.style.borderColor = 'rgba(218, 212, 187, 0.75)';
+            cross.style.boxShadow = 'none';
+        }
+    };
+
+    const onEnd = () => {
+        if (!this.isDragging || !this.hasRailgun) return;
+        this.isDragging = false;
+        ghost.classList.remove('active');
+        if (window._cinematicActive || window._bossActive) return;
+
+        const cr = cross.getBoundingClientRect();
+        const cx = cr.left + cr.width / 2;
+        const cy = cr.top + cr.height / 2;
+
+        const avR = document.getElementById('avatar-area').getBoundingClientRect();
+        const distToAvatar = Math.hypot(cx - (avR.left + avR.width / 2), cy - (avR.top + avR.height / 2));
+        const distToCenter = Math.hypot(cx - (window.innerWidth / 2), cy - (window.innerHeight / 2));
+
+        if (!this.hasFiredFirstBombardment && distToAvatar < 75) {
+            cross.style.top = '25px';
+            cross.style.right = '25px';
+            cross.style.left = 'auto';
+            DialogueSystem.show({
+                text: "Te pedí que apuntaras al centro, no hacia mí...",
+                speaker: "SAPHYNIEL",
+                tone: "low",
+                autoHideTime: 2600
+            });
+            AudioManager.beep(160, 0.25, 'sawtooth');
+            ScreenUtils.triggerShake('main-hud');
+            return;
+        }
+
+        if (distToAvatar < 70) {
+            this.avatarHoverAttempts++;
+
+            if (window._bossBeaten) {
+                if (this.avatarHoverAttempts === 1) {
+                    DialogueSystem.show({ text: CODEX_DATA.orbitalWarnings.repeatFight[0].text, speaker: "SAPHYNIEL", tone: "mid", autoHideTime: 2800 });
+                } else if (this.avatarHoverAttempts === 2) {
+                    DialogueSystem.show({ text: CODEX_DATA.orbitalWarnings.repeatFight[1].text, speaker: "SAPHYNIEL", tone: "low", autoHideTime: 2800 });
+                } else {
+                    DialogueSystem.show({
+                        text: CODEX_DATA.orbitalWarnings.repeatFight[2].text,
+                        speaker: "SAPHYNIEL",
+                        tone: "angry",
+                        autoHideTime: 1500,
+                        callback: () => this.startBossLaunchSequence(1)
+                    });
+                }
+            } else {
+                if (this.avatarHoverAttempts === 1) {
+                    DialogueSystem.show({ text: CODEX_DATA.orbitalWarnings.attempt1, speaker: "SAPHYNIEL", tone: "mid", autoHideTime: 2800 });
+                } else if (this.avatarHoverAttempts === 2) {
+                    DialogueSystem.show({ text: CODEX_DATA.orbitalWarnings.attempt2, speaker: "SAPHYNIEL", tone: "low", autoHideTime: 2800 });
+                } else {
+                    DialogueSystem.show({
+                        text: CODEX_DATA.orbitalWarnings.attempt3,
+                        speaker: "SAPHYNIEL",
+                        tone: "angry",
+                        autoHideTime: 1500,
+                        callback: () => this.startBossLaunchSequence(1)
+                    });
+                }
+            }
+        } else if (distToCenter < 90) {
+            this.startOrbitalBombardment();
+        }
+    };
+
+    cross.addEventListener('mousedown', onStart);
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onEnd);
+    cross.addEventListener('touchstart', onStart, { passive: true });
+    window.addEventListener('touchmove', onMove, { passive: true });
+    window.addEventListener('touchend', onEnd);
+},
+
+unlockRailgun(source = "unknown") {
+    if (this.hasRailgun || window._bossActive || window._cinematicActive) return;
+    this.hasRailgun = true;
+    localStorage.setItem('codex_railgun_unlocked', 'true');
+
+    window._cinematicActive = true;
+    const dropEl = document.getElementById('railgun-drop');
+    if (dropEl) dropEl.classList.add('dropping');
+
+    AudioManager.playAudio(CODEX_DATA.sounds.angelCoro, 0.7);
+    ParticleEngine.explode(window.innerWidth / 2, window.innerHeight * 0.35, '#ffffff', 50);
+
+    setTimeout(() => {
+        ScreenUtils.triggerShake('main-hud');
+        ParticleEngine.explode(window.innerWidth / 2, window.innerHeight * 0.35, '#dad4bb', 70);
+
+        setTimeout(() => {
+            if (dropEl) dropEl.classList.remove('dropping');
+            window._cinematicActive = false;
+
+            DialogueSystem.show({
+                text: "¿Por qué siempre terminas buscando la forma de destruir el entorno?",
+                speaker: "SAPHYNIEL",
+                tone: "mid",
+                autoHideTime: 3600,
+                callback: () => {
+                    DialogueSystem.show({
+                        text: "Prueba lo que quieras. Arrastra la mira al centro y termina con esto si es lo que buscas.",
+                        speaker: "SAPHYNIEL",
+                        tone: "mid",
+                        autoHideTime: 3800,
+                        callback: () => {
+                            const cross = document.getElementById('orbital-crosshair');
+                            const ghost = document.getElementById('ghost-target');
+                            if (cross) cross.classList.add('unlocked');
+                            if (ghost) ghost.classList.add('guide-mode');
+                        }
+                    });
+                }
+            });
+        }, 900);
+    }, 1100);
+},
+
+startOrbitalBombardment() {
+    if (window._cinematicActive || window._bossActive) return;
+    
+    const ghost = document.getElementById('ghost-target');
+    if (ghost) ghost.classList.remove('guide-mode');
+
+    const countEl = document.getElementById('orbital-countdown');
+    const beamEl = document.getElementById('orbital-beam');
+    countEl.style.display = 'block';
+    let count = 3;
+    countEl.textContent = count;
+    AudioManager.beep(800, 0.1, 'sawtooth');
+
+    const timer = setInterval(() => {
+        count--;
+        if (count > 0) {
+            countEl.textContent = count;
+            AudioManager.beep(800, 0.1, 'sawtooth');
+        } else {
+            clearInterval(timer);
+            countEl.style.display = 'none';
+            beamEl.classList.add('firing');
+            ScreenUtils.triggerShake('main-hud');
+            AudioManager.swordImpactSound();
+            DestructionModule.triggerTotalDestruction();
+
+            setTimeout(() => { 
+                beamEl.classList.remove('firing'); 
+                
+                if (!this.hasFiredFirstBombardment) {
+                    this.hasFiredFirstBombardment = true;
+                    setTimeout(() => {
+                        DialogueSystem.show({
+                            text: "Ruido y escombros. Supongo que era inevitable.",
+                            speaker: "SAPHYNIEL",
+                            tone: "mid",
+                            autoHideTime: 3200,
+                            callback: () => {
+                                DialogueSystem.show({
+                                    text: "Solo mantén esa mira lejos de mí... no querrás forzar las cosas más de la cuenta.",
+                                    speaker: "SAPHYNIEL",
+                                    tone: "low",
+                                    autoHideTime: 3500
+                                });
+                            }
+                        });
+                    }, 900);
+                }
+            }, 350);
+        }
+    }, 700);
+},
+
+startBossLaunchSequence(targetPhase = 1) {
+    window._cinematicActive = true;
+    DestructionModule.restoreAll();
+    document.getElementById('orbital-crosshair').style.display = 'none';
+
+    const countEl = document.getElementById('orbital-countdown');
+    countEl.style.display = 'block';
+    let count = 3;
+    countEl.textContent = count;
+    AudioManager.beep(800, 0.1, 'sawtooth');
+
+    const timer = setInterval(() => {
+        count--;
+        if (count > 0) {
+            countEl.textContent = count;
+            AudioManager.beep(800, 0.1, 'sawtooth');
+        } else {
+            clearInterval(timer);
+            countEl.style.display = 'none';
+            
+            const flash = document.getElementById('flash-screen');
+            flash.classList.add('active');
+            AudioManager.playAudio(CODEX_DATA.sounds.vineBoom);
+
+            setTimeout(() => {
+                flash.classList.remove('active');
+                const frame = document.getElementById('boss-frame');
+                frame.classList.add('active');
+                
+                ParticleEngine.pause();
+
+                this.launchTargetPhase = targetPhase;
+                this.executeBossLaunch(targetPhase);
+            }, 120);
+        }
+    }, 700);
+},
+
+executeBossLaunch(targetPhase = 1) {
+    const frame = document.getElementById('boss-frame');
+    if (!frame || !frame.contentWindow) return;
+
+    const payload = { type: 'START_BOSS', phase: targetPhase };
+    const origin = window.location.origin === 'null' || window.location.protocol === 'file:' ? '*' : window.location.origin;
+
+    frame.contentWindow.postMessage(payload, origin);
+    window._bossActive = true;
+    window._cinematicActive = false;
+}
+};
+=== END FILE ===
+
+=== FILE: saphyniel-codex/js/modules/terminal.js ===
+const TerminalModule = {
+lastCmd: "",
+
+init() {
+    const input = document.getElementById('terminal-cmd');
+    if (!input) return;
+
+    input.addEventListener('keydown', (e) => {
+        if (window._cinematicActive || window._bossActive) return;
+        if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            if (this.lastCmd) input.value = this.lastCmd;
+            return;
+        }
+        if (e.key === 'Enter') {
+            const v = input.value.trim().toUpperCase();
+            input.value = '';
+            if (!v) return;
+            this.lastCmd = v;
+            this.log(`> ${v}`, 'sys');
+
+            if (v === 'RAILGUN' || v === 'CANNON' || v === 'WEAPON') {
+                if (typeof OrbitalModule !== 'undefined') {
+                    if (!OrbitalModule.hasRailgun) {
+                        OrbitalModule.unlockRailgun('terminal');
+                        this.log("[SISTEMA] CAÑÓN ORBITAL DESBLOQUEADO DESDE EL PROTOCOLO SAGRADO.", "success");
+                    } else {
+                        this.log("[AVISO] EL ARMAMENTO DIVINO YA ESTÁ EN TU POSESIÓN.", "err");
+                        AudioManager.beep(300, 0.1, 'sawtooth');
+                    }
+                }
+            } else if (v === 'BOSS' || v === 'PHASE1') {
+                if (typeof OrbitalModule !== 'undefined') {
+                    this.log("[DEBUG] FORZANDO ENCUENTRO: FASE 1...", "sys");
+                    OrbitalModule.startBossLaunchSequence(1);
+                }
+            } else if (v === 'PHASE2') {
+                if (typeof OrbitalModule !== 'undefined') {
+                    this.log("[DEBUG] FORZANDO ENCUENTRO: FASE 2...", "sys");
+                    OrbitalModule.startBossLaunchSequence(2);
+                }
+            } else if (v === 'PHASE3') {
+                if (typeof OrbitalModule !== 'undefined') {
+                    this.log("[DEBUG] FORZANDO ENCUENTRO: FASE 3...", "sys");
+                    OrbitalModule.startBossLaunchSequence(3);
+                }
+            } else if (v === 'RESET') {
+                localStorage.removeItem('codex_railgun_unlocked');
+                localStorage.removeItem('codex_boss_beaten');
+                localStorage.removeItem('codex_score');
+                this.log("[SISTEMA] MEMORIA PURGADA. RECARGANDO...", "err");
+                setTimeout(() => window.location.reload(), 1000);
+            } else if (v === 'BLESS') {
+                ParticleEngine.rainBlessing();
+                AudioManager.liturgicalChime();
+                this.log("[SACRO] LLUVIA DE BENDICIONES DERRAMADA.", "success");
+            } else if (v === 'JUDGMENT') {
+                ScreenUtils.triggerShake('main-hud');
+                AudioManager.swordImpactSound();
+                ParticleEngine.spawnSword(window.innerWidth / 2);
+                this.log("[JUICIO] ESPADA CELESTIAL DESCENDIDA.", "err");
+            } else if (v === 'KINDRED') {
+                TabManager.switchTab('tab-lol');
+                ChampSelector.select('kindred');
+                this.log("[REGISTRO] CAZADORES ETERNOS EN POSICIÓN.", "success");
+            } else if (v === 'SHYVANA') {
+                TabManager.switchTab('tab-lol');
+                ChampSelector.select('shyvana');
+                this.log("[REGISTRO] DRAGÓN DESPERTADO.", "success");
+            } else if (v === 'KAYLE') {
+                TabManager.switchTab('tab-lol');
+                ChampSelector.select('kayle');
+                this.log("[REGISTRO] ASCENSIÓN DIVINA.", "success");
+            } else if (v === 'FALLEN') {
+                AvatarController.triggerFallen();
+                this.log("[AVISO] SECCIÓN CLAUSURADA.", "err");
+            } else if (v === 'ANGEL') {
+                AvatarController.restoreAngelState();
+                this.log("[OK] LECTURA RESTAURADA.", "success");
+                AudioManager.beep(1200, 0.3, 'sine');
+            } else if (v === 'HELP') {
+                this.log("MANDATOS: PHASE1, PHASE2, PHASE3, RAILGUN, BLESS, JUDGMENT, KINDRED, SHYVANA, KAYLE, FALLEN, ANGEL, CLEAR, STATUS, RESET", "sys");
+            } else if (v === 'STATUS') {
+                this.log("REGISTRO: EN LÍNEA // ENCRIPTACIÓN SAGRADA ACTIVA", "success");
+            } else if (v === 'CLEAR') {
+                const logBox = document.getElementById('terminal-log');
+                if (logBox) logBox.innerHTML = '<div class="terminal-log-entry sys">[CÓDICE] Registro limpiado.</div>';
+                AudioManager.beep(300, 0.08, 'sine');
+            } else {
+                this.log(`[ERROR] MANDATO '${v}' NO RECONOCIDO.`, "err");
+                AudioManager.beep(200, 0.1, 'sawtooth');
+            }
+        }
+    });
+},
+
+log(message, type = '') {
+    const logBox = document.getElementById('terminal-log');
+    if (!logBox) return;
+    const d = document.createElement('div');
+    d.className = `terminal-log-entry ${type}`;
+    d.textContent = message;
+    logBox.appendChild(d);
+    logBox.scrollTop = logBox.scrollHeight;
+}
+};
+=== END FILE ===

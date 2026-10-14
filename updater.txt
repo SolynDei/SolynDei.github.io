@@ -1,0 +1,2273 @@
+<<<FILE: css/modules/achievements.css>>>
+/* =========================================================
+   SISTEMA DE LOGROS NIER / RETRO
+========================================================= */
+.ach-nav-btn {
+    background: transparent;
+    border: 1px solid rgba(218, 212, 187, 0.35);
+    color: var(--accent-color);
+    font-family: var(--font-mono);
+    font-size: 0.64rem;
+    padding: 2px 8px;
+    cursor: pointer;
+    letter-spacing: 1px;
+    transition: all 0.2s ease;
+}
+.ach-nav-btn:hover {
+    background: var(--accent-color);
+    color: #000;
+}
+
+.achievements-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(3, 3, 3, 0.88);
+    backdrop-filter: blur(8px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+    padding: 16px;
+}
+.achievements-modal.active {
+    display: flex;
+    animation: fadeIn 0.2s ease;
+}
+
+.achievements-panel {
+    background: #09090b;
+    border: 1px solid #333338;
+    border-left: 3px solid var(--accent-color);
+    width: 100%;
+    max-width: 440px;
+    max-height: 80vh;
+    max-height: 80dvh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 0 35px rgba(0,0,0,0.9);
+    font-family: var(--font-mono);
+}
+
+.achievements-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    border-bottom: 1px solid #222226;
+    color: var(--accent-color);
+    font-size: 0.76rem;
+    letter-spacing: 1.5px;
+}
+
+.ach-close-btn {
+    background: transparent;
+    border: 1px solid rgba(218, 212, 187, 0.3);
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+    font-size: 0.64rem;
+    padding: 2px 8px;
+    cursor: pointer;
+}
+.ach-close-btn:hover {
+    color: #fff;
+    border-color: #fff;
+}
+
+.achievements-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 12px;
+    overflow-y: auto;
+}
+
+.achievement-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #111114;
+    border: 1px solid #222226;
+    padding: 6px 10px;
+    transition: all 0.2s ease;
+}
+
+.achievement-item.unlocked {
+    border-color: rgba(218, 212, 187, 0.4);
+    background: rgba(218, 212, 187, 0.05);
+}
+
+.achievement-item.platinum-tier {
+    border: 1px solid #ffd700;
+    background: radial-gradient(circle, #2a2612 0%, #111114 100%);
+    box-shadow: 0 0 12px rgba(255, 215, 0, 0.2);
+}
+
+.achievement-icon {
+    font-size: 1.1rem;
+    min-width: 24px;
+    text-align: center;
+    color: var(--text-dim);
+}
+.achievement-item.unlocked .achievement-icon {
+    color: var(--accent-color);
+}
+
+.achievement-info {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.achievement-title {
+    font-size: 0.74rem;
+    font-weight: bold;
+    color: var(--text-main);
+    letter-spacing: 1px;
+}
+
+.achievement-desc {
+    font-size: 0.62rem;
+    color: var(--text-dim);
+}
+
+.achievement-toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #0d0d10;
+    border: 1px solid var(--accent-color);
+    border-left: 4px solid var(--accent-color);
+    padding: 8px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #fff;
+    z-index: 1000;
+    transform: translateY(120%);
+    transition: transform 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+    font-family: var(--font-mono);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.7);
+}
+.achievement-toast.show {
+    transform: translateY(0);
+}
+<<<ENDFILE>>>
+
+<<<FILE: css/modules/deck.css>>>
+/* =========================================================
+   BARAJA DE CARTAS EN ABANICO (CARD FAN HAND SYSTEM)
+========================================================= */
+.quotes-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    height: 100%;
+    padding: 4px 0;
+}
+
+.deck-hand-wrapper {
+    position: relative;
+    width: 100%;
+    height: 175px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+}
+
+.card-fan-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+}
+
+/* Hitbox desacoplada para evitar el bug del temblor / flicker */
+.fan-card-wrapper {
+    position: absolute;
+    bottom: 0;
+    width: 135px;
+    height: 165px;
+    transform-origin: bottom center;
+    transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275), z-index 0.1s;
+}
+
+.fan-card-wrapper:hover {
+    transform: translateY(-26px) scale(1.12) rotate(0deg) !important;
+    z-index: 50 !important;
+}
+
+.fan-card {
+    width: 100%;
+    height: 100%;
+    background: #090909;
+    border-radius: 6px;
+    padding: 10px 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    font-family: var(--font-mono);
+    text-align: center;
+    user-select: none;
+    touch-action: manipulation;
+}
+
+.fan-card-wrapper.played {
+    animation: playCardAnim 0.6s cubic-bezier(0.1, 0.9, 0.2, 1) forwards !important;
+    pointer-events: none !important;
+}
+
+@keyframes playCardAnim {
+    0% { transform: translateY(-26px) scale(1.12) rotate(0deg); opacity: 1; }
+    50% { transform: translateY(-90px) scale(1.25) rotate(4deg); opacity: 0.9; }
+    100% { transform: translateY(-160px) scale(0.6) rotate(-8deg); opacity: 0; }
+}
+
+/* Tier 1: Sello Ceniza / Plata */
+.fan-card.tier-silver {
+    border: 1px solid rgba(218, 212, 187, 0.45);
+    box-shadow: 0 0 14px rgba(218, 212, 187, 0.15), inset 0 0 8px rgba(218, 212, 187, 0.05);
+}
+.fan-card-wrapper:hover .fan-card.tier-silver {
+    border-color: #ffffff;
+    box-shadow: 0 0 25px rgba(255, 255, 255, 0.35), inset 0 0 12px rgba(255, 255, 255, 0.1);
+}
+.fan-card.tier-silver .card-top-glyph { color: #dad4bb; }
+
+/* Tier 2: Sello Oro Sacro */
+.fan-card.tier-gold {
+    border: 1px solid rgba(255, 215, 0, 0.55);
+    box-shadow: 0 0 16px rgba(255, 215, 0, 0.25), inset 0 0 10px rgba(255, 215, 0, 0.08);
+}
+.fan-card-wrapper:hover .fan-card.tier-gold {
+    border-color: #ffd700;
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.55), inset 0 0 15px rgba(255, 215, 0, 0.2);
+}
+.fan-card.tier-gold .card-top-glyph { color: #ffd700; text-shadow: 0 0 8px #ffd700; }
+.fan-card.tier-gold .card-title { color: #ffd700; }
+
+/* Tier 3: Sello Carmesí Litúrgico */
+.fan-card.tier-crimson {
+    border: 1px solid rgba(180, 20, 20, 0.65);
+    box-shadow: 0 0 18px rgba(255, 0, 50, 0.25), inset 0 0 10px rgba(180, 0, 0, 0.12);
+}
+.fan-card-wrapper:hover .fan-card.tier-crimson {
+    border-color: #ff3333;
+    box-shadow: 0 0 32px rgba(255, 51, 51, 0.6), inset 0 0 16px rgba(255, 0, 0, 0.25);
+}
+.fan-card.tier-crimson .card-top-glyph { color: #ff3333; text-shadow: 0 0 10px #ff0000; animation: shakyWord 0.15s infinite alternate; }
+.fan-card.tier-crimson .card-title { color: #ff5555; }
+
+.card-top-glyph { font-size: 0.85rem; margin-bottom: 2px; opacity: 0.85; }
+.card-title { font-family: var(--font-angel); font-size: 0.65rem; font-weight: bold; letter-spacing: 1px; }
+.card-tag { font-size: 0.52rem; color: var(--text-dim); letter-spacing: 0.5px; margin-top: 1px; }
+.card-divider { width: 40%; height: 1px; background: rgba(218, 212, 187, 0.3); margin: 3px auto; }
+.card-body { font-size: 0.58rem; color: #dad4bb; font-style: italic; line-height: 1.25; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; }
+.card-bottom-seal { font-family: var(--font-pixel); font-size: 0.45rem; color: var(--text-dim); opacity: 0.7; }
+
+.deck-controls { width: 100%; display: flex; justify-content: center; }
+
+@media (max-width: 680px) {
+    .fan-card-wrapper { width: 105px; height: 145px; }
+    .card-body { font-size: 0.5rem; line-height: 1.15; -webkit-line-clamp: 3; }
+}
+<<<ENDFILE>>>
+
+<<<FILE: js/core/shaders.js>>>
+// ==========================================
+// REACT BITS: BALATRO WEBGL SHADER ENGINE
+// ==========================================
+const BalatroEngine = {
+    canvas: null,
+    gl: null,
+    program: null,
+    startTime: 0,
+    animId: null,
+
+    init(canvasId = 'balatro-canvas') {
+        this.canvas = document.getElementById(canvasId);
+        if (!this.canvas) return;
+        this.gl = this.canvas.getContext('webgl') || this.canvas.getContext('experimental-webgl');
+        if (!this.gl) return;
+
+        this.resize();
+        window.addEventListener('resize', () => this.resize());
+
+        const vsSource = `
+            attribute vec2 a_position;
+            void main() {
+                gl_Position = vec4(a_position, 0.0, 1.0);
+            }
+        `;
+
+        const fsSource = `
+            precision mediump float;
+            uniform vec2 u_resolution;
+            uniform float u_time;
+            uniform vec3 u_color1;
+            uniform vec3 u_color2;
+            uniform vec3 u_color3;
+
+            void main() {
+                vec2 uv = (gl_FragCoord.xy * 2.0 - u_resolution.xy) / min(u_resolution.x, u_resolution.y);
+                float t = u_time * 0.45;
+                
+                for (float i = 1.0; i < 4.0; i++) {
+                    uv.x += 0.35 / i * sin(i * 3.0 * uv.y + t);
+                    uv.y += 0.35 / i * cos(i * 3.0 * uv.x + t);
+                }
+
+                float wave = sin(uv.x * 3.0 + uv.y * 3.0 + t);
+                vec3 col = mix(u_color1, u_color2, wave * 0.5 + 0.5);
+                col = mix(col, u_color3, cos(uv.x * 2.0 - t) * 0.5 + 0.5);
+
+                gl_FragColor = vec4(col, 0.85);
+            }
+        `;
+
+        const createShader = (gl, type, source) => {
+            const shader = gl.createShader(type);
+            gl.shaderSource(shader, source);
+            gl.compileShader(shader);
+            return shader;
+        };
+
+        const vs = createShader(this.gl, this.gl.VERTEX_SHADER, vsSource);
+        const fs = createShader(this.gl, this.gl.FRAGMENT_SHADER, fsSource);
+        this.program = this.gl.createProgram();
+        this.gl.attachShader(this.program, vs);
+        this.gl.attachShader(this.program, fs);
+        this.gl.linkProgram(this.program);
+
+        const positionBuffer = this.gl.createBuffer();
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, positionBuffer);
+        this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array([
+            -1, -1,  1, -1, -1,  1,
+            -1,  1,  1, -1,  1,  1
+        ]), this.gl.STATIC_DRAW);
+
+        const posAttr = this.gl.getAttribLocation(this.program, 'a_position');
+        this.gl.enableVertexAttribArray(posAttr);
+        this.gl.vertexAttribPointer(posAttr, 2, this.gl.FLOAT, false, 0, 0);
+
+        this.startTime = performance.now();
+        this.render();
+    },
+
+    resize() {
+        if (!this.canvas || !this.gl) return;
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+        this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+    },
+
+    render() {
+        if (!this.gl || !this.program) return;
+        const now = (performance.now() - this.startTime) / 1000;
+
+        this.gl.useProgram(this.program);
+        this.gl.uniform2f(this.gl.getUniformLocation(this.program, 'u_resolution'), this.canvas.width, this.canvas.height);
+        this.gl.uniform1f(this.gl.getUniformLocation(this.program, 'u_time'), now);
+
+        if (window._isFallen) {
+            this.gl.uniform3f(this.gl.getUniformLocation(this.program, 'u_color1'), 0.55, 0.05, 0.05);
+            this.gl.uniform3f(this.gl.getUniformLocation(this.program, 'u_color2'), 0.15, 0.0, 0.0);
+            this.gl.uniform3f(this.gl.getUniformLocation(this.program, 'u_color3'), 0.9, 0.1, 0.1);
+        } else if (window._bossBeaten) {
+            this.gl.uniform3f(this.gl.getUniformLocation(this.program, 'u_color1'), 0.25, 0.22, 0.18);
+            this.gl.uniform3f(this.gl.getUniformLocation(this.program, 'u_color2'), 0.08, 0.08, 0.08);
+            this.gl.uniform3f(this.gl.getUniformLocation(this.program, 'u_color3'), 0.55, 0.5, 0.4);
+        } else {
+            this.gl.uniform3f(this.gl.getUniformLocation(this.program, 'u_color1'), 0.12, 0.11, 0.09);
+            this.gl.uniform3f(this.gl.getUniformLocation(this.program, 'u_color2'), 0.02, 0.02, 0.02);
+            this.gl.uniform3f(this.gl.getUniformLocation(this.program, 'u_color3'), 0.28, 0.26, 0.21);
+        }
+
+        this.gl.drawArrays(this.gl.TRIANGLES, 0, 6);
+        this.animId = requestAnimationFrame(() => this.render());
+    }
+};
+<<<ENDFILE>>>
+
+<<<FILE: js/modules/achievements.js>>>
+// ==========================================
+// SISTEMA DE LOGROS NIER / RETRO
+// ==========================================
+const ACHIEVEMENTS_DATA = [
+    { id: "init", title: "Unidad Activada", desc: "Inicia y carga la interfaz del Códice.", secret: false },
+    { id: "audio_sync", title: "Frecuencia Resonante", desc: "Interactúa con los enlaces o frecuencias sonoras.", secret: false },
+    { id: "insomnia", title: "Vigilia Nocturna", desc: "Accede al Códice entre la medianoche y las 5 AM.", secret: false },
+    { id: "glitch_tap", title: "Anomalía de Memoria", desc: "???", secret: true },
+    { id: "codex_deep", title: "Protocolo NieR", desc: "???", secret: true },
+    { id: "boss_slayer", title: "Deicidio Trascendente", desc: "Quebranta la voluntad del Códice en combate.", secret: false },
+    { id: "platinum", title: "Fin del Registro: [E]", desc: "Desbloquea todos los registros anteriores del Códice.", secret: false, isPlatinum: true }
+];
+
+const AchievementSystem = {
+    storageKey: "saphyniel_codex_achievements_v1",
+    unlocked: [],
+
+    init() {
+        this.unlocked = JSON.parse(localStorage.getItem(this.storageKey)) || [];
+        this.unlock("init");
+        this.checkTimeCondition();
+        if (window._bossBeaten) this.unlock("boss_slayer");
+        this.render();
+        this.updateCounter();
+    },
+
+    unlock(id) {
+        if (this.unlocked.includes(id)) return;
+        const ach = ACHIEVEMENTS_DATA.find(a => a.id === id);
+        if (!ach) return;
+
+        this.unlocked.push(id);
+        localStorage.setItem(this.storageKey, JSON.stringify(this.unlocked));
+        this.showToast(ach.title);
+        this.render();
+        this.updateCounter();
+
+        if (this.unlocked.length === ACHIEVEMENTS_DATA.length - 1 && !this.unlocked.includes("platinum")) {
+            setTimeout(() => this.unlock("platinum"), 800);
+        }
+    },
+
+    checkTimeCondition() {
+        const hours = new Date().getHours();
+        if (hours >= 0 && hours < 5) this.unlock("insomnia");
+    },
+
+    showToast(title) {
+        const toast = document.getElementById("achievementToast");
+        const titleEl = document.getElementById("toastTitle");
+        if (!toast || !titleEl) return;
+
+        titleEl.textContent = title;
+        toast.classList.add("show");
+        if (typeof AudioManager !== 'undefined') AudioManager.liturgicalChime();
+        setTimeout(() => toast.classList.remove("show"), 3800);
+    },
+
+    updateCounter() {
+        const counterEl = document.getElementById("ach-counter");
+        if (counterEl) {
+            counterEl.textContent = `${this.unlocked.length}/${ACHIEVEMENTS_DATA.length}`;
+        }
+    },
+
+    render() {
+        const container = document.getElementById("achievementsList");
+        if (!container) return;
+
+        container.innerHTML = ACHIEVEMENTS_DATA.map(ach => {
+            const isUnlocked = this.unlocked.includes(ach.id);
+            const isPlat = ach.isPlatinum;
+            const title = !isUnlocked && ach.secret ? "???" : ach.title;
+            const desc = !isUnlocked && ach.secret ? "Registro clasificado bajo directiva confidencial." : ach.desc;
+            const icon = isUnlocked ? (isPlat ? "★" : "◈") : "◇";
+
+            return `
+                <div class="achievement-item ${isUnlocked ? 'unlocked' : ''} ${isPlat && isUnlocked ? 'platinum-tier' : ''}">
+                    <div class="achievement-icon">${icon}</div>
+                    <div class="achievement-info">
+                        <div class="achievement-title">${title}</div>
+                        <div class="achievement-desc">${desc}</div>
+                    </div>
+                </div>
+            `;
+        }).join("");
+    }
+};
+
+function toggleAchievementsModal() {
+    const modal = document.getElementById("achievementsModal");
+    if (modal) {
+        modal.classList.toggle("active");
+        AchievementSystem.unlock("codex_deep");
+    }
+}
+<<<ENDFILE>>>
+
+<<<FILE: js/modules/deck.js>>>
+// =========================================================
+// CONTROLADOR DE BARAJA EN ABANICO (CARD FAN CONTROLLER)
+// =========================================================
+const DeckController = {
+    renderVerses() {
+        const deck = document.getElementById('quotes-deck');
+        if (!deck) return;
+        deck.innerHTML = '';
+
+        const shuffled = [...CODEX_DATA.verses].sort(() => 0.5 - Math.random()).slice(0, 5);
+        const total = shuffled.length;
+        const isMobile = window.innerWidth <= 680;
+        const angleStep = isMobile ? 6 : 7.5;
+        const xStep = isMobile ? 32 : 48;
+        const midIdx = (total - 1) / 2;
+
+        shuffled.forEach((v, idx) => {
+            const offset = idx - midIdx;
+            const angle = offset * angleStep;
+            const xTranslate = offset * xStep;
+            const yTranslate = Math.abs(offset) * (isMobile ? 5 : 8);
+
+            const wrapper = document.createElement('div');
+            wrapper.className = 'fan-card-wrapper destructible';
+            wrapper.style.transform = `translateX(${xTranslate}px) translateY(${yTranslate}px) rotate(${angle}deg)`;
+            wrapper.style.zIndex = `${10 + idx}`;
+
+            const glyph = v.tier === 'crimson' ? '⚔' : (v.tier === 'gold' ? '✦' : '❖');
+
+            wrapper.innerHTML = `
+                <div class="fan-card tier-${v.tier}">
+                    <div class="card-top-glyph">${glyph}</div>
+                    <div class="card-title">${v.title || 'SALMO'}</div>
+                    <div class="card-tag">${v.tag}</div>
+                    <div class="card-divider"></div>
+                    <div class="card-body">${v.body}</div>
+                    <div class="card-bottom-seal">[ CÓDICE // SACRO ]</div>
+                </div>
+            `;
+
+            wrapper.addEventListener('mouseenter', () => {
+                if (window._cinematicActive || window._bossActive) return;
+                AudioManager.cardSlideSound();
+            });
+
+            wrapper.addEventListener('click', (e) => {
+                if (window._cinematicActive || window._bossActive) return;
+                this.playCard(wrapper, v, e);
+            });
+
+            deck.appendChild(wrapper);
+        });
+    },
+
+    playCard(wrapperEl, verseData, event) {
+        if (wrapperEl.classList.contains('played')) return;
+        wrapperEl.classList.add('played');
+
+        AudioManager.playCardJingle(verseData.tier);
+
+        const r = wrapperEl.getBoundingClientRect();
+        const particleColor = verseData.tier === 'crimson' ? '#ff3333' : (verseData.tier === 'gold' ? '#ffd700' : '#ffffff');
+        ParticleEngine.explode(event.clientX || (r.left + r.width / 2), event.clientY || (r.top + r.height / 2), particleColor, 22);
+
+        DialogueSystem.show({
+            text: `${verseData.tag} // ${verseData.body}`,
+            speaker: "SACRO // REGISTRO",
+            tone: verseData.tier === 'crimson' ? 'angry' : 'mid',
+            autoHideTime: 3200
+        });
+
+        setTimeout(() => {
+            wrapperEl.remove();
+            if (document.querySelectorAll('.fan-card-wrapper:not(.played)').length === 0) {
+                this.rerollVerses();
+            }
+        }, 600);
+    },
+
+    rerollVerses() {
+        if (window._cinematicActive || window._bossActive) return;
+        const deck = document.getElementById('quotes-deck');
+        if (!deck) return;
+        deck.style.opacity = '0';
+        AudioManager.beep(420, 0.1, 'square');
+        setTimeout(() => {
+            this.renderVerses();
+            deck.style.opacity = '1';
+            AudioManager.cardSlideSound();
+        }, 200);
+    }
+};
+
+function _renderVerses() { DeckController.renderVerses(); }
+function _rerollVerses() { DeckController.rerollVerses(); }
+<<<ENDFILE>>>
+
+<<<FILE: js/config/data.js>>>
+const CODEX_DATA = {
+    discordId: "409107659153735680",
+    discordUserCopy: "laska.com.tv",
+    uniqueVisitsKey: "saphyniel-codex",
+
+    sprites: {
+        normalBody: "img/portraits/saphyniel_normal.png",
+        angryBody: "img/portraits/saphyniel_angry.png",
+        yandereBody: "img/portraits/Risayandere.png",
+        divineBossPhase2: "img/boss/boss_fase2.png",
+        bossPhase3: "img/boss/boos_fase3.gif",
+        iconDefault: "img/icons/icon.png",
+        eye: "img/icons/eye.png"
+    },
+
+    sounds: {
+        legoPop: "audio/sfx/lego.mp3",
+        vineBoom: "audio/sfx/boom.mp3",
+        defeatLaugh: "audio/sfx/defeatlaught.mp3",
+        bossMusicFase1: "audio/bgm/boss-music-fase1.mp3",
+        bossMusicFase2: "audio/bgm/boss-music-fase2.mp3",
+        bossMusicFase3: "audio/bgm/boss-music-fase3.mp3",
+        superAttack: "audio/sfx/superattack.mp3",
+        victory: "audio/bgm/ending.mp3",
+        bell: "audio/sfx/bell.mp3",
+        rewind: "audio/sfx/rewind.mp3",
+        angelCoro: "audio/sfx/angelcoro.mp3"
+    },
+
+    danmaku: [
+        "祈り (Pray)", "天使降臨", "SOLI DEO GLORIA", "+++ GLORIA IN EXCELSIS +++",
+        "KINDRED CARRY 1v9", "神の恵み (Gracia Divina)", "ESMERALDA ELO HELL REAL",
+        "NUNCA UNO SIN EL OTRO", "CANON_INDEX_ACTIVE", "ARCHIVE_SYNC_OK"
+    ],
+
+    avatarDialogues: [
+        { text: "¿Mmh? ¿Qué sucede?", tone: "mid" },
+        { text: "Oye... deja de tocar ahí.", tone: "mid" },
+        { text: "Te he dicho que te detengas.", tone: "low" },
+        { text: "No juegues con fuego.", tone: "low" },
+        { text: "Mi paciencia tiene un límite...", tone: "low" },
+        { text: "¡¡TE ADVERTÍ QUE PARARAS!!", tone: "angry" }
+    ],
+
+    orbitalWarnings: {
+        attempt1: "Ten cuidado a donde apuntas eso.",
+        attempt2: "En serio... no quieres hacer esto.",
+        attempt3: "Suficiente.",
+        repeatFight: [
+            { text: "¿Quieres hacerlo otra vez? ¿O solo te equivocaste?", tone: "mid" },
+            { text: "Creo que alguien quiere pelear de nuevo...", tone: "low" },
+            { text: "Tú lo pediste.", tone: "angry" }
+        ]
+    },
+
+    champions: {
+        kindred: {
+            title: "KINDRED // LOS CAZADORES ETERNOS",
+            meta: "CAMPEÓN PRINCIPAL • MAESTRÍA 38 (385K PTS)",
+            splash: "img/champions/kindred.jpg",
+            role: "JUNGLA / HIPERCARGADOR",
+            pts: "385,000 PTS (NVL 38)",
+            quote: "«Cordero, ¿es hora? — Es hora.»",
+            sound: (_beep) => {
+                _beep(220, 0.4, 'sine', 0.06);
+                setTimeout(() => _beep(440, 0.5, 'triangle', 0.05), 80);
+            }
+        },
+        shyvana: {
+            title: "SHYVANA // LA HIJA DEL DRAGÓN",
+            meta: "SEGUNDO CAMPEÓN • MAESTRÍA 22 (216K PTS)",
+            splash: "img/champions/shyvana.jpg",
+            role: "JUNGLA / COLOSO",
+            pts: "216,000 PTS (NVL 22)",
+            quote: "«Furia en mis venas, fuego en el corazón.»",
+            sound: (_beep) => {
+                _beep(130, 0.5, 'sawtooth', 0.07);
+                setTimeout(() => _beep(260, 0.3, 'square', 0.05), 100);
+            }
+        },
+        kayle: {
+            title: "KAYLE // LA JUSTICIERA",
+            meta: "SEGUNDO CAMPEÓN COMPARTIDO • MAESTRÍA 15 (138K PTS)",
+            splash: "img/champions/kayle.jpg",
+            role: "SUPERIOR / CENTRAL • ESCALADO DIVINO",
+            pts: "138,000 PTS (NVL 15)",
+            quote: "«El juicio no conoce la piedad.»",
+            sound: (_beep) => {
+                _beep(587, 0.4, 'triangle', 0.05);
+                setTimeout(() => _beep(880, 0.4, 'sine', 0.04), 100);
+            }
+        }
+    },
+
+    verses: [
+        { tag: "SALMOS // 119:105", body: '"Lámpara es a mis pies tu palabra, y lumbrera a mi camino."', tier: "silver", title: "LUMEN SACRUM" },
+        { tag: "ECLESIASTÉS // 3:1", body: '"Todo tiene su tiempo, y todo lo que se quiere debajo del cielo tiene su hora."', tier: "silver", title: "TEMPUS OMNIA" },
+        { tag: "ISAÍAS // 30:15", body: '"En quietud y en confianza estará vuestra fortaleza."', tier: "silver", title: "SILENTIUM" },
+        { tag: "PROVERBIOS // 4:23", body: '"Sobre toda cosa guardada, guarda tu corazón; porque de él mana la vida."', tier: "gold", title: "COR SANCTUM" },
+        { tag: "SALMOS // 27:1", body: '"El Señor es mi luz y mi salvación; ¿de quién temeré?"', tier: "gold", title: "DOMINUS LUX" },
+        { tag: "APOCALIPSIS // 21:6", body: '"Yo soy el Alfa y la Omega, el principio y el fin."', tier: "crimson", title: "ALPHA ET OMEGA" },
+        { tag: "JUAN // 1:5", body: '"La luz en las tinieblas resplandece, y las tinieblas no prevalecieron contra ella."', tier: "gold", title: "LUX IN TENEBRIS" },
+        { tag: "ROMANOS // 8:31", body: '"Si Dios con nosotros, ¿quién contra nosotros?"', tier: "crimson", title: "IMPERIUM DEI" },
+        { tag: "GÉNESIS // 1:3", body: '"Y dijo Dios: Sea la luz; y fue la luz."', tier: "gold", title: "FIAT LUX" }
+    ],
+
+    faq: [
+        {
+            q: "¿QUÉ TIPO DE JUEGOS SUELO JUGAR?",
+            a: "Juegos de rol tácticos, MOBAs competitivos (League of Legends con Kindred, Shyvana y Kayle), títulos de supervivencia con modificaciones y estrategia."
+        },
+        {
+            q: "¿CUÁL ES EL PROPÓSITO DE ESTA PÁGINA?",
+            a: "Un espacio personal sobrio para centralizar enlaces directos, presencia en línea y perfiles."
+        },
+        {
+            q: "¿CÓMO CONTACTARME?",
+            a: "A través de Discord. Los mensajes directos están habilitados para consultas o juego en equipo."
+        }
+    ]
+};
+<<<ENDFILE>>>
+
+<<<FILE: index.html>>>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="img/icons/icon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>SAPHYNIEL // CODEX</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Press+Start+2P&family=Rajdhani:wght@300;500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/modules/achievements.css">
+    <link rel="stylesheet" href="css/modules/deck.css">
+</head>
+<body>
+    <iframe id="boss-frame" src="boss.html"></iframe>
+
+    <!-- REACT BITS: BALATRO WEBGL BACKGROUND CANVAS -->
+    <canvas id="balatro-canvas"></canvas>
+
+    <button type="button" class="hud-fullscreen-btn" id="fullscreen-toggle" title="Modo pantalla completa" aria-label="Alternar pantalla completa">⛶</button>
+
+    <div class="flash-overlay" id="flash-screen"></div>
+    <div class="orbital-laser-beam" id="orbital-beam"></div>
+    <div class="countdown-overlay" id="orbital-countdown">3</div>
+    <div class="orbital-ghost-target" id="ghost-target">
+        <div class="ghost-core"></div>
+    </div>
+    
+    <!-- Cinemática de obtención del Railgun -->
+    <div class="railgun-drop-overlay" id="railgun-drop">
+        <img src="img/icons/Orbitalcannon.png" alt="Railgun">
+    </div>
+
+    <div class="combo-counter-hud" id="combo-hud">COMBO x0</div>
+
+    <canvas id="particle-canvas"></canvas>
+    <div class="noise"></div>
+    <div class="scanlines"></div>
+    <div class="ambient-halo-1"></div>
+    <div class="ambient-halo-2"></div>
+
+    <div class="p5-dialogue-wrapper" id="p5-box">
+        <img id="p5-cutin-img" class="p5-char-cutin" src="img/portraits/saphyniel_normal.png" alt="Portrait">
+        <div class="p5-name-tag" id="p5-name">SAPHYNIEL</div>
+        <div class="p5-speech-bubble">
+            <div class="p5-speech-text" id="p5-text"></div>
+        </div>
+    </div>
+
+    <div class="orbital-crosshair" id="orbital-crosshair" title="Arrastra la cruceta al centro o sobre el avatar">
+        <div class="crosshair-ring"></div>
+        <div class="crosshair-core"></div>
+    </div>
+
+    <div class="danmaku-container" id="danmaku-box"></div>
+
+    <div class="pc-side-panel pc-panel-left destructible">
+        <div>[TELEMETRÍA]</div>
+        <div>SYS_MEM: <span id="sys-metric">0x----</span></div>
+        <div>ALLOC: STABLE</div>
+        <div>CANONICAL_INDEX: 0.89</div>
+        <div style="margin-top: 10px;">[FREQ_GRAPH]</div>
+        <div>||||||||| 89%</div>
+        <div>|||||| 62%</div>
+        <div>|||||||||||| 98%</div>
+    </div>
+
+    <div class="pc-side-panel pc-panel-right destructible">
+        <div>[REGISTROS_CANON]</div>
+        <div>MEMORIA: PRESERVADA</div>
+        <div>ENCRIPTACIÓN: ACTIVA</div>
+        <div>CANAL: DISCORD_LIVE</div>
+        <div style="margin-top: 10px;">[ESTADO]</div>
+        <div>RESONANCIA: 99.4%</div>
+        <div>SANCTUS: VER_3.5</div>
+    </div>
+
+    <!-- MODAL DE LOGROS NIER -->
+    <div id="achievementsModal" class="achievements-modal" onclick="if(event.target === this) toggleAchievementsModal()">
+        <div class="achievements-panel">
+            <div class="achievements-header">
+                <span>REGISTRO DE OPERACIÓN // ARCHIVOS</span>
+                <button class="ach-close-btn" onclick="toggleAchievementsModal()">[ CERRAR ]</button>
+            </div>
+            <div class="achievements-list" id="achievementsList"></div>
+        </div>
+    </div>
+
+    <!-- TOAST DE NOTIFICACIÓN DE LOGRO -->
+    <div id="achievementToast" class="achievement-toast">
+        <span style="font-size: 1.2rem; color: #ffd700;">◈</span>
+        <div>
+            <div style="font-size: 0.65rem; color: var(--accent-color); letter-spacing: 1px;">LOGRO DESBLOQUEADO</div>
+            <div id="toastTitle" style="font-size: 0.8rem; font-weight: bold; color: #fff;">-</div>
+        </div>
+    </div>
+
+    <div class="hud-modal-overlay" id="hud-modal-overlay" onclick="_mCls(event)">
+        <div class="hud-modal">
+            <div class="hud-modal-header">
+                <span id="modal-title">// CODEX NOTA</span>
+                <span style="color:var(--text-dim); font-size:0.7rem;">0x9A</span>
+            </div>
+            <div class="hud-modal-body" id="modal-body"></div>
+            <button class="hud-modal-btn" onclick="_mCls(null)">[ CERRAR ]</button>
+        </div>
+    </div>
+
+    <header class="telemetry-bar destructible">
+        <span>CODEX // LIBER PRIMUS</span>
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <button class="ach-nav-btn" onclick="toggleAchievementsModal()" title="Ver Registro de Logros">
+                [ LOGROS <span id="ach-counter">0/6</span> ]
+            </button>
+            <button class="clock-btn" onclick="_liturgicalChime()" title="Tocar Campana Canónica">
+                <span id="utc-clock">HORA CANÓNICA // 00:00:00:000 UTC</span> 🔔
+            </button>
+        </div>
+    </header>
+
+    <main class="hud-container" id="main-hud">
+        <div class="hud-corner-tr"></div>
+        <div class="hud-corner-bl"></div>
+
+        <button class="sound-toggle destructible" id="sound-btn" onclick="_sndTgl()">[ AUDIO: ACTIVO ]</button>
+        <div class="destructible" style="position: absolute; top: -22px; right: 0px; font-size: 0.65rem; color: var(--text-dim); letter-spacing: 1px; font-family: var(--font-mono);">LIBER SACER // TOMO III</div>
+
+        <header class="profile-header destructible" id="frag-header">
+            <div class="avatar-container" id="avatar-area">
+                <div class="anger-mark" id="anger-icon">💢</div>
+                <div class="avatar-frame"></div>
+                <div class="avatar-halo"></div>
+                <button type="button" class="avatar-btn" id="avatar-trigger" aria-label="Avatar">
+                    <img id="avatar-img" src="img/portraits/saphyniel_normal.png" alt="Avatar" class="avatar">
+                </button>
+            </div>
+            
+            <h1 class="name destructible shiny-text" id="display-name" data-scramble="SAPHYNIEL">SAPHYNIEL</h1>
+            <div class="designation destructible" id="display-role">
+                Saphyniel // <span class="redacted-text">she / her</span>
+            </div>
+            
+            <div class="bio destructible" id="typewriter-text" data-bio="Lucerna pedibus meis verbum tuum et lumen semitis meis. \nIn silentio et in spe erit fortitudo vestra."></div>
+        </header>
+
+        <div class="data-divider destructible">+--- [ CÓDICE ] ---+</div>
+
+        <div class="tabs-header destructible" id="frag-tabs">
+            <button class="tab-btn active" onclick="_tSw('tab-links')">[LECTURAS]</button>
+            <button class="tab-btn" onclick="_tSw('tab-lol')">[REGISTRO]</button>
+            <button class="tab-btn" onclick="_tSw('tab-quotes')">[SALMOS]</button>
+            <button class="tab-btn" onclick="_tSw('tab-faq')">[EPÍSTOLAS]</button>
+            <button class="tab-btn" onclick="_tSw('tab-terminal')">[MANDATOS]</button>
+        </div>
+
+        <div id="tab-links" class="tab-pane active">
+            <nav class="links-grid" id="links-container">
+                <a onclick="navigator.clipboard.writeText(CODEX_DATA.discordUserCopy); _mShow('// COMUNICADO', 'Usuario <b>' + CODEX_DATA.discordUserCopy + '</b> copiado al portapapeles.');" class="link-btn destructible spotlight-card" data-platform="ds">
+                    <div class="link-left">
+                        <svg class="link-svg" viewBox="0 0 24 24"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.0777.0777 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg>
+                        <span class="link-title">DISCORD // COMUNICACIÓN</span>
+                    </div>
+                    <span class="link-tag">[COPIAR]</span>
+                    <div class="link-progress"></div>
+                </a>
+
+                <a href="https://steamcommunity.com/id/tachydeuwi/" target="_blank" class="link-btn destructible spotlight-card" data-platform="st">
+                    <div class="link-left">
+                        <svg class="link-svg" viewBox="0 0 24 24"><path d="M11.979 0C5.678 0 .511 4.86.022 11.037l6.432 2.658c.545-.371 1.203-.59 1.912-.59.063 0 .125.004.188.006l2.861-4.142V8.91c0-2.495 2.028-4.524 4.524-4.524 2.494 0 4.524 2.031 4.524 4.527s-2.03 4.525-4.524 4.525h-.105l-4.076 2.911c0 .052.005.105.005.159 0 1.875-1.515 3.396-3.39 3.396-1.635 0-3.016-1.173-3.331-2.727L.436 14.819C1.675 20.051 6.37 24 11.979 24c6.627 0 12-5.373 12-12s-5.373-12-12-12z"/></svg>
+                        <span class="link-title">STEAM // TACHYDEUWI</span>
+                    </div>
+                    <span class="link-tag">[JUEGOS]</span>
+                    <div class="link-progress"></div>
+                </a>
+
+                <a href="https://open.spotify.com/user/8yev45n3zz6g3e3vt7xitm0k7?si=f02dbbfd08954943" target="_blank" class="link-btn destructible spotlight-card" data-platform="sp">
+                    <div class="link-left">
+                        <svg class="link-svg" viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+                        <span class="link-title">SPOTIFY // FRECUENCIAS</span>
+                    </div>
+                    <span class="link-tag">[AUDIO]</span>
+                    <div class="link-progress"></div>
+                </a>
+
+                <a href="https://www.tiktok.com/@sonieqwq" target="_blank" class="link-btn destructible spotlight-card" data-platform="tk">
+                    <div class="link-left">
+                        <svg class="link-svg" viewBox="0 0 24 24"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.24 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>
+                        <span class="link-title">TIKTOK // @SONIEQWQ</span>
+                    </div>
+                    <span class="link-tag">[REDES]</span>
+                    <div class="link-progress"></div>
+                </a>
+
+                <a href="https://www.youtube.com/watch?v=7x0aPZ8tQvA" target="_blank" class="link-btn destructible spotlight-card" data-platform="yt">
+                    <div class="link-left">
+                        <svg class="link-svg" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                        <span class="link-title">YOUTUBE // ARCHIVO VISUAL</span>
+                    </div>
+                    <span class="link-tag">[VIDEO]</span>
+                    <div class="link-progress"></div>
+                </a>
+            </nav>
+
+            <div class="rp-container destructible pixel-card" id="rp-widget">
+                <canvas class="pixel-card-canvas"></canvas>
+                <div class="rp-header">
+                    <span id="rp-status-text">ESTADO: REPOSO</span>
+                    <div class="platform-badges">
+                        <span class="platform-badge" id="badge-desktop">DSK</span>
+                        <span class="platform-badge" id="badge-mobile">MOB</span>
+                        <span class="platform-badge" id="badge-web">WEB</span>
+                    </div>
+                </div>
+
+                <div class="rp-body" id="rp-spotify-box" style="display:none;">
+                    <img id="rp-art" class="rp-album-art" src="" alt="Art" onerror="this.style.display='none';">
+                    <div class="rp-info">
+                        <div style="font-size:0.62rem; color:var(--text-dim); letter-spacing:1px;">[SPOTIFY // TRANSMISIÓN]</div>
+                        <div id="rp-title" class="rp-title">SIN ACTIVIDAD</div>
+                        <div id="rp-subtitle" class="rp-subtitle">SILENCIO</div>
+                    </div>
+                    <div class="eq-bar-container" id="rp-visualizer" style="display:none;">
+                        <div class="eq-bar"></div>
+                        <div class="eq-bar"></div>
+                        <div class="eq-bar"></div>
+                        <div class="eq-bar"></div>
+                    </div>
+                </div>
+
+                <div class="rp-body rp-body-game" id="rp-game-box" style="display:none;">
+                    <img id="rp-game-art" class="rp-album-art" src="" alt="Game Art" onerror="this.style.display='none';">
+                    <div class="rp-info">
+                        <div id="rp-game-label" style="font-size:0.62rem; color:var(--text-dim); letter-spacing:1px;">[JUGANDO]</div>
+                        <div id="rp-game-title" class="rp-title">SIN JUEGO</div>
+                        <div id="rp-game-subtitle" class="rp-subtitle">REPOSO</div>
+                    </div>
+                </div>
+
+                <div class="rp-body rp-body-idle" id="rp-idle-box">
+                    <div class="rp-info">
+                        <div class="rp-title">SIN ACTIVIDAD</div>
+                        <div class="rp-subtitle">SILENCIO // PROTOCOLO DE REPOSO</div>
+                    </div>
+                </div>
+            </div>
+        </div>         
+
+        <div id="tab-lol" class="tab-pane">
+            <div class="lol-dossier destructible" id="frag-dossier">
+                <div class="lol-card destructible pixel-card" id="lol-card-trigger" onclick="_triggerChampInteraction(event)">
+                    <canvas class="pixel-card-canvas"></canvas>
+                    <img id="lol-splash-img" src="img/champions/kindred.jpg" alt="Champion" class="lol-card-bg">
+                    <div class="lol-card-content">
+                        <div class="lol-champ-title shiny-text" id="lol-champ-title">KINDRED // LOS CAZADORES ETERNOS</div>
+                        <div class="lol-champ-meta" id="lol-champ-meta">CAMPEÓN PRINCIPAL • MAESTRÍA 38 (385K PTS)</div>
+                    </div>
+                </div>
+
+                <div class="champion-selector destructible">
+                    <button class="champ-tab-btn active" onclick="_selectChamp('kindred')">KINDRED</button>
+                    <button class="champ-tab-btn" onclick="_selectChamp('shyvana')">SHYVANA</button>
+                    <button class="champ-tab-btn" onclick="_selectChamp('kayle')">KAYLE</button>
+                </div>
+
+                <div class="lol-stats-grid destructible">
+                    <div class="lol-stat-box spotlight-card">
+                        <div class="lol-stat-label">INVOCADOR</div>
+                        <div class="lol-stat-val" id="lol-summoner-val">TACHY #YORHA (LAN)</div>
+                    </div>
+                    <div class="lol-stat-box spotlight-card">
+                        <div class="lol-stat-label">RANGO ACTUAL</div>
+                        <div class="lol-stat-val">ESMERALDA IV (ELO HELL // JG DIFF)</div>
+                    </div>
+                    <div class="lol-stat-box spotlight-card">
+                        <div class="lol-stat-label">ROL PRINCIPAL</div>
+                        <div class="lol-stat-val" id="lol-stat-role">JUNGLA / HIPERCARGADOR</div>
+                    </div>
+                    <div class="lol-stat-box spotlight-card">
+                        <div class="lol-stat-label">PUNTOS DE MAESTRÍA</div>
+                        <div class="lol-stat-val" id="lol-stat-pts">385,000 PTS (NVL 38)</div>
+                    </div>
+                </div>
+                <a href="https://www.op.gg/summoners/lan/Tachy-YorHa" target="_blank" class="link-btn destructible spotlight-card" style="padding: 9px; font-size: 0.75rem; text-align: center; justify-content: center;">
+                    [ VER PERFIL EN OP.GG ]
+                </a>
+            </div>
+        </div>
+
+        <!-- PESTAÑA SALMOS: BARAJA DE CARTAS EN ABANICO INTERACTIVA -->
+        <div id="tab-quotes" class="tab-pane">
+            <div class="quotes-container">
+                <div class="deck-hand-wrapper" id="deck-hand-area">
+                    <div class="card-fan-container" id="quotes-deck"></div>
+                </div>
+                <div class="deck-controls">
+                    <button class="reroll-btn destructible spotlight-card" onclick="_rerollVerses()">[ ❖ BARAJAR NUEVA MANO SACRA ]</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-faq" class="tab-pane">
+            <div class="faq-list" id="faq-container-list"></div>
+        </div>
+
+        <div id="tab-terminal" class="tab-pane">
+            <div class="terminal-module destructible" id="frag-terminal">
+                <div class="terminal-log" id="terminal-log">
+                    <div class="terminal-log-entry sys">[CÓDICE] Registro abierto. Mandatos sagrados en línea.</div>
+                    <div class="terminal-log-entry">[INFO] Escribe 'HELP' para ver mandatos. Pulsa ↑ para repetir el último comando.</div>
+                </div>
+                <div class="cmd-box">
+                    <span class="cmd-prompt">></span>
+                    <input type="text" id="terminal-cmd" class="cmd-input" placeholder="ESCRIBIR MANDATO..." autocomplete="off" spellcheck="false">
+                </div>
+            </div>
+        </div>
+
+        <div class="data-divider destructible" style="margin-top:10px;">LIBER SANCTUS // REGISTRO VIVO</div>
+        <div class="destructible" id="discord-status-hud" style="font-size: 0.65rem; color: var(--text-dim); font-weight: bold; letter-spacing: 1px; font-family: var(--font-mono); text-align: center;">DISCORD: SINCRONIZANDO...</div>
+
+        <div class="secret-message" id="secret">
+            SOLI DEO GLORIA
+        </div>
+    </main>
+
+    <!-- Configuración y Núcleo -->
+    <script src="js/config/data.js"></script>
+    <script src="js/core/audio.js"></script>
+    <script src="js/core/shaders.js"></script>
+    <script src="js/core/particles.js"></script>
+    <script src="js/core/dialogue.js"></script>
+
+    <!-- Módulos del Hub -->
+    <script src="js/modules/destruction.js"></script>
+    <script src="js/modules/orbital.js"></script>
+    <script src="js/modules/terminal.js"></script>
+    <script src="js/modules/lanyard.js"></script>
+    <script src="js/modules/deck.js"></script>
+    <script src="js/modules/achievements.js"></script>
+
+    <!-- Script Principal -->
+    <script src="js/app.js"></script>
+</body>
+</html>
+<<<ENDFILE>>>
+
+<<<FILE: css/main.css>>>
+:root {
+    --bg-color: #030303; 
+    --text-main: #dad4bb; 
+    --text-dim: #8b8778; 
+    --accent-color: #f7f5ed; 
+    --danger-color: #9a2020; 
+    --font-hud: 'Rajdhani', sans-serif;
+    --font-angel: 'Cinzel', serif;
+    --font-mono: 'Share Tech Mono', monospace;
+    --font-pixel: 'Press Start 2P', monospace;
+}
+
+* { 
+    margin: 0; padding: 0; box-sizing: border-box; 
+    user-select: none; -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden !important;
+    position: fixed;
+    top: 0;
+    left: 0;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    font-family: var(--font-hud);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: crosshair;
+    padding: clamp(6px, 1.5vh, 16px) 12px;
+    perspective: 1200px;
+    transition: background-color 1.2s ease, color 1.2s ease, filter 2s ease;
+}
+
+#balatro-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.35;
+    mix-blend-mode: screen;
+    transition: opacity 1.5s ease;
+}
+body.fallen-mode #balatro-canvas { opacity: 0.65; }
+
+body.transcended-world {
+    --text-main: #ffffff;
+    --text-dim: #b8b3a0;
+    --accent-color: #ffffff;
+    filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.28));
+}
+body.transcended-world .hud-container {
+    box-shadow: 0 0 45px rgba(255, 255, 255, 0.16), inset 0 0 15px rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.55);
+}
+body.transcended-world .avatar {
+    border-color: #ffffff;
+    box-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+    filter: grayscale(0%) contrast(105%) brightness(1.1);
+}
+
+a, button, .avatar-btn, .redacted-text, .sound-toggle, .tab-btn, .faq-item summary, .champ-tab-btn, .reroll-btn, .destructible, .fan-card-wrapper { cursor: pointer; }
+
+body.dialogue-locked a,
+body.dialogue-locked .link-btn,
+body.dialogue-locked .tab-btn,
+body.dialogue-locked .destructible,
+body.dialogue-locked .fan-card-wrapper {
+    pointer-events: none !important;
+}
+
+body.dialogue-locked .avatar-container,
+body.dialogue-locked .avatar-btn,
+body.dialogue-locked .avatar {
+    pointer-events: auto !important;
+}
+
+#particle-canvas {
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; height: 100dvh;
+    pointer-events: none; z-index: 99;
+}
+
+.danmaku-container {
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; height: 100dvh;
+    pointer-events: none; z-index: 2; overflow: hidden;
+}
+.danmaku-item {
+    position: absolute; white-space: nowrap; font-family: var(--font-mono);
+    font-size: 0.75rem; color: var(--text-dim); opacity: 0.25;
+    animation: danmakuFly linear infinite;
+}
+@keyframes danmakuFly {
+    from { transform: translateX(100vw); }
+    to { transform: translateX(-100%); }
+}
+
+.pc-side-panel {
+    display: none; position: fixed; top: 50%; transform: translateY(-50%);
+    font-family: var(--font-mono); font-size: 0.65rem; color: var(--text-dim);
+    pointer-events: none; z-index: 5; line-height: 1.6;
+}
+.pc-panel-left { left: 30px; border-left: 1px solid rgba(139, 135, 120, 0.3); padding-left: 12px; }
+.pc-panel-right { right: 30px; border-right: 1px solid rgba(139, 135, 120, 0.3); padding-right: 12px; text-align: right; }
+@media (min-width: 1100px) { .pc-side-panel { display: block; } }
+
+.orbital-crosshair {
+    position: fixed; top: calc(20px + env(safe-area-inset-top, 0px)); right: calc(20px + env(safe-area-inset-right, 0px)); width: 56px; height: 56px;
+    border: 2px solid rgba(218, 212, 187, 0.75); border-radius: 50%;
+    display: none; justify-content: center; align-items: center;
+    cursor: grab; z-index: 120; opacity: 0.85;
+    background: radial-gradient(circle, rgba(218, 212, 187, 0.15) 0%, transparent 70%);
+    box-shadow: 0 0 14px rgba(218, 212, 187, 0.25);
+    transition: border-color 0.25s ease, box-shadow 0.25s ease, opacity 0.4s ease;
+    touch-action: none;
+}
+.orbital-crosshair.unlocked { display: flex; animation: crosshairSpawn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+@keyframes crosshairSpawn { 0% { transform: scale(0.2); opacity: 0; } 100% { transform: scale(1); opacity: 0.85; } }
+
+.orbital-crosshair:active { 
+    cursor: grabbing; opacity: 1; border-color: #ff3333; 
+    box-shadow: 0 0 24px rgba(255, 51, 51, 0.7); 
+}
+.crosshair-core { width: 10px; height: 10px; background: #ff3333; border-radius: 50%; box-shadow: 0 0 8px #ff0000; }
+.orbital-crosshair::before, .orbital-crosshair::after { content: ''; position: absolute; background: var(--text-main); }
+.orbital-crosshair::before { width: 100%; height: 2px; }
+.orbital-crosshair::after { height: 100%; width: 2px; }
+.crosshair-ring {
+    position: absolute; width: 74px; height: 74px;
+    border: 1px dashed rgba(218, 212, 187, 0.5); border-radius: 50%;
+    animation: rotCW 10s linear infinite; pointer-events: none;
+}
+
+.orbital-ghost-target {
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.5);
+    width: 100px; height: 100px; border: 2px dashed rgba(255, 255, 255, 0.6); border-radius: 50%;
+    display: none; justify-content: center; align-items: center; pointer-events: none; z-index: 115;
+    animation: ghostPulse 1s ease-in-out infinite alternate;
+}
+.orbital-ghost-target.active { display: flex; }
+.orbital-ghost-target.guide-mode {
+    display: flex !important;
+    border-color: #ffd700;
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.6);
+    animation: guideBlink 0.6s infinite alternate;
+}
+@keyframes guideBlink { 0% { transform: translate(-50%, -50%) scale(0.85); opacity: 0.3; } 100% { transform: translate(-50%, -50%) scale(1.15); opacity: 1; } }
+
+.ghost-core { width: 14px; height: 14px; background: rgba(255, 255, 255, 0.6); border-radius: 50%; box-shadow: 0 0 15px #ffffff; }
+
+.railgun-drop-overlay {
+    position: fixed; top: -350px; left: 50%; transform: translateX(-50%);
+    width: 220px; z-index: 600; pointer-events: none; opacity: 0;
+    transition: top 1.2s cubic-bezier(0.1, 0.9, 0.2, 1), opacity 0.4s ease;
+    filter: drop-shadow(0 0 40px #ffffff) drop-shadow(0 0 80px rgba(218,212,187,0.8));
+}
+.railgun-drop-overlay img { width: 100%; filter: brightness(250%); }
+.railgun-drop-overlay.dropping { top: 28%; opacity: 1; }
+
+.combo-counter-hud {
+    position: fixed; top: 75px; right: 25px; font-family: var(--font-pixel);
+    font-size: 0.85rem; color: #ffd700; z-index: 130; pointer-events: none;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.8); opacity: 0; transition: opacity 0.3s ease;
+}
+.combo-counter-hud.active { opacity: 1; }
+
+.combo-popup {
+    position: fixed; font-family: var(--font-pixel); z-index: 280; pointer-events: none;
+    transform: translate(-50%, -50%) scale(0.4); animation: comboPopAnim 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+@keyframes comboPopAnim {
+    0% { transform: translate(-50%, -50%) scale(0.4); opacity: 0; }
+    50% { transform: translate(-50%, -50%) scale(1.3); opacity: 1; }
+    100% { transform: translate(-50%, -80px) scale(1); opacity: 0; }
+}
+
+.orbital-laser-beam {
+    position: fixed; top: 0; left: 50%; transform: translateX(-50%);
+    width: 0px; height: 100vh; height: 100dvh; background: #fff; box-shadow: 0 0 50px #ffd700, 0 0 100px #fff;
+    pointer-events: none; z-index: 95; opacity: 0;
+    transition: width 0.1s ease, opacity 0.1s ease;
+}
+.orbital-laser-beam.firing { width: 140px; opacity: 1; }
+
+.countdown-overlay {
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    font-family: var(--font-pixel); font-size: 3.5rem; color: #ff3333;
+    text-shadow: 0 0 25px #ff0000; pointer-events: none; z-index: 260; display: none;
+}
+
+.flash-overlay {
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; height: 100dvh;
+    background: #fff; opacity: 0; pointer-events: none; z-index: 290;
+    transition: opacity 0.08s ease-out;
+}
+.flash-overlay.active { opacity: 0.95; transition: none; }
+
+/* DIÁLOGOS P5 */
+.p5-dialogue-wrapper {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(40px);
+    width: 95%; max-width: 820px; z-index: 310; display: none; opacity: 0;
+    pointer-events: none; transition: transform 0.28s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.28s ease;
+}
+.p5-dialogue-wrapper.active { display: block; opacity: 1; transform: translateX(-50%) translateY(0); }
+
+.p5-char-cutin {
+    position: absolute; bottom: -10px; left: 10px; width: 170px; height: 240px;
+    object-fit: contain; object-position: bottom left; z-index: 2;
+    filter: drop-shadow(4px 4px 0px #000) drop-shadow(-2px -2px 0px #fff);
+    pointer-events: none;
+    transform-origin: bottom left;
+    transition: transform 0.15s ease;
+}
+.p5-char-cutin.mouth-talk { animation: mouthTalkAnim 0.18s ease-in-out infinite alternate; }
+@keyframes mouthTalkAnim { 0% { transform: scaleY(1); } 100% { transform: scaleY(1.03) scaleX(0.99); } }
+
+.p5-name-tag {
+    position: absolute; top: -16px; left: 180px;
+    background: #fff; color: #000; font-family: var(--font-angel);
+    font-size: 1.05rem; font-weight: bold; padding: 4px 18px;
+    transform: skew(-14deg); border: 2px solid #000; z-index: 3;
+    box-shadow: 3px 3px 0px #000; letter-spacing: 2px;
+}
+
+.p5-speech-bubble {
+    margin-left: 160px; background: #111; color: #fff;
+    border: 3px solid #fff; padding: 18px 28px 18px 30px;
+    clip-path: polygon(0% 12%, 100% 0%, 96% 100%, 4% 94%);
+    box-shadow: 6px 6px 0px rgba(0,0,0,0.9), 0 0 25px rgba(255,255,255,0.2);
+    min-height: 90px; display: flex; align-items: center; position: relative;
+    transition: transform 0.2s ease, border-color 0.3s ease, background 0.3s ease;
+}
+.p5-speech-text {
+    font-family: var(--font-mono); font-size: 0.98rem; font-weight: bold;
+    line-height: 1.4; color: #f7f5ed; text-shadow: 1px 1px 0px #000;
+}
+
+.p5-prompt-glyph {
+    position: absolute; bottom: 8px; right: 24px;
+    font-size: 0.75rem; color: var(--accent-color);
+    animation: promptBlink 0.6s infinite alternate;
+    pointer-events: none; display: none;
+}
+.p5-prompt-glyph.show { display: block; }
+@keyframes promptBlink { 0% { opacity: 0.2; transform: translateY(0); } 100% { opacity: 1; transform: translateY(3px); } }
+
+.kw-highlight { color: #ffd700; text-shadow: 0 0 8px rgba(255, 215, 0, 0.7); display: inline-block; font-weight: bold; }
+.kw-danger { color: #ff3333; text-shadow: 0 0 8px #ff0000; display: inline-block; animation: shakyWord 0.1s infinite alternate; }
+@keyframes shakyWord { 0% { transform: translate(-1px, 1px); } 100% { transform: translate(1px, -1px); } }
+
+.p5-dialogue-wrapper.angry-theme .p5-name-tag { background: #ff3333; color: #fff; border-color: #fff; }
+.p5-dialogue-wrapper.angry-theme .p5-speech-bubble { border-color: #ff3333; background: #1a0505; box-shadow: 6px 6px 0px #ff0000; transform: rotate(-0.8deg); }
+.p5-dialogue-wrapper.angry-theme .p5-speech-text { color: #ffcccc; }
+.p5-dialogue-wrapper.yandere-theme .p5-speech-bubble { border-color: #dad4bb; background: #0a0a0a; box-shadow: 6px 6px 0px #ffffff; transform: rotate(0.8deg); }
+
+.shake-active { animation: shakeScreen 0.15s cubic-bezier(.36,.07,.19,.97) both; }
+@keyframes shakeScreen {
+    10%, 90% { transform: translate3d(-3px, 0, 0); }
+    20%, 80% { transform: translate3d(4px, 2px, 0); }
+    30%, 50%, 70% { transform: translate3d(-4px, -2px, 0); }
+    40%, 60% { transform: translate3d(4px, 0, 0); }
+}
+
+.destroyed-block {
+    transform: translate(calc((var(--rx, 0) - 0.5) * 400px), calc((var(--ry, 0) - 0.5) * 400px)) rotate(calc((var(--rr, 0) - 0.5) * 180deg)) scale(0.2) !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transition: transform 0.4s cubic-bezier(0.55, 0.085, 0.68, 0.53), opacity 0.4s ease !important;
+}
+.restoring-block { animation: blockRebuild 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards !important; }
+@keyframes blockRebuild {
+    0% { transform: translateY(50px) scale(0.6); opacity: 0; }
+    70% { transform: translateY(-8px) scale(1.04); opacity: 1; }
+    100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.scanlines {
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; height: 100dvh;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.35) 50%);
+    background-size: 100% 4px;
+    pointer-events: none; z-index: -1; opacity: 0.6;
+    transition: opacity 1.2s ease;
+}
+
+.noise {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background-image: url('data:image/svg+xml,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noiseFilter"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noiseFilter)"/%3E%3C/svg%3E');
+    opacity: 0.04; pointer-events: none; z-index: -2;
+}
+
+.ambient-halo-1 {
+    position: fixed; top: -120px; left: -120px; width: 340px; height: 340px;
+    border: 1px dashed rgba(218, 212, 187, 0.12); border-radius: 50%;
+    pointer-events: none; z-index: 1; animation: rotCW 40s linear infinite;
+}
+.ambient-halo-2 {
+    position: fixed; bottom: -140px; right: -140px; width: 420px; height: 420px;
+    border: 1px solid rgba(218, 212, 187, 0.08); border-radius: 50%;
+    pointer-events: none; z-index: 1; animation: rotCCW 55s linear infinite;
+}
+.ambient-halo-2::after {
+    content: '❖'; position: absolute; top: 20px; left: 50%;
+    font-size: 12px; color: var(--text-dim); opacity: 0.5;
+}
+
+.telemetry-bar {
+    position: fixed; top: calc(8px + env(safe-area-inset-top, 0px)); left: calc(16px + env(safe-area-inset-left, 0px)); right: calc(16px + env(safe-area-inset-right, 0px));
+    display: flex; justify-content: space-between; align-items: center;
+    font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-dim);
+    letter-spacing: 1.5px; z-index: 20;
+    transition: color 1.2s ease;
+}
+
+.clock-btn {
+    background: transparent; border: none; color: inherit; font-family: inherit;
+    font-size: inherit; letter-spacing: inherit; cursor: pointer;
+}
+.clock-btn:hover { color: var(--accent-color); }
+
+/* CONTENEDOR COMPACTO VERTICAL COMPLETO */
+.hud-container {
+    position: relative; 
+    z-index: 10; 
+    width: 100%; 
+    max-width: 480px; 
+    height: calc(100vh - 36px);
+    height: calc(100dvh - 36px);
+    margin: auto;
+    padding: 16px 18px 12px; 
+    border: 1px solid var(--text-dim);
+    background: rgba(3, 3, 3, 0.9); 
+    backdrop-filter: blur(12px);
+    box-shadow: 0 0 35px rgba(218, 212, 187, 0.06);
+    animation: pulse-border 4s infinite alternate;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden;
+    transform-style: preserve-3d;
+    transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1), border-color 1.2s ease, box-shadow 1.2s ease, background-color 1.2s ease;
+}
+
+@keyframes pulse-border {
+    0% { box-shadow: 0 0 10px rgba(218, 212, 187, 0.05); border-color: rgba(139, 135, 120, 0.3); }
+    100% { box-shadow: 0 0 32px rgba(218, 212, 187, 0.16); border-color: rgba(218, 212, 187, 0.6); }
+}
+
+.hud-container::before, .hud-container::after, .hud-corner-tr, .hud-corner-bl {
+    content: ''; position: absolute; width: 14px; height: 14px; border: 2px solid var(--text-main);
+    transition: border-color 1.2s ease;
+}
+.hud-container::before { top: -4px; left: -4px; border-right: none; border-bottom: none; }
+.hud-container::after { bottom: -4px; right: -4px; border-left: none; border-top: none; }
+.hud-corner-tr { top: -4px; right: -4px; border-left: none; border-bottom: none; pointer-events: none; }
+.hud-corner-bl { bottom: -4px; left: -4px; border-right: none; border-top: none; pointer-events: none; }
+
+.profile-header { text-align: center; margin-bottom: 2px; position: relative; }
+
+.avatar-container { 
+    position: relative; width: 85px; height: 85px; margin: 0 auto 4px; 
+    display: flex; align-items: center; justify-content: center; 
+    transition: transform 0.35s ease;
+}
+
+.avatar-btn {
+    background: transparent; border: none; padding: 0; outline: none;
+    width: 74px; height: 74px; border-radius: 50%; display: flex;
+    align-items: center; justify-content: center; position: relative; z-index: 2;
+    -webkit-user-select: none; user-select: none;
+    transition: transform 0.25s ease;
+    touch-action: manipulation;
+}
+
+.avatar {
+    width: 74px; height: 74px; object-fit: cover; border-radius: 50%;
+    border: 2px solid var(--text-main);
+    filter: grayscale(100%) contrast(120%);
+    transition: filter 0.4s ease, border-color 1.2s ease, box-shadow 0.4s ease;
+    pointer-events: none; -webkit-user-drag: none;
+}
+.avatar-btn:hover .avatar { filter: grayscale(0%) contrast(100%); box-shadow: 0 0 24px rgba(218, 212, 187, 0.4); }
+
+.avatar-frame {
+    position: absolute; top: -5px; left: -5px; right: -5px; bottom: -5px;
+    border: 1px dashed var(--text-dim); border-radius: 50%;
+    animation: rotCW 20s linear infinite; pointer-events: none; opacity: 0.45;
+}
+.avatar-halo {
+    position: absolute; top: -11px; left: -11px; right: -11px; bottom: -11px;
+    border: 1px solid rgba(218, 212, 187, 0.2); border-radius: 50%;
+    pointer-events: none; animation: rotCCW 28s linear infinite;
+}
+.avatar-halo::after {
+    content: '❖'; position: absolute; top: -6px; left: 50%; transform: translateX(-50%);
+    font-size: 9px; color: var(--text-dim);
+}
+
+.anger-mark {
+    position: absolute; top: -4px; right: -4px; font-size: 1.4rem;
+    z-index: 10; pointer-events: none; display: none;
+    filter: drop-shadow(0 0 6px rgba(255, 51, 51, 0.8));
+    transform: rotate(18deg);
+    animation: anger-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+@keyframes anger-pop {
+    0% { transform: scale(0.2) rotate(-10deg); opacity: 0; }
+    50% { transform: scale(1.3) rotate(25deg); }
+    100% { transform: scale(1) rotate(18deg); opacity: 1; }
+}
+
+@keyframes rotCW { 100% { transform: rotate(360deg); } }
+@keyframes rotCCW { 100% { transform: rotate(-360deg); } }
+
+.shiny-text {
+    background: linear-gradient(120deg, #dad4bb 0%, #ffffff 40%, #dad4bb 70%, #8b8778 100%);
+    background-size: 200% auto;
+    color: #dad4bb;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shinyTextAnim 4.5s linear infinite;
+}
+@keyframes shinyTextAnim {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+.name {
+    font-family: var(--font-angel); font-size: 1.45rem;
+    letter-spacing: 2px; margin-bottom: 2px; text-shadow: 0 0 8px rgba(247, 245, 237, 0.4);
+    transition: color 1.2s ease;
+}
+.designation { font-size: 0.74rem; color: var(--text-dim); letter-spacing: 1.5px; margin-bottom: 4px; text-transform: uppercase; }
+.bio { font-size: 0.78rem; line-height: 1.35; min-height: 2.2em; border-left: 2px solid var(--text-dim); padding-left: 8px; text-align: left; margin: 0 4px; }
+
+.data-divider {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    font-family: var(--font-mono); font-size: 0.6rem; color: var(--text-dim);
+    letter-spacing: 1.5px; margin: 4px 0; opacity: 0.75;
+}
+.data-divider::before, .data-divider::after {
+    content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, transparent, var(--text-dim), transparent);
+}
+
+.tabs-header {
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; margin-bottom: 6px;
+}
+.tab-btn {
+    background: rgba(218, 212, 187, 0.03); border: 1px solid rgba(139, 135, 120, 0.3);
+    color: var(--text-dim); font-family: var(--font-mono); font-size: 0.58rem; padding: 5px 1px;
+    letter-spacing: 0.5px; transition: all 0.2s ease; text-align: center;
+}
+.tab-btn:hover, .tab-btn.active {
+    background: rgba(218, 212, 187, 0.12); color: var(--accent-color);
+    border-color: var(--text-main); box-shadow: inset 0 0 8px rgba(218, 212, 187, 0.1);
+}
+
+.tab-pane { display: none; flex: 1; }
+.tab-pane.active { display: flex; flex-direction: column; justify-content: space-between; animation: fadeIn 0.25s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: translateY(0); } }
+
+.spotlight-card {
+    position: relative;
+    background: radial-gradient(circle 80px at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(218, 212, 187, 0.18), transparent 75%), rgba(218, 212, 187, 0.02);
+    border: 1px solid rgba(139, 135, 120, 0.35);
+    transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.2s ease;
+}
+.spotlight-card:hover {
+    border-color: rgba(255, 255, 255, 0.8) !important;
+    box-shadow: 0 0 16px rgba(218, 212, 187, 0.22);
+}
+
+.pixel-card {
+    position: relative;
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.7);
+    border: 1px solid rgba(139, 135, 120, 0.4);
+}
+.pixel-card-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.75;
+}
+
+.links-grid { display: flex; flex-direction: column; gap: 4px; }
+.link-btn {
+    position: relative; display: flex; justify-content: space-between; align-items: center;
+    padding: 6px 10px; color: var(--text-main); text-decoration: none;
+    font-size: 0.74rem; letter-spacing: 1px;
+    text-transform: uppercase; overflow: hidden;
+}
+.link-btn:hover, .link-btn:active { 
+    transform: translateX(3px);
+    box-shadow: -3px 0 0 var(--text-main);
+}
+.link-left { display: flex; align-items: center; gap: 8px; position: relative; z-index: 2; }
+.link-svg { width: 14px; height: 14px; fill: var(--text-main); opacity: 0.75; transition: all 0.2s; }
+.link-btn:hover .link-svg { opacity: 1; fill: var(--accent-color); transform: scale(1.1); }
+.link-title { font-weight: 500; font-size: 0.74rem; }
+.link-tag { font-size: 0.56rem; color: var(--text-dim); font-weight: bold; background: rgba(218, 212, 187, 0.05); padding: 1px 4px; border-radius: 2px; font-family: var(--font-mono); position: relative; z-index: 2; }
+
+.link-progress {
+    position: absolute; bottom: 0; left: 0; height: 2px; width: 0%;
+    background: linear-gradient(90deg, var(--text-dim), var(--accent-color));
+    transition: width 0.6s cubic-bezier(0.1, 0.9, 0.2, 1);
+    z-index: 1;
+}
+.link-btn:hover .link-progress { width: 100%; }
+
+.rp-container {
+    margin-top: 4px;
+    padding: 6px 8px; font-family: var(--font-mono);
+    display: flex; flex-direction: column; gap: 4px; text-align: left;
+    transition: border-color 1.2s ease;
+}
+.rp-header {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 0.56rem; color: var(--text-dim); border-bottom: 1px solid rgba(139, 135, 120, 0.3); padding-bottom: 2px; position: relative; z-index: 2;
+}
+.rp-body { display: flex; gap: 8px; align-items: center; position: relative; z-index: 2; }
+.rp-body-game {
+    border-top: 1px dashed rgba(139, 135, 120, 0.25);
+    padding-top: 4px;
+    margin-top: 2px;
+}
+.rp-body-idle { display: flex; align-items: center; position: relative; z-index: 2; }
+.rp-album-art { 
+    width: 42px; height: 42px; object-fit: cover; border-radius: 4px;
+    border: 1px solid var(--text-dim); filter: grayscale(30%); flex-shrink: 0;
+    background: #111;
+}
+.rp-info { display: flex; flex-direction: column; overflow: hidden; width: 100%; gap: 2px; }
+.rp-title { font-size: 0.72rem; color: var(--text-main); font-weight: bold; line-height: 1.2; word-break: break-word; }
+.rp-subtitle { font-size: 0.62rem; color: var(--text-dim); line-height: 1.2; word-break: break-word; }
+
+.eq-bar-container { display: flex; gap: 2px; align-items: flex-end; height: 10px; }
+.eq-bar { width: 2px; background-color: var(--text-main); animation: eq-bounce 1s infinite ease-in-out alternate; transition: background-color 1.2s ease; }
+.eq-bar:nth-child(1) { height: 40%; animation-delay: 0.1s; }
+.eq-bar:nth-child(2) { height: 80%; animation-delay: 0.3s; }
+.eq-bar:nth-child(3) { height: 30%; animation-delay: 0.2s; }
+.eq-bar:nth-child(4) { height: 100%; animation-delay: 0.4s; }
+@keyframes eq-bounce { 0% { height: 15%; } 100% { height: 100%; } }
+
+.platform-badges { display: flex; gap: 4px; font-size: 0.55rem; color: var(--text-dim); }
+.platform-badge { padding: 1px 3px; border: 1px solid rgba(139, 135, 120, 0.3); border-radius: 2px; }
+.platform-badge.active { color: var(--text-main); border-color: var(--text-main); }
+
+.lol-dossier {
+    border: 1px solid rgba(139, 135, 120, 0.3); background: rgba(0,0,0,0.5); padding: 6px;
+    display: flex; flex-direction: column; gap: 5px;
+}
+.lol-card {
+    position: relative; height: 110px;
+    overflow: hidden; display: flex; align-items: flex-end; padding: 6px;
+    cursor: pointer;
+}
+.lol-card-bg {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;
+    filter: grayscale(100%) contrast(120%) brightness(55%); transition: all 0.5s ease; z-index: 0;
+}
+.lol-card:hover .lol-card-bg { filter: grayscale(10%) contrast(105%) brightness(80%); transform: scale(1.04); }
+.lol-card-content { position: relative; z-index: 2; text-shadow: 0 2px 8px #000; }
+.lol-champ-title { font-family: var(--font-angel); font-size: 0.9rem; letter-spacing: 1px; }
+.lol-champ-meta { font-family: var(--font-mono); font-size: 0.6rem; color: var(--text-dim); }
+
+.champion-selector {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px;
+}
+.champ-tab-btn {
+    background: rgba(218, 212, 187, 0.05); border: 1px solid rgba(139, 135, 120, 0.3);
+    color: var(--text-dim); font-family: var(--font-mono); font-size: 0.58rem; padding: 4px;
+    text-align: center; transition: all 0.2s ease;
+}
+.champ-tab-btn.active, .champ-tab-btn:hover {
+    border-color: var(--accent-color); color: var(--accent-color);
+    background: rgba(218, 212, 187, 0.15); box-shadow: 0 0 8px rgba(218, 212, 187, 0.2);
+}
+
+.lol-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; font-family: var(--font-mono); font-size: 0.6rem; }
+.lol-stat-box { padding: 4px 6px; }
+.lol-stat-label { color: var(--text-dim); font-size: 0.5rem; margin-bottom: 1px; }
+.lol-stat-val { color: var(--accent-color); font-weight: bold; }
+
+.faq-list { display: flex; flex-direction: column; gap: 4px; text-align: left; }
+.faq-item { border: 1px solid rgba(139, 135, 120, 0.3); background: rgba(0,0,0,0.3); }
+.faq-item summary {
+    padding: 5px 8px; font-size: 0.72rem; color: var(--text-main); font-weight: 500;
+    list-style: none; display: flex; justify-content: space-between; align-items: center;
+}
+.faq-item summary::-webkit-details-marker { display: none; }
+.faq-item summary::after { content: '+'; font-family: var(--font-mono); color: var(--text-dim); }
+.faq-item[open] summary::after { content: '-'; color: var(--accent-color); }
+.faq-content {
+    padding: 0 8px 4px; font-size: 0.65rem; color: var(--text-dim); line-height: 1.3;
+    font-family: var(--font-mono); border-top: 1px dashed rgba(139, 135, 120, 0.2); margin-top: 3px; padding-top: 3px;
+}
+
+.terminal-module {
+    border: 1px solid rgba(139, 135, 120, 0.35); background: #000;
+    font-family: var(--font-mono); text-align: left;
+}
+.terminal-log {
+    font-size: 0.6rem; color: var(--text-dim); padding: 5px 8px;
+    max-height: 90px; overflow-y: auto; line-height: 1.3; border-bottom: 1px dashed rgba(139, 135, 120, 0.2);
+}
+.terminal-log-entry { margin-bottom: 2px; }
+.terminal-log-entry.success { color: #43b581; }
+.terminal-log-entry.err { color: var(--danger-color); }
+.terminal-log-entry.sys { color: var(--accent-color); }
+
+.cmd-box { display: flex; align-items: center; gap: 6px; padding: 4px 8px; }
+.cmd-prompt { color: var(--accent-color); font-weight: bold; font-size: 0.74rem; }
+.cmd-input {
+    background: transparent; border: none; outline: none; color: var(--text-main);
+    font-family: var(--font-mono); width: 100%; font-size: 0.68rem; text-transform: uppercase;
+}
+
+.hud-modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; height: 100dvh;
+    background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(6px);
+    display: none; justify-content: center; align-items: center; z-index: 100;
+}
+.hud-modal-overlay.active { display: flex; animation: fadeIn 0.2s ease; }
+.hud-modal {
+    background: #050505; border: 1px solid var(--text-main); width: 90%; max-width: 360px;
+    max-height: 80vh; max-height: 80dvh; display: flex; flex-direction: column;
+    padding: 16px; box-shadow: 0 0 25px rgba(218, 212, 187, 0.15);
+    font-family: var(--font-mono); text-align: left; position: relative;
+}
+.hud-modal-header {
+    font-size: 0.8rem; color: var(--accent-color); font-weight: bold;
+    border-bottom: 1px solid var(--text-dim); padding-bottom: 4px; margin-bottom: 8px;
+    display: flex; justify-content: space-between;
+}
+.hud-modal-body { font-size: 0.72rem; color: var(--text-main); line-height: 1.4; margin-bottom: 12px; overflow-y: auto; }
+.hud-modal-btn {
+    width: 100%; background: transparent; border: 1px solid var(--text-main);
+    color: var(--text-main); font-family: var(--font-mono); padding: 6px; font-size: 0.7rem;
+    text-transform: uppercase; transition: all 0.2s;
+}
+.hud-modal-btn:hover { background: var(--text-main); color: #000; }
+
+.sound-toggle {
+    position: absolute; top: -20px; left: 0; font-size: 0.6rem; color: var(--text-dim);
+    background: transparent; border: none; font-family: var(--font-mono); letter-spacing: 1px;
+}
+.sound-toggle:hover { color: var(--text-main); }
+
+.redacted-text {
+    background-color: var(--text-main); color: var(--text-main);
+    padding: 0 4px; user-select: none; transition: all 0.3s ease;
+    font-family: var(--font-mono); border-radius: 2px;
+}
+.redacted-text:hover { background-color: transparent; color: var(--accent-color); }
+
+body.fallen-mode { 
+    --text-main: var(--danger-color); --text-dim: #501010; --accent-color: #ff3333; 
+    transition: none;
+}
+body.fallen-mode .hud-container { animation: glitch-skew 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94) both infinite; }
+body.fallen-mode .eq-bar { background-color: var(--danger-color); }
+@keyframes glitch-skew { 0% { transform: skew(0deg); } 20% { transform: skew(-3deg); } 40% { transform: skew(3deg); } 60% { transform: skew(-1deg); } 80% { transform: skew(2deg); } 100% { transform: skew(0deg); } }
+.secret-message { display: none; color: var(--danger-color); font-family: var(--font-angel); font-size: 1rem; margin-top: 6px; text-align: center; letter-spacing: 2px; }
+body.fallen-mode .secret-message { display: block; }
+body.fallen-mode .avatar-container { 
+    pointer-events: none !important; 
+    filter: grayscale(80%) brightness(50%);
+    transition: filter 0.5s ease;
+}
+
+.hud-fullscreen-btn {
+    position: fixed; top: calc(8px + env(safe-area-inset-top, 0px)); left: calc(12px + env(safe-area-inset-left, 0px)); z-index: 400;
+    width: 38px; height: 38px;
+    display: flex; align-items: center; justify-content: center;
+    background: transparent; border: 1px solid var(--text-dim);
+    color: var(--text-dim); font-size: 0.95rem; cursor: pointer;
+    touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+    transition: color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, transform 0.15s ease;
+}
+.hud-fullscreen-btn:hover, .hud-fullscreen-btn:focus-visible {
+    color: var(--accent-color); border-color: var(--accent-color);
+    box-shadow: 0 0 14px rgba(218, 212, 187, 0.35);
+}
+.hud-fullscreen-btn:active { transform: scale(0.92); }
+.hud-fullscreen-btn.is-fullscreen { color: #ff3333; border-color: #ff3333; }
+
+#boss-frame {
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; height: 100dvh;
+    border: none; z-index: 500; opacity: 0; pointer-events: none;
+    transform: scale(0.6);
+    transition: transform 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.45s ease;
+}
+#boss-frame.active {
+    opacity: 1; pointer-events: all; transform: scale(1);
+}
+
+@media (max-width: 680px) {
+    body { padding: 4px; }
+    .hud-container { height: calc(100vh - 16px); height: calc(100dvh - 16px); padding: 10px 8px 6px; transform: none !important; }
+    .name { font-size: 1.25rem; }
+    .avatar-container { width: 70px; height: 70px; }
+    .avatar-btn { width: 62px; height: 62px; }
+    .avatar { width: 62px; height: 62px; }
+    .bio { font-size: 0.68rem; min-height: 2em; }
+    .link-btn { padding: 5px 8px; font-size: 0.68rem; }
+    .rp-album-art { width: 36px; height: 36px; }
+    .rp-title { font-size: 0.66rem; }
+    .rp-subtitle { font-size: 0.56rem; }
+    .p5-dialogue-wrapper { width: 98%; bottom: 10px; }
+    .p5-char-cutin { width: 110px; height: 150px; bottom: -4px; left: 0px; }
+    .p5-name-tag { left: 115px; top: -10px; font-size: 0.8rem; padding: 2px 8px; }
+    .p5-speech-bubble { margin-left: 100px; padding: 10px 12px; min-height: 65px; }
+    .p5-speech-text { font-size: 0.76rem; }
+    .tab-btn { font-size: 0.52rem; padding: 4px 1px; }
+    .hud-fullscreen-btn { top: 6px; left: 6px; width: 32px; height: 32px; font-size: 0.8rem; }
+}
+<<<ENDFILE>>>
+
+<<<FILE: js/app.js>>>
+window._isFallen = false;
+window._bossBeaten = false;
+window._bossActive = false;
+window._cinematicActive = false;
+
+let _danmakuInterval = null;
+let _clockInterval = null;
+
+// ==========================================
+// REACT BITS: DECRYPTED / SCRAMBLE TEXT EFFECT
+// ==========================================
+function decryptTextEffect(element, targetText = null, duration = 450) {
+    if (!element) return;
+    const finalTxt = targetText !== null ? targetText : (element.getAttribute('data-scramble') || element.textContent.trim());
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*<>[]{}";
+    let start = performance.now();
+    
+    function step(now) {
+        const elapsed = now - start;
+        const progress = Math.min(1, elapsed / duration);
+        const resolvedCount = Math.floor(progress * finalTxt.length);
+        
+        let out = "";
+        for (let i = 0; i < finalTxt.length; i++) {
+            if (i < resolvedCount) {
+                out += finalTxt[i];
+            } else if (finalTxt[i] === " " || finalTxt[i] === "\n") {
+                out += finalTxt[i];
+            } else {
+                out += chars[Math.floor(Math.random() * chars.length)];
+            }
+        }
+        element.textContent = out;
+        if (progress < 1) {
+            requestAnimationFrame(step);
+        }
+    }
+    requestAnimationFrame(step);
+}
+
+// ==========================================
+// REACT BITS: PIXEL CARD CANVAS SYSTEM
+// ==========================================
+function initPixelCards() {
+    document.querySelectorAll('.pixel-card').forEach(card => {
+        const canvas = card.querySelector('.pixel-card-canvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const cellSize = 16;
+        let activePixels = [];
+
+        const resize = () => {
+            canvas.width = card.offsetWidth;
+            canvas.height = card.offsetHeight;
+        };
+        resize();
+
+        card.addEventListener('mousemove', (e) => {
+            const rect = card.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            const gridX = Math.floor(mouseX / cellSize);
+            const gridY = Math.floor(mouseY / cellSize);
+
+            for (let dx = -1; dx <= 1; dx++) {
+                for (let dy = -1; dy <= 1; dy++) {
+                    if (Math.random() > 0.4) {
+                        activePixels.push({
+                            x: (gridX + dx) * cellSize,
+                            y: (gridY + dy) * cellSize,
+                            alpha: 1.0
+                        });
+                    }
+                }
+            }
+        });
+
+        const draw = () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = activePixels.length - 1; i >= 0; i--) {
+                const p = activePixels[i];
+                ctx.fillStyle = `rgba(218, 212, 187, ${p.alpha * 0.35})`;
+                ctx.fillRect(p.x, p.y, cellSize - 1, cellSize - 1);
+                p.alpha -= 0.035;
+                if (p.alpha <= 0) activePixels.splice(i, 1);
+            }
+            requestAnimationFrame(draw);
+        };
+        draw();
+    });
+}
+
+// ==========================================
+// REACT BITS: SPOTLIGHT CARDS & 3D TILT PARALLAX
+// ==========================================
+function initReactBitsEffects() {
+    document.querySelectorAll('.spotlight-card').forEach(card => {
+        card.addEventListener('mousemove', (e) => {
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            card.style.setProperty('--mouse-x', `${x}px`);
+            card.style.setProperty('--mouse-y', `${y}px`);
+        });
+    });
+
+    const hud = document.getElementById('main-hud');
+    if (hud && window.innerWidth > 680) {
+        window.addEventListener('mousemove', (e) => {
+            if (window._cinematicActive || window._bossActive) {
+                hud.style.transform = 'none';
+                return;
+            }
+            const cx = window.innerWidth / 2;
+            const cy = window.innerHeight / 2;
+            const dx = (e.clientX - cx) / cx;
+            const dy = (e.clientY - cy) / cy;
+            
+            const rotX = (-dy * 4.5).toFixed(2);
+            const rotY = (dx * 4.5).toFixed(2);
+            hud.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg)`;
+        });
+
+        window.addEventListener('mouseleave', () => {
+            hud.style.transform = 'rotateX(0deg) rotateY(0deg)';
+        });
+    }
+
+    window.addEventListener('pointerdown', (e) => {
+        if (window._bossActive || typeof ParticleEngine === 'undefined') return;
+        ParticleEngine.explode(e.clientX, e.clientY, '#ffffff', 6);
+    });
+
+    initPixelCards();
+}
+
+const TabManager = {
+    switchTab(tabId) {
+        if (window._cinematicActive || window._bossActive) return;
+        document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        const targetPane = document.getElementById(tabId);
+        if (targetPane) targetPane.classList.add('active');
+        if (event && event.currentTarget && event.currentTarget.classList.contains('tab-btn')) {
+            event.currentTarget.classList.add('active');
+            decryptTextEffect(event.currentTarget, null, 250);
+        }
+        AudioManager.beep(700, 0.03, 'sine');
+    }
+};
+
+const ChampSelector = {
+    current: 'kindred',
+
+    select(champKey) {
+        if (window._cinematicActive || window._bossActive) return;
+        this.current = champKey;
+        const c = CODEX_DATA.champions[champKey];
+        if (!c) return;
+
+        document.getElementById('lol-splash-img').src = c.splash;
+        const titleEl = document.getElementById('lol-champ-title');
+        titleEl.textContent = c.title;
+        decryptTextEffect(titleEl, c.title, 400);
+
+        document.getElementById('lol-champ-meta').textContent = c.meta;
+        document.getElementById('lol-stat-role').textContent = c.role;
+        document.getElementById('lol-stat-pts').textContent = c.pts;
+
+        document.querySelectorAll('.champ-tab-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.textContent.toLowerCase() === champKey);
+        });
+
+        if (c.sound) c.sound((...args) => AudioManager.beep(...args));
+        const r = document.getElementById('lol-card-trigger').getBoundingClientRect();
+        ParticleEngine.explode(r.left + r.width / 2, r.top + r.height / 2, '#dad4bb', 16);
+    },
+
+    interact(e) {
+        if (window._cinematicActive || window._bossActive) return;
+        const c = CODEX_DATA.champions[this.current];
+        if (this.current === 'kayle') {
+            AvatarController.triggerFallen();
+            DialogueSystem.show({ text: "¡Hereje!", speaker: "SAPHYNIEL", tone: "angry", autoHideTime: 2500 });
+            const r = e.currentTarget.getBoundingClientRect();
+            ParticleEngine.spawnSword(e.clientX || (r.left + r.width / 2));
+        } else {
+            DialogueSystem.show({ text: c.quote, speaker: "SAPHYNIEL", tone: "mid", autoHideTime: 2400 });
+            if (c.sound) c.sound((...args) => AudioManager.beep(...args));
+            const r = e.currentTarget.getBoundingClientRect();
+            ParticleEngine.explode(e.clientX || (r.left + r.width / 2), e.clientY || (r.top + r.height / 2), '#dad4bb', 16);
+        }
+    }
+};
+
+const AvatarController = {
+    clickCount: 0,
+    clickTimer: null,
+    fallenTimer: null,
+
+    init() {
+        const trigger = document.getElementById('avatar-trigger');
+        const angerIcon = document.getElementById('anger-icon');
+        if (!trigger || !angerIcon) return;
+
+        trigger.addEventListener('pointerdown', () => {
+            if (window._cinematicActive || window._bossActive || window._isFallen) return;
+
+            const r = trigger.getBoundingClientRect();
+            ParticleEngine.explode(r.left + r.width / 2, r.top + r.height / 2, window._isFallen ? '#ff3333' : '#dad4bb', 14);
+
+            this.clickCount++;
+            clearTimeout(this.clickTimer);
+            this.clickTimer = setTimeout(() => {
+                this.clickCount = 0;
+                angerIcon.style.display = 'none';
+            }, 3000);
+
+            trigger.style.transform = `scale(${Math.max(0.82, 1 - (this.clickCount * 0.035))})`;
+            setTimeout(() => { trigger.style.transform = 'scale(1)'; }, 100);
+
+            if (this.clickCount >= 3) {
+                angerIcon.style.display = 'block';
+                angerIcon.style.transform = `scale(${1 + (this.clickCount * 0.08)}) rotate(${15 + (this.clickCount * 3)}deg)`;
+            }
+
+            if (this.clickCount >= 2 && this.clickCount <= 6) {
+                const dIdx = Math.min(CODEX_DATA.avatarDialogues.length - 1, this.clickCount - 2);
+                const item = CODEX_DATA.avatarDialogues[dIdx];
+                DialogueSystem.show({ text: item.text, speaker: "SAPHYNIEL", tone: item.tone, autoHideTime: 2000 });
+            }
+
+            if (this.clickCount >= 6 && typeof OrbitalModule !== 'undefined' && !OrbitalModule.hasRailgun) {
+                OrbitalModule.unlockRailgun('avatar');
+            }
+
+            if (this.clickCount >= 7) {
+                AchievementSystem.unlock("glitch_tap");
+            }
+
+            if (this.clickCount >= 7 && !window._isFallen) {
+                this.triggerFallen();
+                DialogueSystem.show({ text: "¡¡NO HABRÁ MISERICORDIA!!", speaker: "SAPHYNIEL", tone: "yandere", autoHideTime: 2600 });
+                this.clickCount = 0;
+            }
+        });
+    },
+
+    triggerFallen() {
+        window._isFallen = true;
+        document.body.classList.add('fallen-mode');
+        const nameEl = document.getElementById('display-name');
+        nameEl.innerText = "CLAVIS";
+        decryptTextEffect(nameEl, "CLAVIS", 400);
+
+        const bio = document.getElementById('typewriter-text');
+        if (bio) bio.innerHTML = "FOLIO SELLADO. <br>Vanitas vanitatum et omnia vanitas.";
+        AudioManager.beep(140, 0.4, 'sawtooth');
+
+        clearTimeout(this.fallenTimer);
+        this.fallenTimer = setTimeout(() => { this.restoreAngelState(); }, 6000);
+    },
+
+    restoreAngelState() {
+        window._isFallen = false;
+        document.body.classList.remove('fallen-mode');
+        const nameEl = document.getElementById('display-name');
+        nameEl.innerText = "SAPHYNIEL";
+        decryptTextEffect(nameEl, "SAPHYNIEL", 400);
+
+        const bio = document.getElementById('typewriter-text');
+        if (bio) bio.innerHTML = "Lucerna pedibus meis verbum tuum et lumen semitis meis. <br>In silentio et in spe erit fortitudo vestra.";
+        const angerIcon = document.getElementById('anger-icon');
+        if (angerIcon) angerIcon.style.display = 'none';
+        this.clickCount = 0;
+        AudioManager.beep(900, 0.25, 'sine');
+    }
+};
+
+function _sndTgl() { AudioManager.toggleSound('sound-btn'); }
+function _mShow(t, m) {
+    if (window._cinematicActive || window._bossActive) return;
+    document.getElementById('modal-title').textContent = t;
+    document.getElementById('modal-body').innerHTML = m;
+    document.getElementById('hud-modal-overlay').classList.add('active');
+    AudioManager.beep(650, 0.15, 'sawtooth');
+}
+function _mCls(e) {
+    if (!e || e.target.id === 'hud-modal-overlay' || e.target.classList.contains('hud-modal-btn')) {
+        document.getElementById('hud-modal-overlay').classList.remove('active');
+        AudioManager.beep(350, 0.05, 'sine');
+    }
+}
+function _tSw(tabId) { TabManager.switchTab(tabId); }
+function _selectChamp(key) { ChampSelector.select(key); }
+function _triggerChampInteraction(e) { ChampSelector.interact(e); }
+function _liturgicalChime() { AudioManager.liturgicalChime(); }
+
+function _renderFaq() {
+    const list = document.getElementById('faq-container-list');
+    if (!list) return;
+    list.innerHTML = '';
+    CODEX_DATA.faq.forEach(item => {
+        const details = document.createElement('details');
+        details.className = 'faq-item destructible spotlight-card';
+        details.innerHTML = `
+            <summary>${item.q}</summary>
+            <div class="faq-content">${item.a}</div>
+        `;
+        list.appendChild(details);
+    });
+}
+
+function _initDanmaku() {
+    const box = document.getElementById('danmaku-box');
+    if (!box) return;
+    if (_danmakuInterval) clearInterval(_danmakuInterval);
+    _danmakuInterval = setInterval(() => {
+        if (window._bossActive) return;
+        const el = document.createElement('div');
+        el.className = 'danmaku-item';
+        el.textContent = CODEX_DATA.danmaku[Math.floor(Math.random() * CODEX_DATA.danmaku.length)];
+        el.style.top = `${Math.random() * 85 + 5}vh`;
+        el.style.animationDuration = `${Math.random() * 12 + 14}s`;
+        box.appendChild(el);
+        setTimeout(() => el.remove(), 26000);
+    }, 2500);
+}
+
+function _upClk() {
+    if (window._bossActive) return;
+    const n = new Date();
+    const h = String(n.getUTCHours()).padStart(2, '0');
+    const m = String(n.getUTCMinutes()).padStart(2, '0');
+    const s = String(n.getUTCSeconds()).padStart(2, '0');
+    const ms = String(n.getUTCMilliseconds()).padStart(3, '0');
+    const el = document.getElementById('utc-clock');
+    if (el) el.textContent = `HORA CANÓNICA // ${h}:${m}:${s}:${ms} UTC`;
+}
+
+const _bEl = document.getElementById('typewriter-text');
+const _bTx = _bEl ? _bEl.getAttribute('data-bio') : "";
+let _bI = 0;
+function _tpW() {
+    if (!_bEl) return;
+    if (_bI < _bTx.length) {
+        if (_bTx.substr(_bI, 2) === '\\n') { _bEl.innerHTML += '<br>'; _bI += 2; }
+        else { _bEl.innerHTML += _bTx.charAt(_bI); _bI++; }
+        setTimeout(_tpW, Math.random() * 35 + 20);
+    } else {
+        _bEl.innerHTML += '<span style="animation: blink 1s infinite;">_</span>';
+    }
+}
+
+const _platformSounds = {
+    yt: () => { AudioManager.beep(440, 0.15, 'sine'); setTimeout(() => AudioManager.beep(880, 0.2, 'sine'), 60); },
+    sp: () => { AudioManager.beep(180, 0.2, 'sawtooth'); setTimeout(() => AudioManager.beep(360, 0.25, 'triangle'), 80); },
+    st: () => { AudioManager.beep(550, 0.1, 'square'); setTimeout(() => AudioManager.beep(733, 0.2, 'square'), 70); },
+    tk: () => { AudioManager.beep(700, 0.08, 'triangle'); setTimeout(() => AudioManager.beep(1050, 0.15, 'triangle'), 50); },
+    ds: () => { AudioManager.beep(300, 0.1, 'sine'); setTimeout(() => AudioManager.beep(600, 0.15, 'sine'), 50); }
+};
+
+document.querySelectorAll('.link-btn').forEach(btn => {
+    btn.addEventListener('mouseenter', () => {
+        if (window._cinematicActive || window._bossActive) return;
+        const p = btn.getAttribute('data-platform');
+        if (_platformSounds[p]) _platformSounds[p]();
+        AchievementSystem.unlock("audio_sync");
+    });
+});
+
+window.addEventListener('message', (e) => {
+    if (e.data && e.data.type === 'BOSS_DEFEATED') {
+        const frame = document.getElementById('boss-frame');
+        if (frame) frame.classList.remove('active');
+        
+        window._bossActive = false;
+        window._bossBeaten = true;
+        localStorage.setItem('codex_boss_beaten', 'true');
+        AvatarController.clickCount = 0;
+        if (typeof OrbitalModule !== 'undefined') {
+            OrbitalModule.avatarHoverAttempts = 0;
+        }
+
+        AchievementSystem.unlock("boss_slayer");
+        document.body.classList.add('transcended-world');
+        ParticleEngine.resume();
+        ParticleEngine.startPetalRain(40);
+        _initDanmaku();
+
+        const cross = document.getElementById('orbital-crosshair');
+        if (cross) {
+            cross.style.display = 'flex';
+            cross.style.top = '25px';
+            cross.style.right = '25px';
+            cross.style.left = 'auto';
+        }
+
+        const avatarImg = document.getElementById('avatar-img');
+        if (avatarImg) avatarImg.src = LanyardModule.discordAvatarUrl;
+
+        setTimeout(() => {
+            DialogueSystem.show({
+                text: "Eso fue divertido... pasé un buen momento.",
+                speaker: "SAPHYNIEL",
+                tone: "mid",
+                autoHideTime: 3400
+            });
+            AudioManager.liturgicalChime();
+        }, 400);
+    }
+});
+
+(function initFullscreenToggle() {
+    const btn = document.getElementById('fullscreen-toggle');
+    if (!btn) return;
+
+    function isFs() {
+        return !!(document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
+    }
+    function enterFs() {
+        const el = document.documentElement;
+        const req = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
+        if (req) req.call(el).catch(() => {});
+    }
+    function exitFs() {
+        const ext = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
+        if (ext) ext.call(document).catch(() => {});
+    }
+    function syncIcon() {
+        const active = isFs();
+        btn.classList.toggle('is-fullscreen', active);
+        btn.textContent = '⛶';
+        btn.title = active ? 'Salir de pantalla completa' : 'Modo pantalla completa';
+        btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+    }
+
+    btn.addEventListener('click', () => { isFs() ? exitFs() : enterFs(); });
+    ['fullscreenchange', 'webkitfullscreenchange', 'msfullscreenchange'].forEach(evt => {
+        document.addEventListener(evt, syncIcon);
+    });
+
+    const supported = !!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen || document.documentElement.msRequestFullscreen);
+    if (!supported) btn.style.display = 'none';
+})();
+
+window.addEventListener('DOMContentLoaded', () => {
+    if (localStorage.getItem('codex_boss_beaten') === 'true') {
+        window._bossBeaten = true;
+        document.body.classList.add('transcended-world');
+    }
+
+    BalatroEngine.init('balatro-canvas');
+    ParticleEngine.init('particle-canvas');
+    if (window._bossBeaten) {
+        ParticleEngine.startPetalRain(40);
+    }
+
+    DestructionModule.init();
+    OrbitalModule.init();
+    TerminalModule.init();
+    AvatarController.init();
+    LanyardModule.init();
+    AchievementSystem.init();
+    initReactBitsEffects();
+
+    _renderVerses();
+    _renderFaq();
+    _initDanmaku();
+    _clockInterval = setInterval(_upClk, 35);
+    setTimeout(_tpW, 500);
+
+    const mainTitle = document.getElementById('display-name');
+    if (mainTitle) decryptTextEffect(mainTitle, "SAPHYNIEL", 700);
+});
+document.head.insertAdjacentHTML("beforeend", `<style>@keyframes blink { 50% { opacity: 0; } }</style>`);
+<<<ENDFILE>>>

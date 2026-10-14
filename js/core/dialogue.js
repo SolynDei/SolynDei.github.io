@@ -1,6 +1,7 @@
-const DialogueSystem = {
+﻿const DialogueSystem = {
     timer: null,
     typewriterTimer: null,
+    glitchTimer: null,
 
     show(options = {}) {
         const {
@@ -23,6 +24,7 @@ const DialogueSystem = {
 
         clearTimeout(this.timer);
         clearTimeout(this.typewriterTimer);
+        clearInterval(this.glitchTimer);
         document.body.classList.add('dialogue-locked');
         if (choices) choices.classList.remove('active');
 
@@ -53,23 +55,56 @@ const DialogueSystem = {
 
         nameEl.textContent = speaker;
         textEl.innerHTML = '';
+        
+        let promptGlyph = box.querySelector('.p5-prompt-glyph');
+        if (!promptGlyph) {
+            promptGlyph = document.createElement('div');
+            promptGlyph.className = 'p5-prompt-glyph';
+            promptGlyph.textContent = '❖';
+            box.querySelector('.p5-speech-bubble')?.appendChild(promptGlyph);
+        }
+        promptGlyph.classList.remove('show');
+
         box.classList.add('active');
+        cutinImg.classList.add('mouth-talk');
 
         if (typeof AudioManager !== 'undefined') {
             AudioManager.balatroVoice(tone);
         }
 
+        // Resaltado de palabras clave dinámico
+        const processedText = text
+            .replace(/\b(Códice|Codex|relic|divinidad|Dios|Saphyniel)\b/gi, '<span class="kw-highlight">$1</span>')
+            .replace(/\b(Hereje|destruir|error|juicio|morir|colapso)\b/gi, '<span class="kw-danger">$1</span>');
+
+        // Renderizado letra a letra respetando tags HTML
         let idx = 0;
+        let isTag = false;
+        let currentHTML = "";
         const self = this;
+
         function typeChar() {
-            if (idx < text.length) {
-                textEl.innerHTML += text.charAt(idx);
+            if (idx < processedText.length) {
+                const char = processedText.charAt(idx);
+                if (char === '<') isTag = true;
+                currentHTML += char;
+                if (char === '>') isTag = false;
                 idx++;
+
+                if (isTag) {
+                    typeChar();
+                    return;
+                }
+
+                textEl.innerHTML = currentHTML;
                 self.typewriterTimer = setTimeout(typeChar, 18);
             } else {
+                cutinImg.classList.remove('mouth-talk');
+                promptGlyph.classList.add('show');
                 if (autoHideTime > 0) {
                     self.timer = setTimeout(() => {
                         box.classList.remove('active');
+                        promptGlyph.classList.remove('show');
                         document.body.classList.remove('dialogue-locked');
                         if (callback) callback();
                     }, autoHideTime);
@@ -84,9 +119,16 @@ const DialogueSystem = {
 
     hide() {
         const box = document.getElementById('p5-box');
-        if (box) box.classList.remove('active');
+        if (box) {
+            box.classList.remove('active');
+            const promptGlyph = box.querySelector('.p5-prompt-glyph');
+            if (promptGlyph) promptGlyph.classList.remove('show');
+            const cutinImg = document.getElementById('p5-cutin-img');
+            if (cutinImg) cutinImg.classList.remove('mouth-talk');
+        }
         document.body.classList.remove('dialogue-locked');
         clearTimeout(this.timer);
         clearTimeout(this.typewriterTimer);
+        clearInterval(this.glitchTimer);
     }
 };

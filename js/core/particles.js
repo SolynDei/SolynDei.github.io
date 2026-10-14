@@ -1,5 +1,5 @@
 class PixelParticle {
-    constructor(x, y, col, vx, vy, decay = 0.02, size = 4) {
+    constructor(x, y, col, vx, vy, decay = 0.025, size = 4) {
         this.x = x; this.y = y; this.size = size || (Math.random() * 4 + 2);
         this.vx = vx !== undefined ? vx : (Math.random() - 0.5) * 14;
         this.vy = vy !== undefined ? vy : (Math.random() - 0.5) * 14;
@@ -7,8 +7,11 @@ class PixelParticle {
     }
     update() { this.x += this.vx; this.y += this.vy; this.life -= this.decay; }
     draw(ctx) {
-        ctx.fillStyle = this.color; ctx.globalAlpha = Math.max(0, this.life);
+        ctx.save();
+        ctx.fillStyle = this.color;
+        ctx.globalAlpha = Math.max(0, this.life);
         ctx.fillRect(this.x, this.y, this.size, this.size);
+        ctx.restore();
     }
 }
 
@@ -39,8 +42,6 @@ class WhitePetalEntity {
         ctx.translate(this.x, this.y);
         ctx.rotate(this.rotation);
         ctx.fillStyle = 'rgba(255, 255, 255, ' + this.alpha + ')';
-        ctx.shadowColor = '#ffffff';
-        ctx.shadowBlur = 6;
         ctx.beginPath();
         ctx.ellipse(0, 0, this.size, this.size * 0.5, 0, 0, Math.PI * 2);
         ctx.fill();
@@ -59,63 +60,63 @@ class HolySwordEntity {
         }
     }
     draw(ctx) {
+        ctx.save();
         ctx.fillStyle = '#fff'; ctx.shadowColor = '#dad4bb'; ctx.shadowBlur = 18;
-        ctx.fillRect(this.x - 3, this.y, 6, 80); ctx.fillRect(this.x - 14, this.y + 20, 28, 6); ctx.shadowBlur = 0;
+        ctx.fillRect(this.x - 3, this.y, 6, 80); ctx.fillRect(this.x - 14, this.y + 20, 28, 6);
+        ctx.restore();
     }
 }
 
 const ParticleEngine = {
-    canvas: null, ctx: null, particles: [], swords: [], petals: [], running: true, animId: null,
+    canvas: null, ctx: null, particles: [], swords: [], petals: [],
+    running: true, animId: null, customOverlayRender: null,
 
     init(canvasId = 'particle-canvas') {
         this.canvas = document.getElementById(canvasId);
         if (!this.canvas) return;
         this.ctx = this.canvas.getContext('2d');
-        this.resize(); 
-        window.addEventListener('resize', () => this.resize()); 
+        this.resize();
+        window.addEventListener('resize', () => this.resize());
         this.running = true;
+        if (this.animId) cancelAnimationFrame(this.animId);
         this.animate();
     },
 
-    resize() { 
-        if (!this.canvas) return; 
-        this.canvas.width = window.innerWidth; 
-        this.canvas.height = window.innerHeight; 
+    resize() {
+        if (!this.canvas) return;
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
     },
 
     pause() {
         this.running = false;
-        if (this.animId) cancelAnimationFrame(this.animId);
+        if (this.animId) { cancelAnimationFrame(this.animId); this.animId = null; }
         if (this.ctx && this.canvas) this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.particles = [];
         this.swords = [];
     },
 
     resume() {
-        if (this.running) return;
         this.running = true;
+        if (this.animId) { cancelAnimationFrame(this.animId); this.animId = null; }
         this.animate();
     },
 
     startPetalRain(count = 35) {
         this.petals = [];
-        const isMobile = window.innerWidth <= 680;
-        const total = isMobile ? Math.floor(count / 2) : count;
-        for (let i = 0; i < total; i++) {
-            this.petals.push(new WhitePetalEntity());
-        }
+        const total = window.innerWidth <= 680 ? Math.floor(count / 2) : count;
+        for (let i = 0; i < total; i++) this.petals.push(new WhitePetalEntity());
     },
 
-    explode(x, y, color = '#dad4bb', count = 20) {
+    explode(x, y, color = '#dad4bb', count = 18) {
         if (!this.running) return;
-        const isMobile = window.innerWidth <= 680;
-        const finalCount = isMobile ? Math.min(count, 5) : count;
-        for (let i = 0; i < finalCount; i++) { this.particles.push(new PixelParticle(x, y, color)); }
+        const finalCount = window.innerWidth <= 680 ? Math.min(count, 6) : count;
+        for (let i = 0; i < finalCount; i++) this.particles.push(new PixelParticle(x, y, color));
     },
 
-    spawnSword(x) { 
+    spawnSword(x) {
         if (!this.running) return;
-        this.swords.push(new HolySwordEntity(x)); 
+        this.swords.push(new HolySwordEntity(x));
     },
 
     rainBlessing() {
@@ -128,29 +129,43 @@ const ParticleEngine = {
 
     animate() {
         if (!this.running) return;
+        // Programar siempre el siguiente fotograma primero para que ningún error detenga el motor
+        this.animId = requestAnimationFrame(() => this.animate());
+
         if (this.ctx && this.canvas) {
-            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            for (let i = this.petals.length - 1; i >= 0; i--) {
-                this.petals[i].update();
-                this.petals[i].draw(this.ctx);
-            }
-            for (let i = this.particles.length - 1; i >= 0; i--) {
-                this.particles[i].update(); this.particles[i].draw(this.ctx);
-                if (this.particles[i].life <= 0) this.particles.splice(i, 1);
-            }
-            for (let i = this.swords.length - 1; i >= 0; i--) {
-                this.swords[i].update(); this.swords[i].draw(this.ctx);
-                if (this.swords[i].done) this.swords.splice(i, 1);
+            try {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                for (let i = this.petals.length - 1; i >= 0; i--) {
+                    this.petals[i].update();
+                    this.petals[i].draw(this.ctx);
+                }
+                for (let i = this.particles.length - 1; i >= 0; i--) {
+                    this.particles[i].update();
+                    this.particles[i].draw(this.ctx);
+                    if (this.particles[i].life <= 0) this.particles.splice(i, 1);
+                }
+                for (let i = this.swords.length - 1; i >= 0; i--) {
+                    this.swords[i].update();
+                    this.swords[i].draw(this.ctx);
+                    if (this.swords[i].done) this.swords.splice(i, 1);
+                }
+                if (typeof this.customOverlayRender === 'function') {
+                    this.customOverlayRender(this.ctx);
+                }
+            } catch (err) {
+                console.error("[ParticleEngine Render Error]:", err);
             }
         }
-        this.animId = requestAnimationFrame(() => this.animate());
     }
 };
 
 const ScreenUtils = {
     triggerShake(targetId = null) {
         const el = targetId ? document.getElementById(targetId) : document.body;
-        if (!el) return; el.classList.remove('shake-active'); void el.offsetWidth; el.classList.add('shake-active');
+        if (!el) return;
+        el.classList.remove('shake-active');
+        void el.offsetWidth;
+        el.classList.add('shake-active');
         setTimeout(() => el.classList.remove('shake-active'), 180);
     }
 };

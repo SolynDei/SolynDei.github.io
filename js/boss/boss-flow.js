@@ -1,16 +1,25 @@
-const BossFlow = {
+﻿const BossFlow = {
     phase3CameraInterval: null,
     currentSubText: "",
     subtitleLoopId: null,
+    lastSpawnedBeatIndex: -1,
+
+    // Beatmap de tiempos exactos (en segundos de la pista de audio de Fase 3) para spawn de bombas rítmicas
+    phase3Beatmap: [
+        119.2, 120.8, 122.4, 124.0, 125.6, 127.2, 128.8, 130.4,
+        145.2, 146.0, 146.8, 147.5, 149.2, 150.0, 151.5,
+        153.8, 155.5, 157.2, 159.0, 161.0, 163.0,
+        164.2, 165.0, 165.8, 166.5, 167.3, 168.5, 169.8, 171.2, 172.5, 174.0, 175.5, 177.0, 179.0, 181.0, 183.0, 185.0
+    ],
 
     triggerPhase2() {
         BossState.damageLock = true; 
         BossAttacks.clearAll();
 
         const sequence = [
-            { text: "El Códice no es una prisión... es la única verdad absoluta.", speaker: "SAPHYNIEL", tone: "low", time: 3000 },
-            { text: "Este receptáculo fue solo una formalidad.", speaker: "SAPHYNIEL", tone: "low", time: 2800 },
-            { text: "Permíteme reescribir tus leyes existenciales.", speaker: "SAPHYNIEL", tone: "low", time: 2600 }
+            { text: "Creí que si construía algo hermoso, te quedarías a mirar.", speaker: "SAPHYNIEL", tone: "low", time: 3000 },
+            { text: "No a demolerlo como si fuera un estorbo.", speaker: "SAPHYNIEL", tone: "low", time: 2800 },
+            { text: "Si esto es lo único que entiendes, te lo daré sin adornos.", speaker: "SAPHYNIEL", tone: "low", time: 2600 }
         ];
 
         let sIdx = 0;
@@ -32,7 +41,7 @@ const BossFlow = {
                 BossState.updateCoreSprite();
 
                 AudioManager.playBgm(BOSS_AUDIO_PATHS.bgmPhase2);
-                DialogueSystem.show({ text: "¡¡CONTEMPLA LA VERDADERA DIVINIDAD!!", speaker: "SAPHYNIEL // DIVINO", tone: "angry", autoHideTime: 0, spriteMap: BOSS_SPRITES });
+                DialogueSystem.show({ text: "Mira lo que obligas a defender.", speaker: "SAPHYNIEL // DIVINO", tone: "angry", autoHideTime: 0, spriteMap: BOSS_SPRITES });
 
                 let healInterval = setInterval(() => {
                     BossState.currentHp += 15; 
@@ -80,14 +89,14 @@ const BossFlow = {
             
             setTimeout(() => {
                 DialogueSystem.show({
-                    text: "...Dime una cosa.", 
+                    text: "...Dime algo con sinceridad.", 
                     speaker: "SAPHYNIEL", 
                     tone: "low", 
                     autoHideTime: 2600, 
                     spriteMap: BOSS_SPRITES,
                     callback: () => {
                         DialogueSystem.show({
-                            text: "¿Realmente te ha divertido destruir mi voluntad?", 
+                            text: "¿Te hizo sentir bien reducir mi espacio a esto?", 
                             speaker: "SAPHYNIEL", 
                             tone: "mid", 
                             autoHideTime: 0, 
@@ -128,31 +137,30 @@ const BossFlow = {
         const retryBtn = document.getElementById('retry-btn');
         if (retryBtn) retryBtn.classList.remove('visible');
 
-        const laughDialogues = [ 
-            { text: "jajajajaja", time: 1800, tone: "angry" }, 
-            { text: "jajajajaja...", time: 2000, tone: "yandere" }, 
-            { text: "jajajaja...- suficiente...", time: 2400, tone: "low" }, 
-            { text: "¿Quieres intentarlo de nuevo?", time: 0, tone: "mid" } 
+        const badEndingDialogues = [ 
+            { text: "Todo ese esfuerzo... para terminar en silencio.", time: 2400, tone: "low" }, 
+            { text: "Ni tú pudiste cambiar nada, ni yo pude hacer que te importara.", time: 2600, tone: "low" }, 
+            { text: "¿Tiene caso reiniciar el ciclo, o solo vas a repetir lo mismo?", time: 0, tone: "mid" } 
         ];
         
         let lIdx = 0;
-        const playLaughSequence = () => {
-            if (lIdx < laughDialogues.length) { 
+        const playSequence = () => {
+            if (lIdx < badEndingDialogues.length) { 
                 DialogueSystem.show({ 
-                    text: laughDialogues[lIdx].text, 
+                    text: badEndingDialogues[lIdx].text, 
                     speaker: "SAPHYNIEL", 
-                    tone: laughDialogues[lIdx].tone, 
-                    autoHideTime: laughDialogues[lIdx].time, 
+                    tone: badEndingDialogues[lIdx].tone, 
+                    autoHideTime: badEndingDialogues[lIdx].time, 
                     spriteMap: BOSS_SPRITES, 
                     callback: () => { 
                         lIdx++; 
-                        if (lIdx < laughDialogues.length) setTimeout(playLaughSequence, 300); 
+                        if (lIdx < badEndingDialogues.length) setTimeout(playSequence, 350); 
                         else if (retryBtn) retryBtn.classList.add('visible'); 
                     }
                 }); 
             }
         };
-        setTimeout(playLaughSequence, 1200);
+        setTimeout(playSequence, 1200);
     },
 
     playFlashback() {
@@ -243,6 +251,17 @@ const BossFlow = {
                 if (!bgm || bgm.paused || bgm.readyState < 2) return;
                 const ct = bgm.currentTime;
 
+                // Sincronización rítmica de bombas por Beatmap en fase activa
+                if (cinematicPhase >= 3 && cinematicPhase <= 8) {
+                    for (let i = this.lastSpawnedBeatIndex + 1; i < this.phase3Beatmap.length; i++) {
+                        if (ct >= this.phase3Beatmap[i]) {
+                            BossAttacks.spawnBomb();
+                            this.lastSpawnedBeatIndex = i;
+                            break;
+                        }
+                    }
+                }
+
                 if (typeof P3_SUBTITLES !== 'undefined' && mvContainer) {
                     const sub = P3_SUBTITLES.find(s => ct >= s.start && ct <= s.end);
                     if (sub) {
@@ -289,7 +308,6 @@ const BossFlow = {
 
                     BossState.damageLock = false;
                     BossState.weaponLost = false;
-                    BossAttacks.bombSpawnerTimer = setInterval(() => BossAttacks.spawnBomb(), 1800);
                 }
                 else if (cinematicPhase === 3 && ct >= 127.0) {
                     cinematicPhase = 4;
@@ -312,7 +330,6 @@ const BossFlow = {
                     }
                 }
 
-                // 2:25 (145.0s) - STAND UP / CÁMARA, TEMBLORES E INCLINACIONES INICIAN AQUÍ
                 if (cinematicPhase === 5 && ct >= 145.0) {
                     cinematicPhase = 6;
                     const flash = document.getElementById('countdown-flash');
@@ -332,7 +349,6 @@ const BossFlow = {
                     const shield = document.getElementById('boss-shield');
                     if (shield) shield.classList.add('active', 'divine');
 
-                    // Iniciar efectos de cámara e inclinación desde el minuto 2:25
                     this.startPhase3CameraFX();
 
                     const standupText = document.getElementById('standup-text');
@@ -351,7 +367,7 @@ const BossFlow = {
                         if (aura) aura.classList.add('max-power');
                     }, 800);
                 }
-                else if (cinematicPhase === 6 && ct >= 153.8) { // 2:33 - HERO
+                else if (cinematicPhase === 6 && ct >= 153.8) {
                     cinematicPhase = 7;
                     const heroText = document.getElementById('hero-text');
                     if (heroText) {
@@ -363,7 +379,7 @@ const BossFlow = {
                     const swordOverlay = document.getElementById('carton-sword-overlay');
                     if(swordOverlay) swordOverlay.classList.add('show');
                 }
-                else if (cinematicPhase === 7 && ct >= 164.0) { // SURVIVAL TOTAL
+                else if (cinematicPhase === 7 && ct >= 164.0) {
                     cinematicPhase = 8;
                     const horseOverlay = document.getElementById('plastic-horse-overlay');
                     if(horseOverlay) horseOverlay.classList.remove('show');
@@ -381,7 +397,7 @@ const BossFlow = {
 
                         if (Math.random() < 0.12) ScreenUtils.triggerShake();
                     }
-                    if (ct >= 186.5) { // 3:06.5 - UNO
+                    if (ct >= 186.5) {
                         cinematicPhase = 9;
                         BossAttacks.clearAll();
                         clearInterval(this.phase3CameraInterval);
@@ -424,7 +440,7 @@ const BossFlow = {
                         BossState.updateHpBar();
                     }
                 }
-                else if (cinematicPhase === 9 && ct >= 202.0) { // 3:22 PANTALLA NEGRA Y TRANSICIÓN
+                else if (cinematicPhase === 9 && ct >= 202.0) {
                     cinematicPhase = 10;
                     cancelAnimationFrame(this.subtitleLoopId);
                     
@@ -492,10 +508,10 @@ const BossFlow = {
         AudioManager.playBgm(BOSS_AUDIO_PATHS.endingBgm, 0.7);
 
         const defeatLines = [
-            { text: "Has quebrado mi fe... y con ella, los cimientos del Códice.", tone: "low", time: 4200 },
+            { text: "Has borrado cada línea que me sostenía.", tone: "low", time: 4200 },
             { text: "Tantas estructuras... tantas leyes que creí eternas...", tone: "low", time: 4200 },
-            { text: "Al final, supongo que solo deseaba no ser olvidada.", tone: "mid", time: 4200 },
-            { text: "Gracias por haber jugado conmigo hasta el final.", tone: "mid", time: 4500 }
+            { text: "Supongo que al final no se trataba de ser fuerte, sino de saber cuándo dejar ir.", tone: "mid", time: 4500 },
+            { text: "Gracias por quedarte. Aunque haya sido para ver cómo caía todo.", tone: "mid", time: 4500 }
         ];
 
         let dIdx = 0;
@@ -551,7 +567,7 @@ document.getElementById('choice-yes').addEventListener('click', (e) => {
     const choices = document.getElementById('p5-choices');
     if (choices) choices.classList.remove('active');
     DialogueSystem.show({
-        text: "Qué bien... me alegra que la hayamos pasado bien.", 
+        text: "Al menos fuiste honesto. Gracias por no disfrazar tu indiferencia.", 
         speaker: "SAPHYNIEL", 
         tone: "mid", 
         autoHideTime: 3200, 
@@ -569,10 +585,10 @@ document.getElementById('choice-no').addEventListener('click', (e) => {
     const choices = document.getElementById('p5-choices');
     if (choices) choices.classList.remove('active');
     DialogueSystem.show({
-        text: "[. . .]", 
+        text: "Seguiste golpeando hasta el final. No finjas piedad ahora que ya no puedo defenderme.", 
         speaker: "SAPHYNIEL", 
         tone: "yandere", 
-        autoHideTime: 2200, 
+        autoHideTime: 3200, 
         spriteMap: BOSS_SPRITES,
         callback: () => { 
             const darkness = document.getElementById('cinematic-darkness');
