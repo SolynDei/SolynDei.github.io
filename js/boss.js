@@ -1,11 +1,13 @@
 // =========================================================
 // FILE: js/boss.js
-// NAVE YORHA + CUT-INS + SFX + RENACER UNDERTALE ("BUT IT REFUSED")
+// NAVE YORHA + COMPAÑERA ÁNGEL SOLYN (ESCALA REDUCIDA EN FASE S
+// PARA CÁMARA ALEJADA + ARMAS 100% DEFENSIVAS)
 // =========================================================
 const BOSS_AUDIO_PATHS = {
     bgmPhase1: "audio/bgm/boss-music-fase1.mp3",
     bgmPhase2: "audio/bgm/boss-music-fase2.mp3",
     bgmPhase3: "audio/bgm/boss-music-fase3.mp3",
+    bgmPhaseS: "audio/bgm/boss-music-fase-alternativa.mp3",
     bossIntro: "audio/sfx/superattack.mp3",
     bossDefeat: "audio/bgm/ending.mp3",
     vineBoom: "audio/sfx/boom.mp3",
@@ -25,7 +27,7 @@ const BOSS_AUDIO_PATHS = {
     endingBgm: "audio/bgm/ending.mp3"
 };
 
-const isMobile = window.innerWidth <= 680;
+const isMobile = window.innerWidth <= 920 || ('ontouchstart' in window);
 const BOSS_SPRITES = {
     normal: "img/portraits/cabezanormal.png",
     angry: "img/portraits/cabezaenojada.png",
@@ -39,6 +41,10 @@ const BossState = {
     phase: 1, maxHp: 480, currentHp: 480, playerHp: 3, maxPlayerHp: 3,
     damageLock: true, isInvulnerable: false, weaponLost: false,
     history: [], battleStartTime: 0, hpAtStart: 0,
+
+    railgunUsed: false,
+    inPhaseSCheckpoint: false,
+    solynCompanionActive: false,
 
     isDying: false,
     rebirthAssembled: false,
@@ -72,6 +78,7 @@ const BossState = {
 
     railgunCharge: 0,
     railgunBeamTimer: 0,
+    railgunMaxBeamDuration: 0.45,
     railgunTargetX: 0,
     railgunTargetY: 0,
 
@@ -86,6 +93,13 @@ const BossState = {
     tackleTargetX: 0,
     tackleTargetY: 0,
     tackleHasHit: false,
+
+    getShipRenderScale() {
+        if (this.phase === 'S') {
+            return isMobile ? 0.44 : 0.65; // Alejamiento de cámara en Fase S
+        }
+        return isMobile ? 0.58 : 1.0;
+    },
 
     recordEvent(type, x, y) {
         if (this.phase < 3) {
@@ -138,20 +152,8 @@ const BossState = {
         setTimeout(() => frame.classList.remove('active'), 180);
     },
 
-    showSpecialCutin(titleText = "JUICIO DIVINO", portraitSrc = BOSS_SPRITES.angry) {
-        let banner = document.getElementById('boss-special-cutin');
-        if (!banner) {
-            banner = document.createElement('div');
-            banner.id = 'boss-special-cutin';
-            banner.className = 'boss-special-cutin';
-            banner.innerHTML = `<img id="cutin-banner-img" src="${portraitSrc}" alt="Cutin"><div class="cutin-title" id="cutin-banner-text">${titleText}</div>`;
-            document.body.appendChild(banner);
-        } else {
-            document.getElementById('cutin-banner-img').src = portraitSrc;
-            document.getElementById('cutin-banner-text').textContent = titleText;
-        }
-        banner.classList.add('active');
-        setTimeout(() => banner.classList.remove('active'), 850);
+    showSpecialCutin() {
+        return;
     },
 
     triggerCoreRgbGlitch() {
@@ -167,7 +169,7 @@ const BossState = {
             const r = core.getBoundingClientRect();
             return { x: r.left + r.width / 2, y: r.top + r.height / 2, radius: r.width * 0.42, kind: 'core' };
         }
-        return { x: window.innerWidth / 2, y: window.innerHeight * 0.30, radius: 55, kind: 'core' };
+        return { x: window.innerWidth / 2, y: window.innerHeight * 0.30, radius: 42, kind: 'core' };
     },
 
     getPriorityTarget() {
@@ -255,7 +257,7 @@ const BossState = {
             this.tackleTimer -= dt;
             ctx.save();
             ctx.strokeStyle = `rgba(217, 56, 30, ${0.5 + Math.sin(performance.now() * 0.035) * 0.35})`;
-            ctx.lineWidth = 4;
+            ctx.lineWidth = 3;
             ctx.setLineDash([12, 8]);
             ctx.beginPath();
             ctx.moveTo(curPos.x, curPos.y);
@@ -265,7 +267,7 @@ const BossState = {
             ctx.strokeStyle = '#e5c158';
             ctx.setLineDash([]);
             ctx.beginPath();
-            ctx.arc(this.tackleTargetX, this.tackleTargetY, 34, 0, Math.PI * 2);
+            ctx.arc(this.tackleTargetX, this.tackleTargetY, 26, 0, Math.PI * 2);
             ctx.stroke();
             ctx.restore();
 
@@ -286,10 +288,14 @@ const BossState = {
             core.style.top = `${(ny / window.innerHeight) * 100}%`;
 
             const distToShip = Math.hypot(nx - this.shipX, ny - this.shipY);
-            if (!this.tackleHasHit && distToShip < curPos.radius + 22) {
+            if (!this.tackleHasHit && distToShip < curPos.radius + 18) {
                 this.tackleHasHit = true;
                 if (this.shieldActive) {
-                    ParticleEngine.explode(this.shipX, this.shipY, '#e5c158', 30);
+                    if (this.phase === 'S' && typeof PhaseSUIArena !== 'undefined') {
+                        PhaseSUIArena.spawnFreeButterflyBurst(this.shipX, this.shipY, 10);
+                    } else {
+                        ParticleEngine.explode(this.shipX, this.shipY, '#e5c158', 30);
+                    }
                     this.triggerAnimeImpactFrame();
                     if (typeof AudioManager !== 'undefined') {
                         AudioManager.parryClangSound();
@@ -297,7 +303,6 @@ const BossState = {
                     }
                     if (typeof ScreenUtils !== 'undefined') ScreenUtils.triggerShake();
                     if (typeof BalatroEngine !== 'undefined') BalatroEngine.triggerHit(this.shipX, this.shipY, 1.8);
-                    this.spawnDamagePopup(this.shipX, this.shipY - 25, "¡PARRY // EMBESTIDA BLOQUEADA!", 'blocked');
                 } else {
                     this.tryHitPlayer(this.shipX, this.shipY);
                     if (this.isDying || this.playerHp <= 0) return;
@@ -331,15 +336,28 @@ const BossState = {
 
         if (typeof AudioManager !== 'undefined') AudioManager.evadeOverclockSound();
         if (typeof ParticleEngine !== 'undefined') {
-            ParticleEngine.explode(this.shipX, this.shipY, '#dad4bb', 16);
+            ParticleEngine.explode(this.shipX, this.shipY, this.solynCompanionActive ? '#ffffff' : '#dad4bb', 14);
         }
-        this.spawnDamagePopup(this.shipX, this.shipY - 28, "ESCUDO YORHA", 'heal');
     },
 
     activateRailgun() {
         if (this.playerHp <= 0 || this.isDying || this.weaponLost || this.damageLock || this.railgunCharge < 100) return;
 
+        // En Fase S, [E] es una onda puramente defensiva que disuelve proyectiles en mariposas libres
+        if (this.phase === 'S') {
+            this.railgunCharge = 0;
+            if (typeof PhaseS !== 'undefined') {
+                PhaseS.triggerHitStop(0.055);
+            }
+            if (typeof PhaseSUIArena !== 'undefined') {
+                PhaseSUIArena.triggerAstralResonancePulse();
+            }
+            return;
+        }
+
+        this.railgunUsed = true;
         this.railgunCharge = 0;
+        this.railgunMaxBeamDuration = 0.45;
         this.railgunBeamTimer = 0.45;
         const target = this.getPriorityTarget();
         this.railgunTargetX = target.x;
@@ -369,7 +387,8 @@ const BossState = {
     },
 
     dealDamageToBoss(dmg, hitX, hitY, isRailgun = false) {
-        if (this.damageLock || this.weaponLost || this.isDying) return;
+        if (localStorage.getItem('codex_debug_oneshot') === 'true') dmg = 9999;
+        if (this.damageLock || this.weaponLost || this.isDying || this.phase === 'S') return;
 
         this.currentHp = Math.max(1, this.currentHp - dmg);
         this.recordEvent('hit', hitX, hitY);
@@ -445,10 +464,11 @@ const BossState = {
             ctx.restore();
         }
 
-        // Si las piezas ya se unieron en el centro ("But it refused"), dibujar la nave recién reparada brillando
         if (this.rebirthAssembled) {
             ctx.save();
             ctx.translate(this.shipX, this.shipY);
+            const shipScale = this.getShipRenderScale();
+            ctx.scale(shipScale, shipScale);
             ctx.fillStyle = '#f7f5ed';
             ctx.strokeStyle = '#e5c158';
             ctx.lineWidth = 2.5;
@@ -468,9 +488,65 @@ const BossState = {
         }
     },
 
+    renderSolynAngelCompanion(ctx) {
+        if (!this.solynCompanionActive) return;
+        const shipScale = this.getShipRenderScale();
+        const t = performance.now() * 0.004;
+        const compX = this.shipX + 34 * shipScale + Math.cos(t) * 5;
+        const compY = this.shipY - 14 * shipScale + Math.sin(t * 1.5) * 6;
+
+        ctx.save();
+        ctx.translate(compX, compY);
+        ctx.scale(shipScale, shipScale);
+
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.65)';
+        ctx.lineWidth = 1.8;
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo((this.shipX - compX) / shipScale, (this.shipY - compY) / shipScale);
+        ctx.stroke();
+
+        const flap = Math.sin(t * 2.5) * 0.22;
+        [-1, 1].forEach(dir => {
+            ctx.save();
+            ctx.scale(dir, 1);
+            ctx.rotate(-0.3 + flap);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+            ctx.strokeStyle = '#e5c158';
+            ctx.lineWidth = 1.5;
+            ctx.shadowColor = '#ffffff';
+            ctx.shadowBlur = 14;
+            ctx.beginPath();
+            ctx.moveTo(4, 0);
+            ctx.lineTo(28, -14);
+            ctx.lineTo(20, 8);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            ctx.restore();
+        });
+
+        ctx.fillStyle = '#ffffff';
+        ctx.shadowColor = '#ffffff';
+        ctx.shadowBlur = 18;
+        ctx.beginPath();
+        ctx.arc(0, 0, 7, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = '#e5c158';
+        ctx.lineWidth = 1.8;
+        ctx.beginPath();
+        ctx.arc(0, -12, 6, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+    },
+
     updateAndRenderShip(dt, ctx) {
         if (this.isDying) {
             this.renderDeathShatterSequence(dt, ctx);
+            return;
+        }
+        if (this.phase === 'S' && typeof PhaseS !== 'undefined' && PhaseS.inPlaceRefusalActive) {
             return;
         }
         if (this.playerHp <= 0) return;
@@ -488,16 +564,16 @@ const BossState = {
         if (vx !== 0 || vy !== 0) {
             const len = Math.hypot(vx, vy);
             if (len > 1) { vx /= len; vy /= len; }
-            this.shipX += vx * this.shipSpeed * dt;
-            this.shipY += vy * this.shipSpeed * dt;
+            const speedBoost = (this.phase === 'S' && this.solynCompanionActive) ? 1.15 : 1.0;
+            this.shipX += vx * this.shipSpeed * speedBoost * dt;
+            this.shipY += vy * this.shipSpeed * speedBoost * dt;
         }
 
         const margin = 26;
         this.shipX = Math.max(margin, Math.min(window.innerWidth - margin, this.shipX));
         this.shipY = Math.max(margin + 60, Math.min(window.innerHeight - margin - 20, this.shipY));
 
-        const blessing = localStorage.getItem('codex_active_blessing');
-        const cooldownMult = blessing === 'silver' ? 1.3 : 1.0;
+        const cooldownMult = this.silverMultiplier || 1.0;
 
         if (this.playerIFrames > 0) this.playerIFrames = Math.max(0, this.playerIFrames - dt);
         if (this.shieldActive) {
@@ -507,33 +583,21 @@ const BossState = {
             this.shieldCooldown = Math.max(0, this.shieldCooldown - dt * cooldownMult * (this.weaponLost ? 1.5 : 1.0));
         }
 
-        if (!this.damageLock && !this.weaponLost && this.railgunCharge < 100) {
+        if (!this.damageLock && !this.weaponLost && this.railgunCharge < 100 && this.phase !== 'S') {
             this.railgunCharge = Math.min(100, this.railgunCharge + dt * 9 * cooldownMult);
+        }
+        if (localStorage.getItem('codex_debug_infrail') === 'true') {
+            this.railgunCharge = 100;
+            this.shieldCooldown = 0;
         }
         this.updateSkillHudBars();
 
         const target = this.getPriorityTarget();
         const aimAngle = Math.atan2(target.y - this.shipY, target.x - this.shipX);
 
-        if (!this.weaponLost && !this.damageLock && (target.kind === 'node' || target.kind === 'clone')) {
-            ctx.save();
-            ctx.strokeStyle = 'rgba(218, 212, 187, 0.4)';
-            ctx.lineWidth = 1.5;
-            ctx.setLineDash([6, 6]);
-            ctx.beginPath();
-            ctx.moveTo(this.shipX, this.shipY);
-            ctx.lineTo(target.x, target.y);
-            ctx.stroke();
-
-            ctx.strokeStyle = '#e5c158';
-            ctx.setLineDash([]);
-            ctx.strokeRect(target.x - 28, target.y - 28, 56, 56);
-            ctx.restore();
-        }
-
         this.fireCooldown -= dt;
-        const effectiveFireRate = blessing === 'crimson' ? this.fireRate * 0.72 : this.fireRate;
-        if (this.fireCooldown <= 0 && !this.damageLock && !this.weaponLost && this.playerHp > 0) {
+        const effectiveFireRate = this.fireRate;
+        if (this.phase !== 'S' && this.fireCooldown <= 0 && !this.damageLock && !this.weaponLost && this.playerHp > 0) {
             this.fireCooldown = effectiveFireRate;
             const spread = (Math.random() - 0.5) * 10;
             const perpX = -Math.sin(aimAngle) * spread;
@@ -583,7 +647,6 @@ const BossState = {
                             const sfxUrl = n.type === 'bomb' ? BOSS_AUDIO_PATHS.crystalBreak : BOSS_AUDIO_PATHS.sealBreak;
                             AudioManager.playAudio(sfxUrl, 0.55);
                         }
-                        this.spawnDamagePopup(n.x, n.y, n.type === 'bomb' ? "DESACTIVADA" : "SELLO ROTO", 'heal');
                         BossAttacks.nodes.splice(j, 1);
                     }
                     hitNode = true;
@@ -627,11 +690,14 @@ const BossState = {
 
         if (this.railgunBeamTimer > 0) {
             this.railgunBeamTimer -= dt;
+            const progressRatio = Math.max(0, this.railgunBeamTimer / (this.railgunMaxBeamDuration || 0.45));
+            const beamWidth = 38 * progressRatio;
+
             ctx.save();
-            const beamWidth = 34 * (this.railgunBeamTimer / 0.45);
+            ctx.globalCompositeOperation = 'lighter';
             ctx.strokeStyle = '#e5c158';
             ctx.lineWidth = beamWidth;
-            ctx.shadowColor = '#f7f5ed';
+            ctx.shadowColor = '#ffd700';
             ctx.shadowBlur = 30;
             ctx.beginPath();
             ctx.moveTo(this.shipX, this.shipY);
@@ -647,22 +713,29 @@ const BossState = {
             ctx.restore();
         }
 
+        this.renderSolynAngelCompanion(ctx);
+
         ctx.save();
         ctx.translate(this.shipX, this.shipY);
+        const shipScale = this.getShipRenderScale();
+        ctx.scale(shipScale, shipScale);
 
         if (this.shieldActive) {
+            const shieldRad = this.solynCompanionActive ? 64 : 36;
             ctx.save();
-            ctx.rotate(performance.now() * 0.004);
-            ctx.strokeStyle = '#f7f5ed';
-            ctx.fillStyle = 'rgba(218, 212, 187, 0.22)';
-            ctx.lineWidth = 2.5;
-            ctx.shadowColor = '#dad4bb';
-            ctx.shadowBlur = 18;
+            ctx.globalCompositeOperation = 'lighter';
+            ctx.rotate(performance.now() * 0.005);
+            ctx.strokeStyle = '#ffffff';
+            ctx.fillStyle = this.solynCompanionActive ? 'rgba(255, 235, 160, 0.28)' : 'rgba(218, 212, 187, 0.22)';
+            ctx.lineWidth = this.solynCompanionActive ? 3.5 : 2.5;
+            ctx.shadowColor = '#ffd700';
+            ctx.shadowBlur = this.solynCompanionActive ? 26 : 16;
             ctx.beginPath();
-            for (let s = 0; s < 6; s++) {
-                const a = (Math.PI * 2 * s) / 6;
-                const rx = Math.cos(a) * 35;
-                const ry = Math.sin(a) * 35;
+            const sides = this.solynCompanionActive ? 8 : 6;
+            for (let s = 0; s < sides; s++) {
+                const a = (Math.PI * 2 * s) / sides;
+                const rx = Math.cos(a) * shieldRad;
+                const ry = Math.sin(a) * shieldRad;
                 if (s === 0) ctx.moveTo(rx, ry);
                 else ctx.lineTo(rx, ry);
             }
@@ -674,16 +747,16 @@ const BossState = {
 
         ctx.rotate(aimAngle + Math.PI / 2);
 
-        ctx.fillStyle = this.weaponLost ? '#d9381e' : '#f7f5ed';
-        ctx.shadowColor = this.weaponLost ? '#d9381e' : '#dad4bb';
-        ctx.shadowBlur = 12;
+        ctx.fillStyle = this.solynCompanionActive ? '#ffffff' : (this.weaponLost ? '#d9381e' : '#f7f5ed');
+        ctx.shadowColor = this.solynCompanionActive ? '#ffd700' : '#dad4bb';
+        ctx.shadowBlur = 14;
         ctx.beginPath();
         ctx.moveTo(-7, 14);
         ctx.lineTo(0, 24 + Math.random() * 8);
         ctx.lineTo(7, 14);
         ctx.fill();
 
-        ctx.fillStyle = this.weaponLost ? '#8b8778' : '#dad4bb';
+        ctx.fillStyle = this.solynCompanionActive ? '#ffffff' : (this.weaponLost ? '#8b8778' : '#dad4bb');
         ctx.strokeStyle = '#f7f5ed';
         ctx.lineWidth = 2;
         ctx.beginPath();
@@ -737,7 +810,7 @@ const BossState = {
                 railBox.classList.remove('ready');
                 railBox.classList.add('disabled-weapon');
             }
-            if (railLabel) railLabel.textContent = "ARMAMENTO: DESTRUIDO";
+            if (railLabel) railLabel.textContent = "ARMAMENTO: DEPUESTO";
             if (mobRailBtn) mobRailBtn.classList.remove('ready');
             if (mobRailState) mobRailState.textContent = "ROTO";
             return;
@@ -746,16 +819,22 @@ const BossState = {
         if (railBox) railBox.classList.remove('disabled-weapon');
         const rPct = Math.floor(this.railgunCharge);
         if (railFill) railFill.style.width = `${rPct}%`;
-        if (railLabel) railLabel.textContent = rPct >= 100 ? "RAILGUN [E] ¡LISTO!" : `RAILGUN [E] ${rPct}%`;
+        const prefix = this.phase === 'S' ? "DISPERSAR [E]" : "RAILGUN [E]";
+        if (railLabel) railLabel.textContent = rPct >= 100 ? `${prefix} ¡LISTO!` : `${prefix}${rPct}%`;
         if (railBox) railBox.classList.toggle('ready', rPct >= 100);
         if (mobRailBtn) mobRailBtn.classList.toggle('ready', rPct >= 100);
-        if (mobRailState) mobRailState.textContent = rPct >= 100 ? "¡DISPARAR!" : `${rPct}%`;
+        if (mobRailState) mobRailState.textContent = rPct >= 100 ? "¡LIBERAR!" : `${rPct}%`;
     },
 
     tryHitPlayer(x, y) {
+        if (localStorage.getItem('codex_debug_godmode') === 'true') {
+            this.spawnDamagePopup(this.shipX, this.shipY - 20, 'GODMODE', 'blocked');
+            return;
+        }
         if (this.isDying || this.playerHp <= 0) return;
+        if (this.phase === 'S' && typeof PhaseS !== 'undefined' && (PhaseS.unionCutsceneActive || PhaseS.inPlaceRefusalActive)) return;
+
         if (this.shieldActive) {
-            this.spawnDamagePopup(this.shipX, this.shipY - 20, "BLOQUEADO", 'heal');
             if (typeof AudioManager !== 'undefined') {
                 AudioManager.parryClangSound();
                 AudioManager.playAudio(BOSS_AUDIO_PATHS.antiSpamBlock, 0.5);
@@ -767,12 +846,18 @@ const BossState = {
         this.damagePlayer();
     },
 
-    resetBossEncounter() {
+    resetBossEncounter(keepPhaseSCheckpoint = false) {
         this.clearDeathTimers();
         this.isDying = false;
         this.rebirthAssembled = false;
         this.deathFragments = [];
         this.deathShockwaveRadius = 0;
+
+        if (!keepPhaseSCheckpoint) {
+            this.railgunUsed = false;
+            this.inPhaseSCheckpoint = false;
+            this.solynCompanionActive = false;
+        }
 
         DialogueSystem.hide();
         BossAttacks.clearAll();
@@ -784,6 +869,7 @@ const BossState = {
             ParticleEngine.particles = [];
             ParticleEngine.swords = [];
             ParticleEngine.petals = [];
+            ParticleEngine.lunarFlowers = [];
             if (ParticleEngine.ctx && ParticleEngine.canvas) {
                 ParticleEngine.ctx.clearRect(0, 0, ParticleEngine.canvas.width, ParticleEngine.canvas.height);
             }
@@ -793,8 +879,17 @@ const BossState = {
             BalatroEngine.render();
         }
 
-        const blessing = localStorage.getItem('codex_active_blessing');
-        this.maxPlayerHp = blessing === 'gold' ? 4 : 3;
+        let blessingsList = [];
+        try { blessingsList = JSON.parse(localStorage.getItem('codex_active_blessings_list')) || []; } catch (e) {}
+        if (blessingsList.length === 0 && localStorage.getItem('codex_active_blessing')) {
+            blessingsList = [localStorage.getItem('codex_active_blessing')];
+        }
+        const goldCount = blessingsList.filter(b => b === 'gold').length;
+        const crimsonCount = blessingsList.filter(b => b === 'crimson').length;
+        const silverCount = blessingsList.filter(b => b === 'silver').length;
+        this.maxPlayerHp = 3 + goldCount;
+        this.fireRate = Math.max(0.045, 0.085 * Math.pow(0.78, crimsonCount));
+        this.silverMultiplier = 1.0 + (silverCount * 0.28);
         this.playerHp = this.maxPlayerHp;
         this.shipX = window.innerWidth / 2;
         this.shipY = window.innerHeight * 0.78;
@@ -858,7 +953,7 @@ const BossState = {
     updateCoreSprite() {
         const img = document.getElementById('boss-core-img');
         if (!img) return;
-        if (this.phase === 3) {
+        if (this.phase === 3 || this.phase === 'S') {
             img.src = isMobile ? BOSS_SPRITES.corePhase3_mobile : BOSS_SPRITES.corePhase3_pc;
         } else if (this.phase === 2) {
             img.src = "img/boss/ddddboss_fase2.png";
@@ -875,8 +970,8 @@ const BossState = {
         const num = document.getElementById('boss-hp-num');
         const core = document.getElementById('boss-core');
         if (fill) fill.style.width = `${pct}%`;
-        if (num) num.textContent = `[${pct}%]`;
-        if (core) core.classList.toggle('critical-hp', ratio > 0 && ratio <= 0.25);
+        if (num) num.textContent = this.phase === 'S' ? `[AUTOPURIFICACIÓN ${pct}%]` : `[${pct}%]`;
+        if (core) core.classList.toggle('critical-hp', this.phase !== 'S' && ratio > 0 && ratio <= 0.25);
         if (typeof BalatroEngine !== 'undefined') {
             BalatroEngine.setBossHpRatio(ratio);
         }
@@ -896,6 +991,18 @@ const BossState = {
 
     damagePlayer() {
         if (this.playerHp <= 0 || this.isDying) return;
+
+        if (this.phase === 'S' && typeof PhaseS !== 'undefined') {
+            if (this.playerHp <= 1) {
+                PhaseS.triggerInPlaceRefusal();
+                return;
+            }
+            if (this.solynCompanionActive) {
+                PhaseS.sacrificeOneGoldenHeart();
+                return;
+            }
+        }
+
         this.playerHp--;
         if (typeof AudioManager !== 'undefined') {
             AudioManager.playAudio(BOSS_AUDIO_PATHS.trapHeartHit, 0.55);
@@ -970,18 +1077,11 @@ const BossState = {
 
             AudioManager.playAudio(BOSS_AUDIO_PATHS.defeatLaugh, 0.65);
 
-            const mockingQuotes = [
-                "¿Escuchas mi risa en medio del silencio? Es todo lo que queda cuando tu nave se deshace en píxeles.",
-                "Tanta prisa por derribar mi santuario... solo para terminar hecho cenizas frente a mí.",
-                "Mírate... reducido a fragmentos de memoria sueltos. ¿Vas a arrastrarte de nuevo o vas a rendirte?"
-            ];
-            const chosenQuote = mockingQuotes[Math.floor(Math.random() * mockingQuotes.length)];
-
             DialogueSystem.show({
-                text: chosenQuote,
+                text: "Tanto ruido, tanta prisa por derribar mis muros... solo para quedarnos los dos en el mismo silencio.",
                 speaker: "SAPHYNIEL",
                 tone: "yandere",
-                autoHideTime: 3400,
+                autoHideTime: 3600,
                 spriteMap: BOSS_SPRITES,
                 callback: () => {
                     this.showGameOverModal();
@@ -999,7 +1099,6 @@ const BossState = {
         if (goScreen) goScreen.classList.add('visible');
     },
 
-    // --- CAPÍTULOS 4 Y 5: EFECTO UNDERTALE ("BUT IT REFUSED") AL REINTENTAR ---
     triggerUndertaleRebirth() {
         this.clearDeathTimers();
         DialogueSystem.hide();
@@ -1023,7 +1122,6 @@ const BossState = {
         this.deathShockwaveRadius = 99999;
         this.deathFragments = [];
 
-        // Colocar las piezas rotas de la nave flotando en dos mitades fracturadas
         for (let i = 0; i < 42; i++) {
             const side = i % 2 === 0 ? -1 : 1;
             const spreadX = side * (28 + Math.random() * 55);
@@ -1043,7 +1141,6 @@ const BossState = {
             });
         }
 
-        // Etapa 1 (0.0s - 0.65s): Temblor intenso de las piezas rotas ("...Pero se negó a morir")
         if (typeof AudioManager !== 'undefined' && typeof AudioManager.undertaleRefuseRumble === 'function') {
             AudioManager.undertaleRefuseRumble();
         }
@@ -1054,7 +1151,6 @@ const BossState = {
             });
         }, 35);
 
-        // Etapa 2 (0.65s): Las piezas viajan magnéticamente al centro y reconstruyen la nave
         const tAssemble = setTimeout(() => {
             clearInterval(shakeInterval);
             if (typeof AudioManager !== 'undefined' && typeof AudioManager.undertaleRefuseHeal === 'function') {
@@ -1066,21 +1162,24 @@ const BossState = {
             });
         }, 650);
 
-        // Etapa 3 (0.95s): Mostrar la nave ensamblada brillando en el centro
         const tGlow = setTimeout(() => {
             this.deathFragments = [];
             this.rebirthAssembled = true;
             ParticleEngine.explode(cx, cy, '#e5c158', 24);
         }, 950);
 
-        // Etapa 4 (1.35s): Arrancar la batalla inmediatamente SIN diálogos
         const tStart = setTimeout(() => {
             this.rebirthAssembled = false;
-            this.resetBossEncounter();
+            const resumeInPhaseS = this.inPhaseSCheckpoint;
+            this.resetBossEncounter(resumeInPhaseS);
             this.battleStartTime = Date.now();
             this.history = [];
             BossEngine.startLoop();
-            BossEngine.transitionTo('phase1', true); // true = salta todos los diálogos
+            if (resumeInPhaseS) {
+                BossEngine.transitionTo('phaseS');
+            } else {
+                BossEngine.transitionTo('phase1', true);
+            }
         }, 1350);
 
         this.deathSequenceTimers.push(tAssemble, tGlow, tStart);
@@ -1165,7 +1264,7 @@ window.addEventListener('keyup', (e) => {
             dx = (dx / dist) * maxRadius;
             dy = (dy / dist) * maxRadius;
         }
-        stick.style.transform = `translate(${dx}px, ${dy}px)`;
+        stick.style.transform = `translate(${dx}px,${dy}px)`;
         BossState.joyDx = dx / maxRadius;
         BossState.joyDy = dy / maxRadius;
     };
@@ -1199,18 +1298,22 @@ window.addEventListener('keyup', (e) => {
 })();
 
 function initBossEncounterSequence() {
+    checkAndShowMobileWarning(() => _runBossEncounterSequenceNow());
+}
+function _runBossEncounterSequenceNow() {
     if (document.activeElement && typeof document.activeElement.blur === 'function') {
         document.activeElement.blur();
     }
     window.focus();
-    BossState.resetBossEncounter();
+    BossState.resetBossEncounter(false);
     BossState.battleStartTime = Date.now();
     BossState.history = [];
     BossEngine.startLoop();
 
     const debugParam = BossEngine.checkDebugParams();
     if (debugParam) {
-        if (debugParam.startsWith('3')) BossEngine.transitionTo('phase3');
+        if (debugParam.toLowerCase() === 's') BossEngine.transitionTo('phaseS');
+        else if (debugParam.startsWith('3')) BossEngine.transitionTo('phase3');
         else if (debugParam === '2') BossEngine.transitionTo('phase2');
         else BossEngine.transitionTo('phase1', false);
     } else {
@@ -1222,7 +1325,7 @@ document.getElementById('choice-yes')?.addEventListener('click', (e) => {
     e.stopPropagation();
     document.getElementById('p5-choices')?.classList.remove('active');
     DialogueSystem.show({
-        text: "Al menos fuiste honesto. Gracias por no disfrazar tu indiferencia.",
+        text: "Al menos no fingiste compasión. Gracias por no disfrazar tu indiferencia.",
         speaker: "SAPHYNIEL",
         tone: "mid",
         autoHideTime: 3000,
@@ -1240,7 +1343,7 @@ document.getElementById('choice-no')?.addEventListener('click', (e) => {
     document.getElementById('p5-choices')?.classList.remove('active');
     document.body.classList.add('combat-no-cursor');
     DialogueSystem.show({
-        text: "Seguiste disparando hasta el final. No finjas piedad ahora que ya no puedo defenderme.",
+        text: "Disparaste hasta dejarme sin aliento. No hables de piedad ahora que ya no tengo adónde huir.",
         speaker: "SAPHYNIEL",
         tone: "yandere",
         autoHideTime: 3000,
@@ -1252,7 +1355,6 @@ document.getElementById('choice-no')?.addEventListener('click', (e) => {
     });
 });
 
-// BOTÓN REINTENTAR: Activa la reparación estilo Undertale ("But it refused") y arranca sin diálogos
 document.getElementById('retry-btn')?.addEventListener('click', (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -1262,13 +1364,13 @@ document.getElementById('retry-btn')?.addEventListener('click', (e) => {
     BossState.triggerUndertaleRebirth();
 });
 
-// BOTÓN RENDIRSE: Guarda en localStorage y regresa a la Bio
 document.getElementById('surrender-btn')?.addEventListener('click', (e) => {
     e.preventDefault();
     e.stopPropagation();
     e.currentTarget.blur();
 
     BossState.clearDeathTimers();
+    BossState.inPhaseSCheckpoint = false;
     BossAttacks.clearAll();
     AudioManager.stopBgm();
     document.getElementById('game-over-screen')?.classList.remove('visible');
@@ -1294,5 +1396,92 @@ window.addEventListener('DOMContentLoaded', () => {
     if (typeof ParticleEngine !== 'undefined') ParticleEngine.init('particle-canvas');
     if (window.parent === window) {
         setTimeout(initBossEncounterSequence, 500);
+    }
+});
+
+function checkAndShowMobileWarning(onProceed) {
+    const isMobDevice = window.innerWidth <= 920 || ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+    if (!isMobDevice || sessionStorage.getItem('codex_mobile_warn_accepted') === 'true') {
+        onProceed();
+        return;
+    }
+
+    let modal = document.getElementById('mobile-warning-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'mobile-warning-modal';
+        modal.className = 'mobile-warning-overlay active';
+        modal.innerHTML = `
+            <div class="mobile-warning-box">
+                <div class="mobile-warning-title">⚠️ AVISO DE SISTEMA YORHA // DISPOSITIVO MÓVIL</div>
+                <p class="mobile-warning-text">
+                    En teléfonos el combate puede experimentar caídas de rendimiento o espacio reducido.<br><br>
+                    Se ha activado el <b>Modo Optimizado (Escala Reducida)</b>. ¿Deseas activar la <b>Pantalla Completa Horizontal</b> para jugar mejor?
+                </p>
+                <div class="mobile-warning-btns">
+                    <button type="button" class="mob-warn-btn" id="btn-mob-landscape">[ ⛶ ACEPTAR Y JUGAR EN HORIZONTAL ]</button>
+                    <button type="button" class="mob-warn-btn secondary" id="btn-mob-continue">[ CONTINUAR SIN ROTAR ]</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    } else {
+        modal.classList.add('active');
+    }
+
+    const requestLandscapeFullscreen = () => {
+        sessionStorage.setItem('codex_mobile_warn_accepted', 'true');
+        modal.classList.remove('active');
+
+        const docEl = document.documentElement;
+        const parentDocEl = (window.parent && window.parent.document) ? window.parent.document.documentElement : docEl;
+        const reqFs = parentDocEl.requestFullscreen || parentDocEl.webkitRequestFullscreen || docEl.requestFullscreen;
+        if (reqFs) {
+            reqFs.call(parentDocEl).then(() => {
+                if (screen.orientation && screen.orientation.lock) {
+                    screen.orientation.lock('landscape').catch(() => {});
+                }
+            }).catch(() => {});
+        } else if (screen.orientation && screen.orientation.lock) {
+            screen.orientation.lock('landscape').catch(() => {});
+        }
+        setTimeout(onProceed, 250);
+    };
+
+    document.getElementById('btn-mob-landscape').onclick = (e) => {
+        e.stopPropagation();
+        requestLandscapeFullscreen();
+    };
+    document.getElementById('btn-mob-continue').onclick = (e) => {
+        e.stopPropagation();
+        sessionStorage.setItem('codex_mobile_warn_accepted', 'true');
+        modal.classList.remove('active');
+        onProceed();
+    };
+}
+
+window.addEventListener('keydown', (e) => {
+    if (e.key === 'F1') {
+        e.preventDefault();
+        const cur = localStorage.getItem('codex_debug_godmode') === 'true';
+        localStorage.setItem('codex_debug_godmode', (!cur).toString());
+        BossState.spawnDamagePopup(BossState.shipX, BossState.shipY - 30, !cur ? "GODMODE: ON" : "GODMODE: OFF", 'blocked');
+    } else if (e.key === 'F2') {
+        e.preventDefault();
+        BossState.railgunCharge = 100;
+        BossState.shieldCooldown = 0;
+        BossState.spawnDamagePopup(BossState.shipX, BossState.shipY - 30, "CARGA MÁXIMA", 'heal');
+    } else if (e.key === 'F3') {
+        e.preventDefault();
+        if (typeof PhaseS !== 'undefined') {
+            BossEngine.transitionTo('phaseS');
+            setTimeout(() => PhaseS.triggerSolynCinematicUnion(), 400);
+        }
+    } else if (e.key === 'F4') {
+        e.preventDefault();
+        if (BossState.phase === 1) BossEngine.transitionTo('phase2');
+        else if (BossState.phase === 2) BossEngine.transitionTo('phase3');
+        else if (BossState.phase === 3) BossEngine.transitionTo('phaseS');
+        else if (BossState.phase === 'S' && typeof PhaseS !== 'undefined') PhaseS.triggerEndingSSequence();
     }
 });

@@ -1,14 +1,17 @@
 // =========================================================
-// GESTOR DE AUDIO NIER (VOLUMEN MAESTRO AL 65% + SINTETIZADOR AVANZADO)
+// GESTOR DE AUDIO NIER (REPRODUCCIÓN NATIVA HTML5 COMPATIBLE CON
+// IFRAME/LOCAL + EFECTO SUMERGIDO "BUT IT REFUSED")
 // =========================================================
 const AudioManager = {
     ctx: null,
     enabled: true,
-    masterVolume: 0.65, // Reducción global al 65% de todo el audio
+    masterVolume: 0.65,
     bgmTrack: null,
+    currentBaseVol: 0.55,
     pendingBgmUrl: null,
     pendingBgmVol: 0.45,
     pendingBgmLoop: true,
+    muffleInterval: null,
     lastHitBossSfxTime: 0,
 
     init() {
@@ -33,7 +36,77 @@ const AudioManager = {
     getAudioPulse() {
         if (!this.enabled || !this.bgmTrack || this.bgmTrack.paused) return 0;
         const t = this.bgmTrack.currentTime || (performance.now() * 0.001);
-        return Math.pow(Math.sin(t * Math.PI * 2.3), 4) * 0.6;
+        const fastBeat = Math.pow(Math.sin(t * Math.PI * 2.45), 4);
+        const accent = Math.pow(Math.cos(t * Math.PI * 1.225), 6);
+        return Math.min(1.0, fastBeat * 0.55 + accent * 0.35);
+    },
+
+    getHighFreqSparkle() {
+        if (!this.enabled || !this.bgmTrack || this.bgmTrack.paused) return 0;
+        const t = this.bgmTrack.currentTime || (performance.now() * 0.001);
+        return Math.pow(Math.sin(t * Math.PI * 4.8), 2) * 0.65;
+    },
+
+    // Ahoga y ralentiza la canción cuando caes en Fase S SIN detener el MP3
+    muffleBgmForRefusal() {
+        if (!this.enabled || !this.bgmTrack) return;
+        this.init();
+        clearInterval(this.muffleInterval);
+        try {
+            this.bgmTrack.volume = this.scaleVol(this.currentBaseVol * 0.22);
+            this.bgmTrack.playbackRate = 0.76;
+
+            // Latido profundo subacuático sintetizado
+            this.beep(55, 0.32, 'sine', 0.16);
+            setTimeout(() => this.beep(46, 0.38, 'sine', 0.14), 230);
+            setTimeout(() => this.beep(55, 0.32, 'sine', 0.14), 950);
+            setTimeout(() => this.beep(46, 0.38, 'sine', 0.12), 1180);
+        } catch (e) {}
+    },
+
+    // Devuelve la canción al 100% con un acorde de resurrección
+    restoreBgmFromRefusal() {
+        if (!this.enabled || !this.bgmTrack) return;
+        this.init();
+        clearInterval(this.muffleInterval);
+        try {
+            this.bgmTrack.playbackRate = 1.0;
+            const targetVol = this.scaleVol(this.currentBaseVol);
+            let step = 0;
+            this.muffleInterval = setInterval(() => {
+                step++;
+                if (!this.bgmTrack) {
+                    clearInterval(this.muffleInterval);
+                    return;
+                }
+                const ratio = Math.min(1, step / 10);
+                this.bgmTrack.volume = targetVol * (0.22 + 0.78 * ratio);
+                if (ratio >= 1) clearInterval(this.muffleInterval);
+            }, 40);
+
+            if (this.ctx) {
+                const now = this.ctx.currentTime;
+                const subOsc = this.ctx.createOscillator();
+                const subGain = this.ctx.createGain();
+                subOsc.type = 'sine';
+                subOsc.frequency.setValueAtTime(55, now);
+                subOsc.frequency.exponentialRampToValueAtTime(115, now + 0.45);
+                subGain.gain.setValueAtTime(this.scaleVol(0.15), now);
+                subGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.65);
+                subOsc.connect(subGain);
+                subGain.connect(this.ctx.destination);
+                subOsc.start(now);
+                subOsc.stop(now + 0.68);
+            }
+
+            const chord = [523.25, 659.25, 783.99, 1046.5, 1318.5, 1567.98];
+            chord.forEach((f, idx) => {
+                setTimeout(() => {
+                    this.beep(f, 0.55, 'triangle', 0.055);
+                    this.beep(f * 1.5, 0.4, 'sine', 0.03);
+                }, idx * 42);
+            });
+        } catch (e) {}
     },
 
     toggleSound(buttonId = 'sound-btn') {
@@ -70,7 +143,6 @@ const AudioManager = {
         } catch (e) {}
     },
 
-    // --- NUEVOS SINTETIZADORES WEB AUDIO API ---
     waterDropSound() {
         if (!this.enabled) return;
         this.init();
@@ -88,8 +160,6 @@ const AudioManager = {
             gain.connect(this.ctx.destination);
             osc.start(now);
             osc.stop(now + 0.23);
-
-            // Eco armónico cristalino
             setTimeout(() => this.beep(2420, 0.18, 'sine', 0.03), 65);
         } catch (e) {}
     },
@@ -126,25 +196,20 @@ const AudioManager = {
             for (let i = 0; i < bufferSize; i++) {
                 data[i] = Math.random() * 2 - 1;
             }
-
             const noise = this.ctx.createBufferSource();
             noise.buffer = buffer;
-
             const filter = this.ctx.createBiquadFilter();
             filter.type = 'bandpass';
             filter.frequency.setValueAtTime(1100, now);
             filter.frequency.exponentialRampToValueAtTime(260, now + 0.24);
-
             const gain = this.ctx.createGain();
             gain.gain.setValueAtTime(this.scaleVol(0.09), now);
             gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.24);
-
             noise.connect(filter);
             filter.connect(gain);
             gain.connect(this.ctx.destination);
             noise.start(now);
             noise.stop(now + 0.25);
-
             this.beep(140, 0.22, 'sawtooth', 0.06);
         } catch (e) {}
     },
@@ -174,16 +239,14 @@ const AudioManager = {
         this.beep(1340, 0.14, 'square', 0.055);
         this.beep(1980, 0.22, 'triangle', 0.05);
         setTimeout(() => this.beep(2640, 0.18, 'sine', 0.04), 30);
-    
     },
-    // Sonido de temblor cuando la nave rota se niega a morir (Estilo Undertale)
+
     undertaleRefuseRumble() {
         for (let i = 0; i < 6; i++) {
             setTimeout(() => this.beep(95 + (i % 2) * 25, 0.05, 'square', 0.06), i * 65);
         }
     },
 
-    // Sonido clásico cuando los fragmentos se unen ("But it refused")
     undertaleRefuseHeal() {
         const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51];
         notes.forEach((n, idx) => {
@@ -191,8 +254,17 @@ const AudioManager = {
         });
     },
 
+    astralResonancePulseSound() {
+        if (!this.enabled) return;
+        const notes = [440, 659.25, 880, 1318.5, 1760];
+        notes.forEach((f, i) => {
+            setTimeout(() => this.beep(f, 0.38, 'sine', 0.055), i * 32);
+        });
+    },
+
     pitchDownStopBgm(durationMs = 1400) {
         if (!this.bgmTrack) return;
+        clearInterval(this.muffleInterval);
         const track = this.bgmTrack;
         const startVol = track.volume;
         const steps = 16;
@@ -324,6 +396,9 @@ const AudioManager = {
         this.pendingBgmUrl = trackUrl;
         this.pendingBgmVol = volume;
         this.pendingBgmLoop = loop;
+        this.currentBaseVol = volume;
+        clearInterval(this.muffleInterval);
+
         if (!this.enabled || !trackUrl) return;
         this.init();
         try {
@@ -334,7 +409,9 @@ const AudioManager = {
             const audio = new Audio(trackUrl);
             audio.volume = this.scaleVol(volume);
             audio.loop = loop;
+            audio.playbackRate = 1.0;
             this.bgmTrack = audio;
+
             const playPromise = audio.play();
             if (playPromise !== undefined) {
                 playPromise.catch(() => {
@@ -352,6 +429,7 @@ const AudioManager = {
     },
 
     stopBgm() {
+        clearInterval(this.muffleInterval);
         if (this.bgmTrack) {
             this.bgmTrack.pause();
             this.bgmTrack.currentTime = 0;

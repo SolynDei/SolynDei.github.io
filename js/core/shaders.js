@@ -1,4 +1,4 @@
-﻿// =========================================================
+// =========================================================
 // MOTOR WEBGL YORHA / BALATRO CON REACTVIDAD DE AUDIO E IMPACTO
 // =========================================================
 const VERTEX_SHADER_SRC = `
@@ -150,7 +150,7 @@ const BalatroEngine = {
 
     resize() {
         if (!this.canvas || !this.gl) return;
-        const scale = window.innerWidth <= 680 ? 0.5 : 0.75; // Escalado inteligente de DPI
+        const scale = window.innerWidth <= 920 ? 0.32 : 0.75; // Escalado inteligente de DPI
         this.canvas.width = Math.floor(window.innerWidth * scale);
         this.canvas.height = Math.floor(window.innerHeight * scale);
         this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);

@@ -1,5 +1,5 @@
 // =========================================================
-// CONTROLADOR MAESTRO DE LA FASE 3 (COLAPSO DEL VACÍO // HERO)
+// CONTROLADOR EXCLUSIVO DE LA FASE 3 (COLAPSO DEL VACÍO // HERO)
 // =========================================================
 const Phase3 = {
     cinematicPhase: 0,
@@ -9,11 +9,6 @@ const Phase3 = {
     virtualTime: 99.0,
     introStartTime: 0,
     activeSessionId: 0,
-    countdownTimes: [
-        { t: 141.2, txt: "1" }, { t: 142.0, txt: "2" },
-        { t: 142.8, txt: "1" }, { t: 143.4, txt: "2" },
-        { t: 144.0, txt: "3" }, { t: 144.6, txt: "4" }
-    ],
     phase3Beatmap: [
         119.4, 120.4, 121.4, 122.4, 123.4, 124.4, 125.4, 126.2,
         145.4, 146.6, 147.8, 149.0, 150.2, 151.4, 152.6,
@@ -29,7 +24,6 @@ const Phase3 = {
         document.body.classList.add('phase-3-active', 'cinema-wide-bars', 'combat-no-cursor');
 
         AudioManager.playAudio(BOSS_AUDIO_PATHS.vineBoom);
-        AudioManager.playAudio("audio/sfx/superattack.mp3", 0.5);
         if (typeof BalatroEngine !== 'undefined') {
             BalatroEngine.triggerHit(window.innerWidth / 2, window.innerHeight / 2, 1.8);
         }
@@ -95,13 +89,6 @@ const Phase3 = {
         }
         ctx.stroke();
         ctx.restore();
-
-        ctx.save();
-        ctx.fillStyle = '#dad4bb';
-        ctx.font = 'bold 14px "Share Tech Mono", monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText('// CAJA NEGRA YORHA: RESONANCIA DE MEMORIA FRAGMENTADA //', w / 2, h * 0.23);
-        ctx.restore();
     },
 
     update(dt) {
@@ -116,19 +103,14 @@ const Phase3 = {
         const playerHud = document.getElementById('player-hud');
         const darkness = document.getElementById('cinematic-darkness');
 
-        // Subtítulos MV reactivos al pulso de audio y palabras clave
         if (typeof P3_SUBTITLES !== 'undefined' && mvContainer) {
             const sub = P3_SUBTITLES.find(s => ct >= s.start && ct <= s.end);
             if (sub) {
                 if (this.currentSubText !== sub.text) {
                     this.currentSubText = sub.text;
                     mvContainer.innerHTML = `<span class="mv-text-beat" id="active-mv-sub" data-text="${sub.text}">${sub.text}</span>`;
-
-                    // Iluminación y onda WebGL en palabras clave de la canción
-                    if (/Hero|Stand up|Uno|Who am I/i.test(sub.text)) {
-                        if (typeof BalatroEngine !== 'undefined') {
-                            BalatroEngine.triggerHit(window.innerWidth / 2, window.innerHeight / 2, 1.4);
-                        }
+                    if (/Hero|Stand up|Uno|Who am I/i.test(sub.text) && typeof BalatroEngine !== 'undefined') {
+                        BalatroEngine.triggerHit(window.innerWidth / 2, window.innerHeight / 2, 1.4);
                     }
                 }
                 const subEl = document.getElementById('active-mv-sub');
@@ -200,43 +182,18 @@ const Phase3 = {
         } else if (this.cinematicPhase === 4 && ct >= 141.0) {
             this.cinematicPhase = 5;
             if (darkness) darkness.classList.remove('active');
-        }
-
-        if (this.cinematicPhase >= 4 && this.cinematicPhase <= 5) {
-            const flash = this.countdownTimes.find(c => ct >= c.t && ct < c.t + 0.3 && this.lastCountdown !== c.t);
-            if (flash) {
-                this.lastCountdown = flash.t;
-                const el = document.getElementById('countdown-flash');
-                if (el) {
-                    el.textContent = flash.txt;
-                    el.classList.remove('show');
-                    void el.offsetWidth;
-                    el.classList.add('show');
-                }
-            }
-        }
-
-        if (this.cinematicPhase === 5 && ct >= 145.0) {
+        } else if (this.cinematicPhase === 5 && ct >= 145.0) {
             this.cinematicPhase = 6;
-            document.getElementById('countdown-flash')?.classList.remove('show');
             BossState.triggerAnimeImpactFrame();
             if (typeof SubphaseOrbitalFall !== 'undefined') SubphaseOrbitalFall.enter();
         } else if (this.cinematicPhase === 6 && ct >= 153.8) {
             this.cinematicPhase = 7;
-            const heroText = document.getElementById('hero-text');
-            if (heroText) {
-                heroText.classList.remove('show');
-                void heroText.offsetWidth;
-                heroText.classList.add('show');
-                setTimeout(() => heroText.classList.remove('show'), 3000);
-            }
             document.getElementById('plastic-horse-overlay')?.classList.add('show');
             document.getElementById('carton-sword-overlay')?.classList.add('show');
             BossState.startBossTackle();
         } else if (this.cinematicPhase === 7 && ct >= 164.0) {
             this.cinematicPhase = 8;
             BossState.triggerAnimeImpactFrame();
-            BossState.showSpecialCutin("CLÍMAX // ESPADAS DEL JUICIO", BOSS_SPRITES.yandere);
             if (typeof SubphaseOrbitalFall !== 'undefined') SubphaseOrbitalFall.exit();
             if (typeof SubphaseSurvival !== 'undefined') SubphaseSurvival.enter();
         } else if (this.cinematicPhase === 8) {

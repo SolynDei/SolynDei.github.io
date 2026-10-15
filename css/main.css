@@ -566,3 +566,64 @@ body.fallen-mode .secret-message { display: block; }
     .link-btn { padding: 5px 8px; font-size: 0.68rem; }
     .tab-btn { font-size: 0.52rem; padding: 4px 1px; }
 }
+/* TEMA DESBLOQUEABLE FINAL [S]: SANTUARIO BLANCO SERENO & FLORES LUNARES GLOW */
+body.sanctuary-s-theme {
+    --bg-color: #f4f2ec;
+    --text-main: #2c2a26;
+    --text-dim: #6e6a5e;
+    --accent-color: #b58d28;
+    background: radial-gradient(circle at 50% 25%, #ffffff 0%, #eae6dc 55%, #dcd6c8 100%) !important;
+    color: #2c2a26 !important;
+}
+body.sanctuary-s-theme #balatro-canvas {
+    opacity: 0.18 !important;
+    mix-blend-mode: multiply !important;
+}
+body.sanctuary-s-theme .hud-container {
+    background: rgba(255, 255, 255, 0.86) !important;
+    border: 1px solid rgba(181, 141, 40, 0.55) !important;
+    box-shadow: 0 10px 60px rgba(255, 255, 255, 0.95), 0 0 35px rgba(212, 175, 55, 0.28), inset 0 0 25px rgba(255, 255, 255, 0.8) !important;
+    backdrop-filter: blur(16px) !important;
+}
+body.sanctuary-s-theme .hud-container::before,
+body.sanctuary-s-theme .hud-container::after,
+body.sanctuary-s-theme .hud-corner-tr,
+body.sanctuary-s-theme .hud-corner-bl {
+    border-color: #b58d28 !important;
+}
+body.sanctuary-s-theme .avatar {
+    border: 2px solid #d4af37 !important;
+    filter: grayscale(0%) contrast(102%) brightness(1.06) !important;
+    box-shadow: 0 0 32px rgba(255, 255, 255, 0.95), 0 0 18px rgba(212, 175, 55, 0.55) !important;
+}
+body.sanctuary-s-theme .shiny-text {
+    background: linear-gradient(120deg, #2c2a26 0%, #b58d28 45%, #2c2a26 85%) !important;
+    background-size: 200% auto !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+}
+body.sanctuary-s-theme .tab-btn,
+body.sanctuary-s-theme .spotlight-card,
+body.sanctuary-s-theme .faq-item,
+body.sanctuary-s-theme .lol-dossier,
+body.sanctuary-s-theme .rp-container {
+    background: rgba(255, 255, 255, 0.72) !important;
+    border-color: rgba(181, 141, 40, 0.38) !important;
+    color: #2c2a26 !important;
+}
+body.sanctuary-s-theme .tab-btn.active,
+body.sanctuary-s-theme .tab-btn:hover,
+body.sanctuary-s-theme .link-btn:hover {
+    background: rgba(212, 175, 55, 0.18) !important;
+    border-color: #b58d28 !important;
+    color: #000000 !important;
+    box-shadow: 0 0 18px rgba(212, 175, 55, 0.25) !important;
+}
+body.sanctuary-s-theme .terminal-module {
+    background: rgba(245, 243, 238, 0.95) !important;
+    border-color: rgba(181, 141, 40, 0.45) !important;
+}
+body.sanctuary-s-theme .danmaku-item {
+    color: #8c7332 !important;
+    opacity: 0.35 !important;
+}

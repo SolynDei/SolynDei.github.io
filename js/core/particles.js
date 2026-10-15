@@ -1,9 +1,13 @@
+const IS_MOBILE_DEVICE = window.innerWidth <= 920 || ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+
 class PixelParticle {
     constructor(x, y, col, vx, vy, decay = 0.025, size = 4) {
-        this.x = x; this.y = y; this.size = size || (Math.random() * 4 + 2);
-        this.vx = vx !== undefined ? vx : (Math.random() - 0.5) * 14;
-        this.vy = vy !== undefined ? vy : (Math.random() - 0.5) * 14;
-        this.life = 1.0; this.decay = decay || (Math.random() * 0.03 + 0.015); this.color = col;
+        const scale = IS_MOBILE_DEVICE ? 0.6 : 1.0;
+        this.x = x; this.y = y; this.size = (size || (Math.random() * 4 + 2)) * scale;
+        this.vx = (vx !== undefined ? vx : (Math.random() - 0.5) * 14) * scale;
+        this.vy = (vy !== undefined ? vy : (Math.random() - 0.5) * 14) * scale;
+        this.life = 1.0; this.decay = (decay || (Math.random() * 0.03 + 0.015)) * (IS_MOBILE_DEVICE ? 1.4 : 1.0);
+        this.color = col;
     }
     update() { this.x += this.vx; this.y += this.vy; this.life -= this.decay; }
     draw(ctx) {
@@ -17,9 +21,10 @@ class PixelParticle {
 
 class WhitePetalEntity {
     constructor() {
+        const scale = IS_MOBILE_DEVICE ? 0.65 : 1.0;
         this.x = Math.random() * window.innerWidth;
         this.y = Math.random() * -window.innerHeight;
-        this.size = Math.random() * 4 + 3;
+        this.size = (Math.random() * 4 + 3) * scale;
         this.vx = Math.sin(Math.random() * 3) * 0.8;
         this.vy = Math.random() * 1.5 + 1.0;
         this.rotation = Math.random() * Math.PI * 2;
@@ -49,26 +54,78 @@ class WhitePetalEntity {
     }
 }
 
+class LunarFlowerEntity {
+    constructor() {
+        const scale = IS_MOBILE_DEVICE ? 0.65 : 1.0;
+        this.x = Math.random() * window.innerWidth;
+        this.y = Math.random() * window.innerHeight;
+        this.size = (Math.random() * 7 + 9) * scale;
+        this.vx = (Math.random() - 0.5) * 0.35;
+        this.vy = -Math.random() * 0.45 - 0.15;
+        this.rotation = Math.random() * Math.PI * 2;
+        this.vRot = (Math.random() - 0.5) * 0.012;
+        this.pulse = Math.random() * Math.PI * 2;
+    }
+    update() {
+        this.pulse += 0.035;
+        this.x += this.vx + Math.sin(this.pulse * 0.7) * 0.25;
+        this.y += this.vy;
+        this.rotation += this.vRot;
+        if (this.y < -40) {
+            this.y = window.innerHeight + 35;
+            this.x = Math.random() * window.innerWidth;
+        }
+    }
+    draw(ctx) {
+        const glowAlpha = 0.55 + Math.sin(this.pulse) * 0.25;
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.rotation);
+        if (!IS_MOBILE_DEVICE) {
+            ctx.shadowColor = '#ffffff';
+            ctx.shadowBlur = 16;
+        }
+        for (let i = 0; i < 5; i++) {
+            ctx.save();
+            ctx.rotate((Math.PI * 2 * i) / 5);
+            ctx.fillStyle = `rgba(255, 255, 255, ${glowAlpha})`;
+            ctx.strokeStyle = 'rgba(212, 175, 55, 0.55)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.ellipse(0, -this.size * 0.55, this.size * 0.28, this.size * 0.62, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            ctx.restore();
+        }
+        ctx.fillStyle = '#fff6cc';
+        ctx.beginPath();
+        ctx.arc(0, 0, this.size * 0.2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+    }
+}
+
 class HolySwordEntity {
     constructor(x) { this.x = x; this.y = -100; this.vy = 28; this.done = false; }
     update() {
         this.y += this.vy;
         if (this.y > window.innerHeight * 0.55) {
-            this.done = true; ParticleEngine.explode(this.x, this.y, '#ffffff', 40);
+            this.done = true; ParticleEngine.explode(this.x, this.y, '#ffffff', 30);
             if (typeof ScreenUtils !== 'undefined') ScreenUtils.triggerShake('main-hud');
             if (typeof AudioManager !== 'undefined') AudioManager.swordImpactSound();
         }
     }
     draw(ctx) {
         ctx.save();
-        ctx.fillStyle = '#fff'; ctx.shadowColor = '#dad4bb'; ctx.shadowBlur = 18;
+        ctx.fillStyle = '#fff';
+        if (!IS_MOBILE_DEVICE) { ctx.shadowColor = '#dad4bb'; ctx.shadowBlur = 16; }
         ctx.fillRect(this.x - 3, this.y, 6, 80); ctx.fillRect(this.x - 14, this.y + 20, 28, 6);
         ctx.restore();
     }
 }
 
 const ParticleEngine = {
-    canvas: null, ctx: null, particles: [], swords: [], petals: [],
+    canvas: null, ctx: null, particles: [], swords: [], petals: [], lunarFlowers: [],
     running: true, animId: null, customOverlayRender: null,
 
     init(canvasId = 'particle-canvas') {
@@ -104,13 +161,19 @@ const ParticleEngine = {
 
     startPetalRain(count = 35) {
         this.petals = [];
-        const total = window.innerWidth <= 680 ? Math.floor(count / 2) : count;
+        const total = IS_MOBILE_DEVICE ? Math.floor(count * 0.35) : count;
         for (let i = 0; i < total; i++) this.petals.push(new WhitePetalEntity());
+    },
+
+    startLunarFlowerField(count = 24) {
+        this.lunarFlowers = [];
+        const total = IS_MOBILE_DEVICE ? Math.floor(count * 0.35) : count;
+        for (let i = 0; i < total; i++) this.lunarFlowers.push(new LunarFlowerEntity());
     },
 
     explode(x, y, color = '#dad4bb', count = 18) {
         if (!this.running) return;
-        const finalCount = window.innerWidth <= 680 ? Math.min(count, 6) : count;
+        const finalCount = IS_MOBILE_DEVICE ? Math.min(count, 4) : count;
         for (let i = 0; i < finalCount; i++) this.particles.push(new PixelParticle(x, y, color));
     },
 
@@ -121,7 +184,7 @@ const ParticleEngine = {
 
     rainBlessing() {
         if (!this.running) return;
-        const limit = window.innerWidth <= 680 ? 15 : 45;
+        const limit = IS_MOBILE_DEVICE ? 10 : 40;
         for (let i = 0; i < limit; i++) {
             this.particles.push(new PixelParticle(Math.random() * window.innerWidth, Math.random() * -200, '#ffffff', (Math.random() - 0.5) * 1.5, Math.random() * 3 + 2, 0.006, 3));
         }
@@ -129,12 +192,15 @@ const ParticleEngine = {
 
     animate() {
         if (!this.running) return;
-        // Programar siempre el siguiente fotograma primero para que ningún error detenga el motor
         this.animId = requestAnimationFrame(() => this.animate());
 
         if (this.ctx && this.canvas) {
             try {
                 this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                for (let i = this.lunarFlowers.length - 1; i >= 0; i--) {
+                    this.lunarFlowers[i].update();
+                    this.lunarFlowers[i].draw(this.ctx);
+                }
                 for (let i = this.petals.length - 1; i >= 0; i--) {
                     this.petals[i].update();
                     this.petals[i].draw(this.ctx);

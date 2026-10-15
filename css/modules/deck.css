@@ -1,5 +1,5 @@
 /* =========================================================
-   SISTEMA DE SALMOS: CARTAS SELLADAS BOCA ABAJO (TAROT YORHA)
+   SISTEMA DE SALMOS ACUMULABLES (3 RANURAS + REROLL INDIVIDUAL)
 ========================================================= */
 .quotes-container {
     display: flex;
@@ -7,20 +7,20 @@
     align-items: center;
     justify-content: space-between;
     height: 100%;
-    padding: 8px 0;
-    gap: 10px;
+    padding: 6px 0;
+    gap: 8px;
 }
 
 .psalms-status-banner {
     font-family: var(--font-mono);
-    font-size: 0.74rem;
+    font-size: 0.72rem;
     color: var(--accent-color);
     background: rgba(218, 212, 187, 0.07);
-    border: 1px solid rgba(218, 212, 187, 0.3);
-    padding: 6px 14px;
+    border: 1px solid rgba(218, 212, 187, 0.35);
+    padding: 6px 12px;
     width: 100%;
     text-align: center;
-    letter-spacing: 1px;
+    letter-spacing: 0.8px;
 }
 
 .deck-hand-wrapper {
@@ -35,17 +35,25 @@
 .card-fan-container {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 14px;
+    gap: 12px;
     width: 100%;
-    max-width: 640px;
+    max-width: 660px;
     justify-items: center;
+    align-items: stretch;
+}
+
+.tarot-column {
+    display: flex;
+    flex-direction: column;
     align-items: center;
+    gap: 6px;
+    width: 100%;
+    max-width: 190px;
 }
 
 .tarot-card-slot {
     width: 100%;
-    max-width: 185px;
-    height: 230px;
+    height: 215px;
     perspective: 900px;
     cursor: pointer;
 }
@@ -58,20 +66,12 @@
     transition: transform 0.65s cubic-bezier(0.2, 0.85, 0.3, 1.15), box-shadow 0.3s ease;
 }
 
-.tarot-card-slot:hover:not(.locked) .tarot-card-inner:not(.is-flipped) {
-    transform: translateY(-8px) scale(1.03);
+.tarot-card-slot:hover .tarot-card-inner:not(.is-flipped) {
+    transform: translateY(-6px) scale(1.02);
 }
 
 .tarot-card-inner.is-flipped {
-    transform: rotateY(180deg) scale(1.04);
-}
-
-.tarot-card-slot.discarded {
-    opacity: 0.18;
-    filter: grayscale(100%);
-    pointer-events: none;
-    transform: scale(0.92);
-    transition: all 0.4s ease;
+    transform: rotateY(180deg);
 }
 
 .tarot-face {
@@ -80,7 +80,7 @@
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
     border-radius: 6px;
-    padding: 12px 10px;
+    padding: 10px 8px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -90,7 +90,6 @@
     background: #08080a;
 }
 
-/* DORSO BOCA ABAJO */
 .tarot-back {
     border: 1px solid rgba(218, 212, 187, 0.55);
     background:
@@ -101,109 +100,86 @@
 }
 
 .tarot-back-ring {
-    width: 68px;
-    height: 68px;
+    width: 60px;
+    height: 60px;
     border: 1px dashed rgba(218, 212, 187, 0.6);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.5rem;
+    font-size: 1.4rem;
     color: var(--text-main);
     animation: rotCW 18s linear infinite;
 }
 
 .tarot-back-label {
     font-family: var(--font-angel);
-    font-size: 0.72rem;
+    font-size: 0.7rem;
     color: var(--text-main);
     letter-spacing: 2px;
 }
 
-/* FRENTE REVELADO */
 .tarot-front {
     transform: rotateY(180deg);
 }
+.tarot-front.tier-silver { border: 1px solid #dad4bb; box-shadow: 0 0 20px rgba(218, 212, 187, 0.25); }
+.tarot-front.tier-gold { border: 1px solid #ffd700; box-shadow: 0 0 22px rgba(255, 215, 0, 0.35); }
+.tarot-front.tier-crimson { border: 1px solid #ff3333; box-shadow: 0 0 22px rgba(255, 51, 51, 0.4); }
 
-.tarot-front.tier-silver {
-    border: 1px solid #dad4bb;
-    box-shadow: 0 0 22px rgba(218, 212, 187, 0.25);
-}
-.tarot-front.tier-gold {
-    border: 1px solid #ffd700;
-    box-shadow: 0 0 25px rgba(255, 215, 0, 0.35);
-}
-.tarot-front.tier-crimson {
-    border: 1px solid #ff3333;
-    box-shadow: 0 0 25px rgba(255, 51, 51, 0.4);
-}
-
-.card-top-glyph { font-size: 1.1rem; }
+.card-top-glyph { font-size: 1rem; }
 .tarot-front.tier-gold .card-top-glyph, .tarot-front.tier-gold .card-title { color: #ffd700; }
 .tarot-front.tier-crimson .card-top-glyph, .tarot-front.tier-crimson .card-title { color: #ff4444; }
 
-.card-title { font-family: var(--font-angel); font-size: 0.75rem; font-weight: bold; letter-spacing: 1px; }
-.card-tag { font-size: 0.58rem; color: var(--text-dim); }
-.card-body { font-size: 0.66rem; color: #f7f5ed; font-style: italic; line-height: 1.35; }
+.card-title { font-family: var(--font-angel); font-size: 0.72rem; font-weight: bold; letter-spacing: 1px; }
+.card-tag { font-size: 0.55rem; color: var(--text-dim); }
+.card-body { font-size: 0.62rem; color: #f7f5ed; font-style: italic; line-height: 1.3; }
 .card-buff-badge {
-    font-size: 0.56rem;
-    padding: 3px 6px;
+    font-size: 0.54rem;
+    padding: 3px 5px;
     background: rgba(255, 255, 255, 0.07);
     border: 1px solid rgba(218, 212, 187, 0.35);
     color: #ffd700;
     width: 100%;
 }
 
-/* BOTONES DE DECISIÓN: CONSERVAR O DESCARTAR */
-.psalm-decision-bar {
-    display: none;
-    gap: 12px;
-    justify-content: center;
+/* Botón individual para rerollear 1 Salmo específico */
+.single-reroll-btn {
     width: 100%;
-    margin-top: 4px;
-}
-.psalm-decision-bar.active {
-    display: flex;
-    animation: fadeIn 0.25s ease;
-}
-
-.psalm-action-btn {
     background: rgba(218, 212, 187, 0.08);
-    border: 1px solid var(--text-main);
+    border: 1px solid rgba(218, 212, 187, 0.45);
     color: var(--text-main);
     font-family: var(--font-mono);
-    font-size: 0.72rem;
-    padding: 7px 16px;
+    font-size: 0.58rem;
+    padding: 5px 4px;
     cursor: pointer;
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
     transition: all 0.2s ease;
 }
-.psalm-action-btn.keep { border-color: #ffd700; color: #ffd700; }
-.psalm-action-btn.keep:hover { background: #ffd700; color: #000; }
-.psalm-action-btn.discard { border-color: #ff4444; color: #ff4444; }
-.psalm-action-btn.discard:hover { background: #ff4444; color: #fff; }
+.single-reroll-btn:hover:not(:disabled) {
+    background: #e5c158;
+    color: #09090b;
+    border-color: #ffffff;
+}
+.single-reroll-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
 
 .reroll-btn {
     background: rgba(218, 212, 187, 0.06);
     border: 1px solid var(--text-dim);
     color: var(--text-main);
     font-family: var(--font-mono);
-    font-size: 0.72rem;
-    padding: 8px 18px;
-    letter-spacing: 1.5px;
+    font-size: 0.7rem;
+    padding: 7px 16px;
+    letter-spacing: 1.2px;
     width: 100%;
-    max-width: 420px;
-}
-.reroll-btn:disabled {
-    opacity: 0.45;
-    cursor: not-allowed;
-    border-color: #444;
-    color: #777;
+    max-width: 460px;
 }
 
 @media (max-width: 680px) {
-    .card-fan-container { gap: 8px; }
-    .tarot-card-slot { height: 175px; }
-    .card-body { font-size: 0.54rem; line-height: 1.2; }
-    .card-title { font-size: 0.62rem; }
+    .card-fan-container { gap: 6px; }
+    .tarot-card-slot { height: 165px; }
+    .card-body { font-size: 0.52rem; line-height: 1.15; }
+    .card-title { font-size: 0.58rem; }
 }

@@ -1,45 +1,25 @@
-// =========================================================
-// CONTROLADOR DE SALMOS BOCA ABAJO (SELECCIÓN Y BLOQUEO POR COMBATE)
-// =========================================================
+// ============================================================================
+// CONTROLADOR DE SALMOS ACUMULABLES (LOS 3 SE CONSERVAN + 3 REROLLS INDIVIDUALES)
+// ============================================================================
 const DeckController = {
     currentCards: [],
-    flippedIndex: null,
+    rerollsLeft: 3,
 
     getBuffDescription(tier) {
-        if (tier === 'crimson') return 'CADENCIA DE FUEGO +35%';
-        if (tier === 'gold') return '+1 CORAZÓN MÁXIMO EN COMBATE';
-        return 'RECARGA DE ESCUDO Y RAILGUN +30%';
+        if (tier === 'crimson') return '+22% CADENCIA DE FUEGO';
+        if (tier === 'gold') return '+1 CORAZÓN MÁXIMO';
+        return '+28% CARGA ESCUDO/RAILGUN';
     },
 
-    renderVerses() {
-        const deck = document.getElementById('quotes-deck');
-        const quotesContainer = document.querySelector('.quotes-container');
-        if (!deck || !quotesContainer) return;
-
-        // Crear banner de estado y barra de decisión si no existen
-        let banner = document.getElementById('psalms-status-banner');
-        if (!banner) {
-            banner = document.createElement('div');
-            banner.id = 'psalms-status-banner';
-            banner.className = 'psalms-status-banner';
-            quotesContainer.insertBefore(banner, quotesContainer.firstChild);
+    initHandState() {
+        const savedRerolls = localStorage.getItem('codex_psalms_rerolls_left');
+        if (savedRerolls !== null) {
+            this.rerollsLeft = parseInt(savedRerolls, 10);
+            if (isNaN(this.rerollsLeft)) this.rerollsLeft = 3;
+        } else {
+            this.rerollsLeft = 3;
+            localStorage.setItem('codex_psalms_rerolls_left', '3');
         }
-
-        let decisionBar = document.getElementById('psalm-decision-bar');
-        if (!decisionBar) {
-            decisionBar = document.createElement('div');
-            decisionBar.id = 'psalm-decision-bar';
-            decisionBar.className = 'psalm-decision-bar';
-            decisionBar.innerHTML = `
-                <button type="button" class="psalm-action-btn keep" id="btn-keep-psalm">[ ✦ CONSERVAR SALMO ]</button>
-                <button type="button" class="psalm-action-btn discard" id="btn-discard-psalm">[ ✕ DESCARTAR ]</button>
-            `;
-            quotesContainer.insertBefore(decisionBar, quotesContainer.querySelector('.deck-controls'));
-
-            document.getElementById('btn-keep-psalm').onclick = () => this.keepCurrentCard();
-            document.getElementById('btn-discard-psalm').onclick = () => this.discardCurrentCard();
-        }
-        decisionBar.classList.remove('active');
 
         const savedHand = localStorage.getItem('codex_psalms_hand');
         if (savedHand) {
@@ -48,164 +28,176 @@ const DeckController = {
 
         if (!this.currentCards || this.currentCards.length !== 3) {
             const shuffled = [...CODEX_DATA.verses].sort(() => 0.5 - Math.random()).slice(0, 3);
-            this.currentCards = shuffled.map(v => ({ ...v, state: 'facedown' })); // 'facedown', 'kept', 'discarded'
+            this.currentCards = shuffled.map(v => ({ ...v, state: 'facedown' })); // 'facedown' o 'kept'
             localStorage.setItem('codex_psalms_hand', JSON.stringify(this.currentCards));
         }
 
-        this.flippedIndex = null;
-        deck.innerHTML = '';
+        this.syncAccumulatedBuffs();
+    },
 
-        const numerals = ['SELLO I', 'SELLO II', 'SELLO III'];
-        const hasKeptCard = this.currentCards.some(c => c.state === 'kept');
-        const allResolved = this.currentCards.every(c => c.state !== 'facedown');
+    syncAccumulatedBuffs() {
+        const keptCards = this.currentCards.filter(c => c.state === 'kept');
+        const tiers = keptCards.map(c => c.tier);
+        localStorage.setItem('codex_active_blessings_list', JSON.stringify(tiers));
+        if (tiers.length > 0) {
+            localStorage.setItem('codex_active_blessing', tiers[0]);
+        } else {
+            localStorage.removeItem('codex_active_blessing');
+        }
+    },
 
-        if (hasKeptCard || allResolved) {
-            localStorage.setItem('codex_psalms_locked', 'true');
+    renderVerses() {
+        const deck = document.getElementById('quotes-deck');
+        const quotesContainer = document.querySelector('.quotes-container');
+        if (!deck || !quotesContainer) return;
+
+        this.initHandState();
+
+        let banner = document.getElementById('psalms-status-banner');
+        if (!banner) {
+            banner = document.createElement('div');
+            banner.id = 'psalms-status-banner';
+            banner.className = 'psalms-status-banner';
+            quotesContainer.insertBefore(banner, quotesContainer.firstChild);
         }
 
-        this.currentCards.forEach((v, idx) => {
-            const slot = document.createElement('div');
-            slot.className = `tarot-card-slot destructible ${v.state === 'discarded' ? 'discarded' : ''} ${(hasKeptCard || v.state !== 'facedown') ? 'locked' : ''}`;
-            const glyph = v.tier === 'crimson' ? '⚔' : (v.tier === 'gold' ? '✦' : '❖');
-            const isFlipped = v.state === 'kept';
+        // Eliminar barra vieja de descartar si existía
+        document.getElementById('psalm-decision-bar')?.remove();
 
-            slot.innerHTML = `
-                <div class="tarot-card-inner ${isFlipped ? 'is-flipped' : ''}" id="tarot-inner-${idx}">
-                    <div class="tarot-face tarot-back">
-                        <div style="font-size:0.55rem; color:var(--text-dim);">[ ARCANO SACRO ]</div>
-                        <div class="tarot-back-ring">❖</div>
-                        <div class="tarot-back-label">${numerals[idx]}</div>
-                    </div>
-                    <div class="tarot-face tarot-front tier-${v.tier}">
-                        <div class="card-top-glyph">${glyph}</div>
-                        <div class="card-title">${v.title}</div>
-                        <div class="card-tag">${v.tag}</div>
-                        <div class="card-body">${v.body}</div>
-                        <div class="card-buff-badge">${this.getBuffDescription(v.tier)}</div>
+        deck.innerHTML = '';
+        const numerals = ['SELLO I', 'SELLO II', 'SELLO III'];
+
+        this.currentCards.forEach((v, idx) => {
+            const col = document.createElement('div');
+            col.className = 'tarot-column destructible';
+
+            const isKept = v.state === 'kept';
+            const glyph = v.tier === 'crimson' ? '⚔' : (v.tier === 'gold' ? '✦' : '❖');
+
+            col.innerHTML = `
+                <div class="tarot-card-slot" id="tarot-slot-${idx}">
+                    <div class="tarot-card-inner ${isKept ? 'is-flipped' : ''}" id="tarot-inner-${idx}">
+                        <div class="tarot-face tarot-back">
+                            <div style="font-size:0.55rem; color:var(--text-dim);">[ TOCAR PARA REVELAR ]</div>
+                            <div class="tarot-back-ring">❖</div>
+                            <div class="tarot-back-label">${numerals[idx]}</div>
+                        </div>
+                        <div class="tarot-face tarot-front tier-${v.tier}">
+                            <div class="card-top-glyph">${glyph}</div>
+                            <div class="card-title">${v.title}</div>
+                            <div class="card-tag">${v.tag}</div>
+                            <div class="card-body">${v.body}</div>
+                            <div class="card-buff-badge">${this.getBuffDescription(v.tier)}</div>
+                        </div>
                     </div>
                 </div>
+                <button type="button" class="single-reroll-btn" id="reroll-single-${idx}" ${this.rerollsLeft <= 0 ? 'disabled' : ''}>
+                    [ ↻ REROLL SALMO (${this.rerollsLeft}) ]
+                </button>
             `;
 
-            slot.addEventListener('click', () => {
+            col.querySelector(`#tarot-slot-${idx}`).addEventListener('click', () => {
                 if (window._cinematicActive || window._bossActive) return;
-                this.flipCard(idx);
+                this.revealAndKeepCard(idx);
             });
 
-            deck.appendChild(slot);
+            col.querySelector(`#reroll-single-${idx}`).addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (window._cinematicActive || window._bossActive) return;
+                this.rerollSingleCard(idx);
+            });
+
+            deck.appendChild(col);
         });
 
         this.updateStatusUI();
     },
 
-    flipCard(idx) {
+    // REGLA 8: Al sacar una carta te quedas con ella y se acumulan las 3 sin descartarse
+    revealAndKeepCard(idx) {
         const card = this.currentCards[idx];
-        if (!card || card.state !== 'facedown') return;
-        if (this.currentCards.some(c => c.state === 'kept')) return;
-        if (this.flippedIndex !== null && this.flippedIndex !== idx) return;
+        if (!card || card.state === 'kept') return;
 
-        this.flippedIndex = idx;
+        card.state = 'kept';
+        localStorage.setItem('codex_psalms_hand', JSON.stringify(this.currentCards));
+        this.syncAccumulatedBuffs();
+
         const inner = document.getElementById(`tarot-inner-${idx}`);
         if (inner) inner.classList.add('is-flipped');
 
-        AudioManager.cardSlideSound();
-        document.getElementById('psalm-decision-bar')?.classList.add('active');
-
-        const banner = document.getElementById('psalms-status-banner');
-        if (banner) {
-            banner.innerHTML = `REVELADO: <b>${card.title}</b> (${this.getBuffDescription(card.tier)}) — ¿Conservar o descartar?`;
-        }
-    },
-
-    keepCurrentCard() {
-        if (this.flippedIndex === null) return;
-        const idx = this.flippedIndex;
-        const card = this.currentCards[idx];
-        card.state = 'kept';
-
-        localStorage.setItem('codex_active_blessing', card.tier);
-        localStorage.setItem('codex_active_blessing_title', card.title);
-        localStorage.setItem('codex_psalms_hand', JSON.stringify(this.currentCards));
-        localStorage.setItem('codex_psalms_locked', 'true');
-
         AudioManager.playCardJingle(card.tier);
-        document.getElementById('psalm-decision-bar')?.classList.remove('active');
-
-        DialogueSystem.show({
-            text: `Has sellado el pacto con ${card.title}: [${this.getBuffDescription(card.tier)}]. Te acompañará en el próximo combate.`,
-            speaker: "SACRO // REGISTRO",
-            tone: card.tier === 'crimson' ? 'angry' : 'mid',
-            autoHideTime: 3200
-        });
-
-        this.flippedIndex = null;
-        this.renderVerses();
+        this.updateStatusUI();
     },
 
-    discardCurrentCard() {
-        if (this.flippedIndex === null) return;
-        const idx = this.flippedIndex;
-        const card = this.currentCards[idx];
-        card.state = 'discarded';
+    // REGLA 9: Rerollear 1 Salmo específico por otro (Tienes 3 rerolls después de cada bossfight)
+    rerollSingleCard(idx) {
+        if (this.rerollsLeft <= 0) {
+            AudioManager.beep(180, 0.15, 'sawtooth');
+            return;
+        }
 
+        const currentTitles = this.currentCards.map(c => c.title);
+        const pool = CODEX_DATA.verses.filter(v => !currentTitles.includes(v.title));
+        const replacementPool = pool.length > 0 ? pool : CODEX_DATA.verses;
+        const newVerse = replacementPool[Math.floor(Math.random() * replacementPool.length)];
+
+        this.rerollsLeft = Math.max(0, this.rerollsLeft - 1);
+        localStorage.setItem('codex_psalms_rerolls_left', this.rerollsLeft.toString());
+
+        // La nueva carta entra ya revelada y acumulada
+        this.currentCards[idx] = { ...newVerse, state: 'kept' };
         localStorage.setItem('codex_psalms_hand', JSON.stringify(this.currentCards));
-        AudioManager.beep(220, 0.12, 'sawtooth');
-        document.getElementById('psalm-decision-bar')?.classList.remove('active');
+        this.syncAccumulatedBuffs();
 
-        this.flippedIndex = null;
+        AudioManager.cardSlideSound();
+        AudioManager.playCardJingle(newVerse.tier);
         this.renderVerses();
     },
 
     updateStatusUI() {
         const banner = document.getElementById('psalms-status-banner');
-        const rerollBtn = document.querySelector('.reroll-btn');
-        const isLocked = localStorage.getItem('codex_psalms_locked') === 'true';
-        const activeTier = localStorage.getItem('codex_active_blessing');
-        const activeTitle = localStorage.getItem('codex_active_blessing_title');
+        const mainBtn = document.querySelector('.reroll-btn');
+        const kept = this.currentCards.filter(c => c.state === 'kept');
 
         if (banner) {
-            if (activeTier && activeTitle) {
-                banner.innerHTML = `BENDICIÓN ACTIVA: <b>${activeTitle}</b> [${this.getBuffDescription(activeTier)}]`;
-            } else if (isLocked) {
-                banner.textContent = "MAZO AGOTADO // ENFRENTA A SAPHYNIEL PARA RENOVAR LOS SELLOS";
+            if (kept.length === 0) {
+                banner.innerHTML = `REVELA TUS 3 CARTAS PARA ACUMULAR SUS BENDICIONES // REROLLS DISPONIBLES: <b>${this.rerollsLeft}/3</b>`;
             } else {
-                banner.textContent = "ELIGE UNA CARTA SELLADA BOCA ABAJO PARA REVELAR TU SALMO";
+                const summary = kept.map(k => `<b>${k.title}</b> (${this.getBuffDescription(k.tier)})`).join(' + ');
+                banner.innerHTML = `SALMOS ACUMULADOS [${kept.length}/3]: ${summary}`;
             }
         }
 
-        if (rerollBtn) {
-            if (isLocked) {
-                rerollBtn.disabled = true;
-                rerollBtn.textContent = "[ 🔒 BLOQUEADO HASTA DESPUÉS DEL COMBATE ]";
+        if (mainBtn) {
+            const allKept = kept.length === 3;
+            if (!allKept) {
+                mainBtn.disabled = false;
+                mainBtn.textContent = `[ ❖ REVELAR Y EQUIPAR LOS 3 SALMOS (${this.rerollsLeft} REROLLS DISP.) ]`;
             } else {
-                rerollBtn.disabled = false;
-                rerollBtn.textContent = "[ ❖ BARAJAR NUEVOS SELLOS ]";
+                mainBtn.disabled = true;
+                mainBtn.textContent = `[ ✦ 3/3 SALMOS EQUIPADOS // REROLLS INDIVIDUALES: ${this.rerollsLeft}/3 ]`;
             }
         }
     },
 
+    // Se llama automáticamente al terminar o salir de una bossfight: recarga los 3 rerolls
     unlockAfterCombat() {
-        localStorage.removeItem('codex_psalms_locked');
-        localStorage.removeItem('codex_psalms_hand');
-        this.currentCards = [];
+        this.rerollsLeft = 3;
+        localStorage.setItem('codex_psalms_rerolls_left', '3');
         this.renderVerses();
     },
 
     rerollVerses() {
         if (window._cinematicActive || window._bossActive) return;
-        if (localStorage.getItem('codex_psalms_locked') === 'true') {
-            AudioManager.beep(180, 0.15, 'sawtooth');
-            DialogueSystem.show({
-                text: "Los Salmos han sido sellados. Debes enfrentar el combate antes de invocar una nueva tirada.",
-                speaker: "SAPHYNIEL",
-                tone: "low",
-                autoHideTime: 2600
-            });
-            return;
+        // Si aún hay cartas boca abajo, el botón inferior las revela todas de golpe para mayor comodidad
+        const hasFacedown = this.currentCards.some(c => c.state !== 'kept');
+        if (hasFacedown) {
+            this.currentCards.forEach(c => { c.state = 'kept'; });
+            localStorage.setItem('codex_psalms_hand', JSON.stringify(this.currentCards));
+            this.syncAccumulatedBuffs();
+            AudioManager.playCardJingle('gold');
+            this.renderVerses();
         }
-        localStorage.removeItem('codex_psalms_hand');
-        this.currentCards = [];
-        AudioManager.cardSlideSound();
-        this.renderVerses();
     }
 };
 

@@ -11,8 +11,8 @@ const Phase1 = {
         const currentSession = this.activeSessionId;
 
         BossState.phase = 1;
-        BossState.maxHp = 480;
-        BossState.currentHp = 480;
+        BossState.maxHp = 620;
+        BossState.currentHp = 620;
         BossState.damageLock = true;
         BossState.isInvulnerable = false;
         BossState.weaponLost = false;
@@ -21,7 +21,7 @@ const Phase1 = {
         this.hit50 = false;
         this.hit20 = false;
         this.transitioning = false;
-        this.alertBannerTimer = isQuickRetry ? 0 : 2.6;
+        this.alertBannerTimer = 0;
 
         BossState.updateHpBar();
         BossState.updateCoreSprite();

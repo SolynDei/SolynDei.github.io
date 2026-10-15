@@ -344,3 +344,10 @@ body.phase-2-active .boss-wings, body.phase-3-active .boss-wings { opacity: 1; a
     .p5-name-tag { left: 100px; font-size: 0.78rem; }
     .p5-speech-bubble { margin-left: 90px; padding: 10px 14px; min-height: 68px; }
 }
+/* REGLA 1: QUITAR SEÑALES Y TEXTOS ANUNCIANDO ATAQUES */
+.boss-special-cutin,
+.cinematic-text-blood,
+.countdown-flash {
+    display: none !important;
+    opacity: 0 !important;
+}

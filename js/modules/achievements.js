@@ -1,100 +1,172 @@
-// ==========================================
-// SISTEMA DE LOGROS NIER / RETRO (INCLUYE FE FRÁGIL Y PERSEVERANCIA)
-// ==========================================
-const ACHIEVEMENTS_DATA = [
-    { id: "init", title: "Unidad Activada", desc: "Inicia y carga la interfaz del Códice.", secret: false },
-    { id: "audio_sync", title: "Frecuencia Resonante", desc: "Interactúa con los enlaces o frecuencias sonoras.", secret: false },
-    { id: "insomnia", title: "Vigilia Nocturna", desc: "Accede al Códice entre la medianoche y las 5 AM.", secret: false },
-    { id: "fragile_faith", title: "Fe Frágil", desc: "Sucumbe ante el colapso y ríndete tras escuchar la burla de Saphyniel.", secret: false },
-    { id: "perseverance", title: "Perseverancia", desc: "Rechaza la derrota y vuelve a alzarte tras ver tu nave hecha pedazos.", secret: false },
-    { id: "glitch_tap", title: "Anomalía de Memoria", desc: "Provoca la ira de Saphyniel insistiendo sobre su retrato.", secret: true },
-    { id: "codex_deep", title: "Protocolo NieR", desc: "Inspecciona los archivos confidenciales de registro.", secret: true },
-    { id: "boss_slayer", title: "Deicidio Trascendente", desc: "Quebranta la voluntad del Códice en combate.", secret: false },
-    { id: "platinum", title: "Fin del Registro: [E]", desc: "Desbloquea todos los registros anteriores del Códice.", secret: false, isPlatinum: true }
-];
-
+// ============================================================================
+// SISTEMA DE LOGROS NIER / REGISTRO DE OPERACIÓN
+// Incluye los 6 logros base + los 5 logros secretos de la Ruta Pacifista [S]
+// ============================================================================
 const AchievementSystem = {
-    storageKey: "saphyniel_codex_achievements_v1",
+    STORAGE_KEY: "saphyniel_codex_achievements_v1",
     unlocked: [],
 
+    catalog: [
+        {
+            id: "audio_sync",
+            title: "RESONANCIA INICIAL",
+            desc: "Sintonizaste las frecuencias del Códice al explorar sus enlaces.",
+            icon: "◈",
+            tier: "normal"
+        },
+        {
+            id: "glitch_tap",
+            title: "INSISTENCIA EN EL UMBRAL",
+            desc: "Perturbaste la calma de Saphyniel hasta despertar su estado caído.",
+            icon: "💢",
+            tier: "normal"
+        },
+        {
+            id: "railgun_unlock",
+            title: "ARTILLERÍA ORBITAL",
+            desc: "Desbloqueaste el Cañón Orbital profanando la estructura del Códice.",
+            icon: "⌖",
+            tier: "normal"
+        },
+        {
+            id: "fragile_faith",
+            title: "FE FRÁGIL",
+            desc: "Elegiste rendirte y abandonar el combate cuando el silencio pesó demasiado.",
+            icon: "🏳",
+            tier: "normal"
+        },
+        {
+            id: "perseverance",
+            title: "PERSEVERANCIA",
+            desc: "Te negaste a desaparecer y reensamblaste tu nave tras caer en combate.",
+            icon: "↻",
+            tier: "normal"
+        },
+        {
+            id: "boss_slayer",
+            title: "TESTIGO DEL COLAPSO",
+            desc: "Llegaste hasta el final del encuentro contra Saphyniel.",
+            icon: "⚔",
+            tier: "normal"
+        },
+        // --- SET DE LOGROS SECRETOS EXCLUSIVOS DE LA FASE [S] ---
+        {
+            id: "silent_canon",
+            title: "VOTO DE SILENCIO BALÍSTICO",
+            desc: "[SECRETO S] Superaste las Fases 1 y 2 sin disparar la Railgun ni una sola vez.",
+            icon: "🕊",
+            tier: "secret"
+        },
+        {
+            id: "golden_covenant",
+            title: "NUNCA UNO SIN EL OTRO",
+            desc: "[SECRETO S] Uniste tu alma con Solyn y forjaste los 10 Corazones Dorados.",
+            icon: "❤",
+            tier: "secret"
+        },
+        {
+            id: "stage_critic",
+            title: "CRÍTICA DE LA PROPIA MEMORIA",
+            desc: "[SECRETO S] Sanaste los 6 recuerdos desprendidos sin destruir ninguno.",
+            icon: "✦",
+            tier: "secret"
+        },
+        {
+            id: "curtain_call_e",
+            title: "EL PESO DEL TELÓN [E]",
+            desc: "[SECRETO S] Entregaste tus Corazones Dorados en el clímax para sostener su vida.",
+            icon: "❖",
+            tier: "secret"
+        },
+        {
+            id: "lunar_sanctuary_s",
+            title: "EL MUNDO ES UN ESCENARIO [S]",
+            desc: "[PLATINO S] Completaste la Fase Secreta [S] y abriste el Jardín de Flores Lunares.",
+            icon: "✿",
+            tier: "platinum"
+        }
+    ],
+
     init() {
-        this.unlocked = JSON.parse(localStorage.getItem(this.storageKey)) || [];
-        this.unlock("init");
-        this.checkTimeCondition();
-        if (window._bossBeaten) this.unlock("boss_slayer");
-        this.render();
+        try {
+            this.unlocked = JSON.parse(localStorage.getItem(this.STORAGE_KEY)) || [];
+        } catch (e) {
+            this.unlocked = [];
+        }
         this.updateCounter();
+        this.render();
     },
 
     unlock(id) {
-        if (this.unlocked.includes(id)) return;
-        const ach = ACHIEVEMENTS_DATA.find(a => a.id === id);
-        if (!ach) return;
+        try {
+            const stored = JSON.parse(localStorage.getItem(this.STORAGE_KEY)) || [];
+            if (stored.length > this.unlocked.length) {
+                this.unlocked = stored;
+            }
+        } catch (e) {}
 
-        this.unlocked.push(id);
-        localStorage.setItem(this.storageKey, JSON.stringify(this.unlocked));
-        this.showToast(ach.title);
-        this.render();
-        this.updateCounter();
+        const item = this.catalog.find(a => a.id === id);
+        if (!item) return false;
 
-        const nonPlatinumCount = ACHIEVEMENTS_DATA.filter(a => !a.isPlatinum).length;
-        const unlockedNonPlat = this.unlocked.filter(u => u !== "platinum").length;
-        if (unlockedNonPlat >= nonPlatinumCount && !this.unlocked.includes("platinum")) {
-            setTimeout(() => this.unlock("platinum"), 800);
+        if (!this.unlocked.includes(id)) {
+            this.unlocked.push(id);
+            localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.unlocked));
+            this.showToast(item.title);
         }
-    },
-
-    checkTimeCondition() {
-        const hours = new Date().getHours();
-        if (hours >= 0 && hours < 5) this.unlock("insomnia");
-    },
-
-    showToast(title) {
-        const toast = document.getElementById("achievementToast");
-        const titleEl = document.getElementById("toastTitle");
-        if (!toast || !titleEl) return;
-
-        titleEl.textContent = title;
-        toast.classList.add("show");
-        if (typeof AudioManager !== 'undefined') AudioManager.liturgicalChime();
-        setTimeout(() => toast.classList.remove("show"), 3800);
+        this.updateCounter();
+        this.render();
+        return true;
     },
 
     updateCounter() {
-        const counterEl = document.getElementById("ach-counter");
+        const counterEl = document.getElementById('ach-counter');
         if (counterEl) {
-            counterEl.textContent = `${this.unlocked.length}/${ACHIEVEMENTS_DATA.length}`;
+            counterEl.textContent = `${this.unlocked.length}/${this.catalog.length}`;
         }
     },
 
+    showToast(title) {
+        const toast = document.getElementById('achievementToast');
+        const titleEl = document.getElementById('toastTitle');
+        if (!toast || !titleEl) return;
+        titleEl.textContent = title;
+        toast.classList.add('show');
+        if (typeof AudioManager !== 'undefined') AudioManager.liturgicalChime();
+        setTimeout(() => toast.classList.remove('show'), 3600);
+    },
+
     render() {
-        const container = document.getElementById("achievementsList");
-        if (!container) return;
+        const listEl = document.getElementById('achievementsList');
+        if (!listEl) return;
+        listEl.innerHTML = '';
 
-        container.innerHTML = ACHIEVEMENTS_DATA.map(ach => {
+        this.catalog.forEach(ach => {
             const isUnlocked = this.unlocked.includes(ach.id);
-            const isPlat = ach.isPlatinum;
-            const title = !isUnlocked && ach.secret ? "???" : ach.title;
-            const desc = !isUnlocked && ach.secret ? "Registro clasificado bajo directiva confidencial." : ach.desc;
-            const icon = isUnlocked ? (isPlat ? "★" : "◈") : "◇";
+            const div = document.createElement('div');
+            const isPlat = isUnlocked && (ach.tier === 'platinum' || ach.tier === 'secret');
+            div.className = `achievement-item ${isUnlocked ? 'unlocked' : ''} ${isPlat ? 'platinum-tier' : ''}`;
 
-            return `
-                <div class="achievement-item ${isUnlocked ? 'unlocked' : ''} ${isPlat && isUnlocked ? 'platinum-tier' : ''}">
-                    <div class="achievement-icon">${icon}</div>
-                    <div class="achievement-info">
-                        <div class="achievement-title">${title}</div>
-                        <div class="achievement-desc">${desc}</div>
-                    </div>
+            const displayTitle = isUnlocked ? ach.title : (ach.tier === 'normal' ? ach.title : 'REGISTRO SELLADO // [S]');
+            const displayDesc = isUnlocked
+                ? ach.desc
+                : (ach.tier === 'normal' ? ach.desc : 'Condición oculta: Calla tu arma durante el juicio para descubrir esta memoria.');
+
+            div.innerHTML = `
+                <div class="achievement-icon">${isUnlocked ? ach.icon : '🔒'}</div>
+                <div class="achievement-info">
+                    <div class="achievement-title">${displayTitle}</div>
+                    <div class="achievement-desc">${displayDesc}</div>
                 </div>
             `;
-        }).join("");
+            listEl.appendChild(div);
+        });
     }
 };
 
 function toggleAchievementsModal() {
-    const modal = document.getElementById("achievementsModal");
-    if (modal) {
-        modal.classList.toggle("active");
-        AchievementSystem.unlock("codex_deep");
-    }
+    const modal = document.getElementById('achievementsModal');
+    if (!modal) return;
+    AchievementSystem.init();
+    modal.classList.toggle('active');
+    if (typeof AudioManager !== 'undefined') AudioManager.beep(520, 0.05, 'sine');
 }

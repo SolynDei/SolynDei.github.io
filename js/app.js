@@ -44,26 +44,33 @@ function adaptWidescreenLayout() {
 window.addEventListener('resize', adaptWidescreenLayout);
 
 function syncSanctuaryThemeUI() {
-    const unlocked = localStorage.getItem('codex_reborn_sanctuary') === 'true';
-    const active = localStorage.getItem('codex_sanctuary_theme_active') !== 'false';
+    const unlockedE = localStorage.getItem('codex_reborn_sanctuary') === 'true';
+    const unlockedS = localStorage.getItem('codex_ending_s_sanctuary') === 'true';
+    const mode = localStorage.getItem('codex_sanctuary_theme_mode') || (unlockedS ? 'S' : (unlockedE ? 'E' : 'OFF'));
     const telemetryRight = document.querySelector('.telemetry-bar > div');
 
-    if (unlocked) {
-        document.body.classList.toggle('sanctuary-e-theme', active);
-        if (telemetryRight && !document.getElementById('sanctuary-theme-btn')) {
-            const btn = document.createElement('button');
+    document.body.classList.toggle('sanctuary-e-theme', mode === 'E');
+    document.body.classList.toggle('sanctuary-s-theme', mode === 'S');
+
+    if (mode === 'S' && typeof ParticleEngine !== 'undefined' && typeof ParticleEngine.startLunarFlowerField === 'function') {
+        ParticleEngine.startLunarFlowerField(26);
+    }
+
+    if ((unlockedE || unlockedS) && telemetryRight) {
+        let btn = document.getElementById('sanctuary-theme-btn');
+        if (!btn) {
+            btn = document.createElement('button');
             btn.id = 'sanctuary-theme-btn';
             btn.className = 'sanctuary-toggle-btn';
-            btn.textContent = active ? '[ ❖ SANTUARIO E: ON ]' : '[ ❖ SANTUARIO E: OFF ]';
-            btn.onclick = () => {
-                const nowActive = !document.body.classList.contains('sanctuary-e-theme');
-                document.body.classList.toggle('sanctuary-e-theme', nowActive);
-                localStorage.setItem('codex_sanctuary_theme_active', nowActive ? 'true' : 'false');
-                btn.textContent = nowActive ? '[ ❖ SANTUARIO E: ON ]' : '[ ❖ SANTUARIO E: OFF ]';
-                AudioManager.liturgicalChime();
-            };
             telemetryRight.insertBefore(btn, telemetryRight.firstChild);
         }
+        btn.textContent = mode === 'S' ? '[ ✿ SANTUARIO LUNAR S ]' : (mode === 'E' ? '[ ❖ SANTUARIO E ]' : '[ ❖ TEMA: ORIGINAL ]');
+        btn.onclick = () => {
+            const next = mode === 'S' ? 'OFF' : (unlockedS ? 'S' : (mode === 'E' ? 'OFF' : 'E'));
+            localStorage.setItem('codex_sanctuary_theme_mode', next);
+            syncSanctuaryThemeUI();
+            AudioManager.liturgicalChime();
+        };
     }
 }
 
@@ -231,6 +238,18 @@ const AvatarController = {
             const r = trigger.getBoundingClientRect();
             ParticleEngine.explode(r.left + r.width / 2, r.top + r.height / 2, '#dad4bb', 14);
 
+            if (document.body.classList.contains('sanctuary-s-theme')) {
+                const lunarQuotes = [
+                    "Dejaste caer tu arma cuando más miedo tenía... Nunca voy a olvidar ese gesto.",
+                    "Las Flores Lunares solo crecen donde dos almas prometieron no volver a herirse.",
+                    "Ya no tienes que pelear por mí. Descansa aquí conmigo todo el tiempo que quieras."
+                ];
+                const q = lunarQuotes[this.clickCount % lunarQuotes.length];
+                this.clickCount++;
+                DialogueSystem.show({ text: q, speaker: "SAPHYNIEL & SOLYN // EN PAZ", tone: "mid", autoHideTime: 3200 });
+                return;
+            }
+
             if (document.body.classList.contains('sanctuary-e-theme')) {
                 const peacefulQuotes = [
                     "La luz del Santuario es cálida gracias a lo que entregaste por mí.",
@@ -266,6 +285,7 @@ const AvatarController = {
 
             if (this.clickCount >= 6 && typeof OrbitalModule !== 'undefined' && !OrbitalModule.hasRailgun) {
                 OrbitalModule.unlockRailgun('avatar');
+                if (typeof AchievementSystem !== 'undefined') AchievementSystem.unlock("railgun_unlock");
             }
 
             if (this.clickCount >= 7) {
@@ -406,19 +426,16 @@ document.querySelectorAll('.link-btn').forEach(btn => {
 window.addEventListener('message', (e) => {
     if (!e.data) return;
 
-    // 1. Desbloqueo de logros desde el iframe (ej: "Perseverancia" al dar clic en Reintentar)
     if (e.data.type === 'UNLOCK_ACHIEVEMENT' && e.data.id) {
         if (typeof AchievementSystem !== 'undefined') {
             AchievementSystem.unlock(e.data.id);
         }
     }
 
-    // 2. Desbloqueo de barajado de Salmos tras pelear
     if (e.data.type === 'UNLOCK_PSALMS_REROLL') {
         if (typeof DeckController !== 'undefined') DeckController.unlockAfterCombat();
     }
 
-    // 3. Botón RENDIRSE desde la pantalla de muerte -> Otorga "Fe Frágil" y regresa a la Bio
     if (e.data.type === 'BOSS_SURRENDERED') {
         const frame = document.getElementById('boss-frame');
         if (frame) frame.classList.remove('active');
@@ -445,7 +462,7 @@ window.addEventListener('message', (e) => {
 
         setTimeout(() => {
             DialogueSystem.show({
-                text: "Elegiste rendirte y volver aquí... Supongo que tu fe era más frágil de lo que aparentabas.",
+                text: "Elegiste bajar los brazos y volver aquí... A veces el silencio pesa más de lo que uno cree.",
                 speaker: "SAPHYNIEL",
                 tone: "low",
                 autoHideTime: 4200
@@ -453,7 +470,6 @@ window.addEventListener('message', (e) => {
         }, 450);
     }
 
-    // 4. Derrota completa del Boss (Final [E] o Final [Y])
     if (e.data.type === 'BOSS_DEFEATED') {
         const frame = document.getElementById('boss-frame');
         if (frame) frame.classList.remove('active');
@@ -465,6 +481,44 @@ window.addEventListener('message', (e) => {
 
         const endingType = e.data.ending || 'SACRIFICE';
         const cross = document.getElementById('orbital-crosshair');
+
+        if (endingType === 'ENDING_S') {
+            localStorage.setItem('codex_boss_beaten', 'true');
+            localStorage.setItem('codex_ending_s_sanctuary', 'true');
+            localStorage.setItem('codex_sanctuary_theme_mode', 'S');
+
+            // PACTO DE DESARME PERMANENTE: El cañón se entrega a cambio de las Flores Lunares
+            localStorage.removeItem('codex_railgun_unlocked');
+            if (typeof OrbitalModule !== 'undefined') OrbitalModule.hasRailgun = false;
+            if (cross) {
+                cross.classList.remove('unlocked');
+                cross.style.display = 'none';
+            }
+
+            if (typeof AchievementSystem !== 'undefined') {
+                AchievementSystem.unlock("boss_slayer");
+                AchievementSystem.unlock("lunar_sanctuary_s");
+            }
+            if (typeof DeckController !== 'undefined') DeckController.unlockAfterCombat();
+
+            document.body.classList.remove('fallen-mode', 'sanctuary-e-theme');
+            document.body.classList.add('transcended-world', 'sanctuary-s-theme');
+            syncSanctuaryThemeUI();
+            ParticleEngine.resume();
+            ParticleEngine.startLunarFlowerField(32);
+            if (typeof BalatroEngine !== 'undefined' && !BalatroEngine.animId) BalatroEngine.render();
+
+            setTimeout(() => {
+                DialogueSystem.show({
+                    text: "Dejaste caer tu arma para tomar mi mano cuando más frío hacía. Mientras estas flores blancas sigan abiertas, ninguno de los dos volverá a estar solo.",
+                    speaker: "SAPHYNIEL & SOLYN // FINAL [S]",
+                    tone: "mid",
+                    autoHideTime: 5600
+                });
+                AudioManager.liturgicalChime();
+            }, 450);
+            return;
+        }
 
         if (endingType === 'SACRIFICE') {
             localStorage.removeItem('codex_score');
@@ -524,8 +578,8 @@ window.addEventListener('message', (e) => {
 
         setTimeout(() => {
             const finalQuote = endingType === 'SACRIFICE'
-                ? "Entregaste todos tus logros, salmos y armas para reconstruir mi Santuario... Bienvenido al Registro Renacido [E]."
-                : "Supongo que al final conseguiste lo que querías... Los sellos de Salmos pueden volver a barajarse.";
+                ? "Entregaste todos tus registros, tus salmos y tus armas para devolverme la paz... Bienvenido al Santuario Renacido [E]."
+                : "Todo terminó por ahora... Los sellos de Salmos han vuelto a abrirse para ti.";
             DialogueSystem.show({
                 text: finalQuote,
                 speaker: endingType === 'SACRIFICE' ? "SAPHYNIEL // RENACIDA" : "SAPHYNIEL",
