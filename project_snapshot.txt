@@ -171,6 +171,15 @@
 
     <div class="countdown-flash" id="countdown-flash"></div>
 
+    <!-- NOTIFICACIÓN DE LOGRO DENTRO DEL COMBATE -->
+    <div id="boss-ach-toast" class="boss-ach-toast">
+        <span style="font-size: 1.2rem; color: #e5c158;">◈</span>
+        <div>
+            <div style="font-size: 0.62rem; color: #dad4bb; letter-spacing: 1px;">LOGRO DESBLOQUEADO</div>
+            <div id="boss-ach-toast-title" style="font-size: 0.78rem; font-weight: bold; color: #f7f5ed;">PERSEVERANCIA</div>
+        </div>
+    </div>
+
     <!-- HUD DEL JUGADOR Y BARRAS DE HABILIDADES (ESCUDO + RAILGUN) -->
     <div class="player-hud" id="player-hud">
         <div class="hearts-row" id="hearts-row">
@@ -183,7 +192,7 @@
                 <span class="skill-label">ESCUDO [ESPACIO]</span>
                 <div class="skill-bar-track"><div class="skill-bar-fill shield-fill" id="shield-bar-fill"></div></div>
             </button>
-            <button type="button" class="hud-skill-box" id="hud-railgun-btn" title="Tecla E o Clic">
+            <button type="button" class="hud-skill-box" id="hud-railgun-btn" title="Tecla E">
                 <span class="skill-label" id="railgun-label">RAILGUN [E] 0%</span>
                 <div class="skill-bar-track"><div class="skill-bar-fill railgun-fill" id="railgun-bar-fill"></div></div>
             </button>
@@ -247,10 +256,19 @@
 
     <div class="end-record-final" id="end-record-final">SAPHYNIEL //</div>
 
+    <!-- PANTALLA CINEMÁTICA DE DERROTA CON OPCIÓN DE REINTENTAR O RENDIRSE -->
     <div class="ending-screen bad-ending-screen" id="game-over-screen">
-        <div class="ending-title game-over-title">BAD ENDING</div>
-        <div class="ending-number" id="game-over-subtext">Registro Corrompido // Tu fe ha colapsado</div>
-        <button type="button" class="retry-btn" id="retry-btn">[ REINTENTAR ]</button>
+        <div class="game-over-panel">
+            <div class="game-over-telemetry">// CAJA NEGRA YORHA: SEÑAL VITAL PERDIDA //</div>
+            <div class="ending-title game-over-title">FE QUEBRANTADA</div>
+            <p class="ending-number" id="game-over-subtext">
+                Tu nave se ha desintegrado en el vacío mientras el eco de la risa de Saphyniel resuena entre las cenizas.
+            </p>
+            <div class="game-over-actions" id="game-over-actions">
+                <button type="button" class="retry-btn visible" id="retry-btn">[ ↻ REINTENTAR // PERSEVERAR ]</button>
+                <button type="button" class="surrender-btn visible" id="surrender-btn">[ 🏳️ RENDIRSE // ABANDONAR ]</button>
+            </div>
+        </div>
     </div>
 
     <!-- P5 DIALOGUE BOX -->
@@ -380,6 +398,20 @@ body.cinema-wide-bars .cinema-bar { height: 15vh; }
 .shake-active { animation: shakeScreen 0.18s cubic-bezier(.36,.07,.19,.97) both; }
 @keyframes shakeScreen { 10%, 90% { transform: translate3d(-5px, 0, 0); } 20%, 80% { transform: translate3d(6px, 3px, 0); } 30%, 50%, 70% { transform: translate3d(-6px, -3px, 0); } 40%, 60% { transform: translate3d(6px, 0, 0); } }
 
+/* TOAST DE LOGRO DENTRO DE COMBATE */
+.boss-ach-toast {
+    position: fixed; bottom: 24px; right: 24px;
+    background: rgba(12, 12, 15, 0.95);
+    border: 1px solid #e5c158; border-left: 4px solid #e5c158;
+    padding: 10px 16px; display: flex; align-items: center; gap: 12px;
+    font-family: var(--font-mono); z-index: 950;
+    transform: translateY(140%);
+    transition: transform 0.35s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+    box-shadow: 0 0 25px rgba(0, 0, 0, 0.85);
+    pointer-events: none;
+}
+.boss-ach-toast.show { transform: translateY(0); }
+
 /* HUD DE VIDA Y HABILIDADES CON PALETA NIER:AUTOMATA */
 .player-hud, .boss-hud-floating { transition: opacity 0.8s ease; }
 .player-hud {
@@ -428,7 +460,7 @@ body.phase-2-active .boss-bar-fill { background: linear-gradient(90deg, #4a120b,
 body.phase-3-active .boss-bar-fill { background: linear-gradient(90deg, #8b8778, #dad4bb, #ffffff); }
 .boss-bar-flair { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 8px; height: 20px; background: #f7f5ed; z-index: 5; clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); }
 
-/* NÚCLEO DE SAPHYNIEL CON TRANSICIÓN RÁPIDA Y FLUIDA */
+/* NÚCLEO DE SAPHYNIEL */
 .boss-core-container {
     position: fixed; top: 30%; left: 50%; width: 120px; height: 120px;
     transform: translate(-50%, -50%) scale(1.45);
@@ -439,13 +471,8 @@ body.phase-3-active .boss-bar-fill { background: linear-gradient(90deg, #8b8778,
 body.phase-2-active .boss-core-container { transform: translate(-50%, -50%) scale(1.65); }
 body.phase-3-active .boss-core-container { transform: translate(-50%, -50%) scale(2.0); filter: grayscale(100%) contrast(120%); }
 
-.boss-core-container.tackle-mode {
-    transition: none !important;
-}
-
-.boss-core-container.core-dying-tremble {
-    animation: coreVibration 0.08s infinite alternate !important;
-}
+.boss-core-container.tackle-mode { transition: none !important; }
+.boss-core-container.core-dying-tremble { animation: coreVibration 0.08s infinite alternate !important; }
 @keyframes coreVibration {
     0% { transform: translate(-50%, -50%) scale(2.2) translate(-5px, 3px); }
     100% { transform: translate(-50%, -50%) scale(2.2) translate(4px, -4px); }
@@ -475,7 +502,7 @@ body.phase-2-active .boss-wings, body.phase-3-active .boss-wings { opacity: 1; a
 .damage-number.blocked { color: #e5c158; text-shadow: 0 0 12px #e5c158; font-size: 0.85rem; }
 @keyframes damageFloat { 0% { transform: translate(-50%, -50%) scale(0.7); opacity: 1; } 100% { transform: translate(-50%, -90px) scale(0.95); opacity: 0; } }
 
-/* CONTROLES TÁCTILES MÓVILES CON PALETA YORHA */
+/* CONTROLES TÁCTILES MÓVILES */
 .mobile-controls-layer { position: fixed; inset: 0; pointer-events: none; z-index: 440; display: none; }
 @media (max-width: 920px), (pointer: coarse) { .mobile-controls-layer { display: block; } }
 .joystick-zone { position: absolute; bottom: 26px; left: 24px; width: 130px; height: 130px; pointer-events: auto; touch-action: none; display: flex; align-items: center; justify-content: center; }
@@ -488,26 +515,67 @@ body.phase-2-active .boss-wings, body.phase-3-active .boss-wings { opacity: 1; a
 .mob-railgun-btn { border-color: #8b8778; color: #8b8778; }
 .mob-railgun-btn.ready { border-color: #e5c158; color: #e5c158; background: rgba(229, 193, 88, 0.22); box-shadow: 0 0 24px #e5c158; }
 
-/* CRÉDITOS Y DIÁLOGOS */
+/* CRÉDITOS Y PANTALLA CINEMÁTICA DE DERROTA */
 .ending-screen {
-    position: fixed; inset: 0; background: rgba(6, 6, 8, 0.96); z-index: 500;
+    position: fixed; inset: 0; background: rgba(6, 6, 8, 0.94); z-index: 800;
     display: none; opacity: 0; flex-direction: column; justify-content: center; align-items: center;
     font-family: var(--font-mono); color: #dad4bb; text-align: center;
-    overflow: hidden; pointer-events: none; transition: opacity 2.2s ease; perspective: 450px;
+    overflow: hidden; pointer-events: none; transition: opacity 1.2s ease; perspective: 450px;
 }
-.ending-screen.visible { display: flex; opacity: 1; pointer-events: auto; cursor: crosshair !important; }
-.ending-title { font-family: var(--font-pixel); font-size: 1.5rem; color: #dad4bb; margin-bottom: 20px; letter-spacing: 3px; }
-.skip-credits-btn { position: fixed; top: 20px; right: 20px; z-index: 600; background: rgba(10, 10, 12, 0.85); border: 1px solid var(--text-dim); color: var(--text-main); font-family: var(--font-pixel); font-size: 0.68rem; padding: 8px 14px; cursor: pointer !important; pointer-events: auto !important; }
+.ending-screen.visible { display: flex; opacity: 1; pointer-events: auto !important; cursor: crosshair !important; }
+.ending-title { font-family: var(--font-pixel); font-size: 1.5rem; color: #dad4bb; margin-bottom: 16px; letter-spacing: 3px; }
+.skip-credits-btn { position: fixed; top: 20px; right: 20px; z-index: 850; background: rgba(10, 10, 12, 0.85); border: 1px solid var(--text-dim); color: var(--text-main); font-family: var(--font-pixel); font-size: 0.68rem; padding: 8px 14px; cursor: pointer !important; pointer-events: auto !important; }
 .skip-credits-btn:hover { background: #dad4bb; color: #000; }
 .credits-crawl-viewport { position: relative; width: 90%; max-width: 820px; height: 68vh; overflow: hidden; transform: rotateX(20deg); }
 .credits-crawl-track { display: flex; flex-direction: column; gap: 28px; font-size: clamp(0.95rem, 2.5vw, 1.25rem); color: #dad4bb; }
-.end-record-final { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: var(--font-angel); font-size: clamp(1.4rem, 4vw, 2.3rem); font-weight: bold; color: #f7f5ed; opacity: 0; pointer-events: none !important; z-index: 550; transition: opacity 1.8s ease; letter-spacing: 3px; }
+.end-record-final { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: var(--font-angel); font-size: clamp(1.4rem, 4vw, 2.3rem); font-weight: bold; color: #f7f5ed; opacity: 0; pointer-events: none !important; z-index: 820; transition: opacity 1.8s ease; letter-spacing: 3px; }
 .end-record-final.active { opacity: 1; }
 
-.bad-ending-screen { background: #050506 !important; perspective: none; }
-.bad-ending-screen .ending-title { color: #d9381e; }
-.retry-btn { margin-top: 15px; padding: 14px 28px; background: transparent; border: 2px solid #d9381e; color: #f7f5ed; font-family: var(--font-pixel); font-size: 0.75rem; cursor: pointer !important; display: none; pointer-events: auto !important; z-index: 650 !important; }
-.retry-btn.visible { display: inline-block; }
+.bad-ending-screen {
+    background: radial-gradient(circle at center, rgba(35, 10, 10, 0.88) 0%, rgba(5, 5, 7, 0.97) 80%) !important;
+    backdrop-filter: blur(6px);
+    perspective: none;
+}
+.game-over-panel {
+    max-width: 580px; width: 92%; padding: 32px 26px;
+    background: rgba(10, 10, 12, 0.92);
+    border: 1px solid rgba(218, 212, 187, 0.4);
+    border-top: 3px solid #d9381e;
+    box-shadow: 0 0 50px rgba(0, 0, 0, 0.95), 0 0 25px rgba(217, 56, 30, 0.2);
+    display: flex; flex-direction: column; align-items: center; gap: 14px;
+}
+.game-over-telemetry {
+    font-family: var(--font-mono); font-size: 0.72rem; color: #8b8778; letter-spacing: 2px;
+}
+.bad-ending-screen .ending-title {
+    color: #d9381e; text-shadow: 0 0 22px rgba(217, 56, 30, 0.7);
+    font-size: clamp(1.2rem, 3.5vw, 1.7rem); margin-bottom: 4px;
+}
+.ending-number {
+    font-family: var(--font-mono); font-size: 0.92rem; color: #dad4bb;
+    line-height: 1.6; max-width: 480px; font-style: italic;
+}
+.game-over-actions {
+    display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; margin-top: 12px; width: 100%;
+}
+.retry-btn, .surrender-btn {
+    padding: 14px 22px; min-height: 46px; background: rgba(218, 212, 187, 0.06);
+    font-family: var(--font-pixel); font-size: 0.68rem; letter-spacing: 1.5px;
+    cursor: pointer !important; pointer-events: auto !important;
+    transition: all 0.2s ease;
+}
+.retry-btn {
+    border: 2px solid #e5c158; color: #f7f5ed;
+}
+.retry-btn:hover {
+    background: #e5c158; color: #09090b; box-shadow: 0 0 22px rgba(229, 193, 88, 0.6); transform: translateY(-2px);
+}
+.surrender-btn {
+    border: 2px solid #8b8778; color: #dad4bb;
+}
+.surrender-btn:hover {
+    background: #d9381e; border-color: #d9381e; color: #f7f5ed; box-shadow: 0 0 22px rgba(217, 56, 30, 0.6); transform: translateY(-2px);
+}
 
 .plastic-horse-overlay { position: fixed; top: 15%; left: -60%; width: 45vw; height: 45vh; background-image: url('../img/icons/Orbitalcannon.png'); background-size: contain; background-repeat: no-repeat; opacity: 0; z-index: 150; pointer-events: none; transition: left 10s linear, opacity 1s ease; }
 .plastic-horse-overlay.show { left: 120%; opacity: 0.5; }
@@ -1886,7 +1954,6 @@ function adaptWidescreenLayout() {
 }
 window.addEventListener('resize', adaptWidescreenLayout);
 
-// Gestor del Tema Desbloqueable "Santuario Lunar [E]"
 function syncSanctuaryThemeUI() {
     const unlocked = localStorage.getItem('codex_reborn_sanctuary') === 'true';
     const active = localStorage.getItem('codex_sanctuary_theme_active') !== 'false';
@@ -2075,7 +2142,6 @@ const AvatarController = {
             const r = trigger.getBoundingClientRect();
             ParticleEngine.explode(r.left + r.width / 2, r.top + r.height / 2, '#dad4bb', 14);
 
-            // Si el Santuario Lunar [E] está activo, Saphyniel está en paz con el jugador
             if (document.body.classList.contains('sanctuary-e-theme')) {
                 const peacefulQuotes = [
                     "La luz del Santuario es cálida gracias a lo que entregaste por mí.",
@@ -2249,10 +2315,57 @@ document.querySelectorAll('.link-btn').forEach(btn => {
 });
 
 window.addEventListener('message', (e) => {
-    if (e.data && e.data.type === 'UNLOCK_PSALMS_REROLL') {
+    if (!e.data) return;
+
+    // 1. Desbloqueo de logros desde el iframe (ej: "Perseverancia" al dar clic en Reintentar)
+    if (e.data.type === 'UNLOCK_ACHIEVEMENT' && e.data.id) {
+        if (typeof AchievementSystem !== 'undefined') {
+            AchievementSystem.unlock(e.data.id);
+        }
+    }
+
+    // 2. Desbloqueo de barajado de Salmos tras pelear
+    if (e.data.type === 'UNLOCK_PSALMS_REROLL') {
         if (typeof DeckController !== 'undefined') DeckController.unlockAfterCombat();
     }
-    if (e.data && e.data.type === 'BOSS_DEFEATED') {
+
+    // 3. Botón RENDIRSE desde la pantalla de muerte -> Otorga "Fe Frágil" y regresa a la Bio
+    if (e.data.type === 'BOSS_SURRENDERED') {
+        const frame = document.getElementById('boss-frame');
+        if (frame) frame.classList.remove('active');
+        window._bossActive = false;
+
+        if (typeof OrbitalModule !== 'undefined') OrbitalModule.avatarHoverAttempts = 0;
+        if (typeof DeckController !== 'undefined') DeckController.unlockAfterCombat();
+
+        const cross = document.getElementById('orbital-crosshair');
+        if (cross && OrbitalModule.hasRailgun) {
+            cross.style.display = 'flex';
+            cross.style.top = '25px';
+            cross.style.right = '25px';
+            cross.style.left = 'auto';
+        }
+
+        ParticleEngine.resume();
+        if (typeof BalatroEngine !== 'undefined' && !BalatroEngine.animId) BalatroEngine.render();
+        _initDanmaku();
+
+        if (typeof AchievementSystem !== 'undefined') {
+            AchievementSystem.unlock(e.data.achievementId || 'fragile_faith');
+        }
+
+        setTimeout(() => {
+            DialogueSystem.show({
+                text: "Elegiste rendirte y volver aquí... Supongo que tu fe era más frágil de lo que aparentabas.",
+                speaker: "SAPHYNIEL",
+                tone: "low",
+                autoHideTime: 4200
+            });
+        }, 450);
+    }
+
+    // 4. Derrota completa del Boss (Final [E] o Final [Y])
+    if (e.data.type === 'BOSS_DEFEATED') {
         const frame = document.getElementById('boss-frame');
         if (frame) frame.classList.remove('active');
         
@@ -2265,7 +2378,6 @@ window.addEventListener('message', (e) => {
         const cross = document.getElementById('orbital-crosshair');
 
         if (endingType === 'SACRIFICE') {
-            // BORRADO TOTAL DE DATOS: Puntaje, Salmos, Railgun y Logros
             localStorage.removeItem('codex_score');
             localStorage.removeItem('codex_railgun_unlocked');
             localStorage.removeItem('codex_psalms_hand');
@@ -2274,7 +2386,6 @@ window.addEventListener('message', (e) => {
             localStorage.removeItem('codex_active_blessing_title');
             localStorage.removeItem('saphyniel_codex_achievements_v1');
 
-            // Desbloquear la interfaz exclusiva "Santuario Lunar [E]"
             localStorage.setItem('codex_reborn_sanctuary', 'true');
             localStorage.setItem('codex_sanctuary_theme_active', 'true');
 
@@ -2392,9 +2503,9 @@ document.head.insertAdjacentHTML("beforeend", `<style>@keyframes blink { 50% { o
 === END FILE ===
 
 === FILE: js/boss.js ===
-// =========================================================
+﻿// =========================================================
 // FILE: js/boss.js
-// NAVE YORHA + ESTELAS DE VELOCIDAD (BLUR) + ESPADAS CLAVADAS + EMBESTIDAS
+// NAVE YORHA + ESPADAS AUTOMÁTICAS CON STROKE + EMBESTIDAS + REINICIO LIMPIO
 // =========================================================
 const BOSS_AUDIO_PATHS = {
     bgmPhase1: "audio/bgm/boss-music-fase1.mp3",
@@ -2434,7 +2545,13 @@ const BossState = {
     damageLock: true, isInvulnerable: false, weaponLost: false,
     history: [], battleStartTime: 0, hpAtStart: 0,
 
-    // Nave YoRHa (WASD / Joystick)
+    isDying: false,
+    deathSequenceTimers: [],
+    deathFragments: [],
+    deathShockwaveRadius: 0,
+    deathOriginX: 0,
+    deathOriginY: 0,
+
     shipX: window.innerWidth / 2,
     shipY: window.innerHeight * 0.78,
     shipSpeed: 385,
@@ -2442,7 +2559,6 @@ const BossState = {
     joyDx: 0,
     joyDy: 0,
 
-    // Auto-Ataque (1 punto de daño por bala)
     playerBullets: [],
     fireCooldown: 0,
     fireRate: 0.085,
@@ -2450,26 +2566,23 @@ const BossState = {
     lastPopupTime: 0,
     aggroRange: 360,
 
-    // Escudo en Barra Espaciadora
     shieldActive: false,
     shieldTimer: 0,
-    shieldDuration: 2.3,
+    shieldDuration: 0.85,
     shieldCooldown: 0,
-    shieldMaxCooldown: 4.3,
+    shieldMaxCooldown: 2.10,
     playerIFrames: 0,
 
-    // Railgun (25 de daño)
     railgunCharge: 0,
     railgunBeamTimer: 0,
     railgunTargetX: 0,
     railgunTargetY: 0,
 
-    // Efectos de Velocidad (Afterimages / Motion Blur), Espadas Clavadas y Embestidas (Tackle)
     afterimages: [],
     lastCoreX: window.innerWidth / 2,
     lastCoreY: window.innerHeight * 0.3,
     impaledSwords: [],
-    tackleState: 'idle', // 'idle', 'warn', 'charge'
+    tackleState: 'idle',
     tackleTimer: 0,
     tackleOriginX: 0,
     tackleOriginY: 0,
@@ -2481,6 +2594,21 @@ const BossState = {
         if (this.phase < 3) {
             this.history.push({ time: Date.now() - this.battleStartTime, type, x, y, drawn: false });
         }
+    },
+
+    clearDeathTimers() {
+        this.deathSequenceTimers.forEach(t => clearTimeout(t));
+        this.deathSequenceTimers = [];
+    },
+
+    showCombatAchievementToast(title) {
+        const toast = document.getElementById('boss-ach-toast');
+        const titleEl = document.getElementById('boss-ach-toast-title');
+        if (!toast || !titleEl) return;
+        titleEl.textContent = title;
+        toast.classList.add('show');
+        if (typeof AudioManager !== 'undefined') AudioManager.liturgicalChime();
+        setTimeout(() => toast.classList.remove('show'), 3600);
     },
 
     getBossCoreCenter() {
@@ -2521,21 +2649,21 @@ const BossState = {
         return this.getBossCoreCenter();
     },
 
-    // --- EMBESTIDA FÍSICA DE SAPHYNIEL (TACKLE / DASH) ---
     startBossTackle() {
         const core = document.getElementById('boss-core');
-        if (!core || core.style.display === 'none' || this.tackleState !== 'idle' || this.currentHp <= 0) return;
+        if (!core || core.style.display === 'none' || this.tackleState !== 'idle' || this.currentHp <= 0 || this.isDying) return;
 
         const cPos = this.getBossCoreCenter();
         this.tackleOriginX = cPos.x;
         this.tackleOriginY = cPos.y;
-        this.tackleTargetX = Math.max(80, Math.min(window.innerWidth - 80, this.shipX));
-        this.tackleTargetY = Math.max(100, Math.min(window.innerHeight - 80, this.shipY));
+        // Apunta directamente hacia la posición actual de tu nave
+        this.tackleTargetX = Math.max(70, Math.min(window.innerWidth - 70, this.shipX));
+        this.tackleTargetY = Math.max(90, Math.min(window.innerHeight - 70, this.shipY));
         this.tackleState = 'warn';
-        this.tackleTimer = 0.62;
+        this.tackleTimer = 0.52;
         this.tackleHasHit = false;
 
-        if (typeof AudioManager !== 'undefined') AudioManager.beep(520, 0.18, 'sawtooth', 0.045);
+        if (typeof AudioManager !== 'undefined') AudioManager.beep(520, 0.16, 'sawtooth', 0.045);
     },
 
     updateBossTackleAndBlur(dt, ctx) {
@@ -2546,20 +2674,18 @@ const BossState = {
         const curPos = this.getBossCoreCenter();
         const moveDist = Math.hypot(curPos.x - this.lastCoreX, curPos.y - this.lastCoreY);
 
-        // Si Saphyniel se está desplazando rápido, generar estelas fantasma (Afterimages / Blur)
-        if (moveDist > 4.5 && coreImg) {
+        if (moveDist > 4.0 && coreImg) {
             this.afterimages.push({
                 x: curPos.x,
                 y: curPos.y,
                 size: curPos.radius * 2.1,
-                alpha: 0.48,
+                alpha: 0.5,
                 img: coreImg
             });
         }
         this.lastCoreX = curPos.x;
         this.lastCoreY = curPos.y;
 
-        // Dibujar Afterimages (Estelas de velocidad estilo NieR)
         for (let i = this.afterimages.length - 1; i >= 0; i--) {
             const af = this.afterimages[i];
             af.alpha -= dt * 1.9;
@@ -2576,11 +2702,10 @@ const BossState = {
             ctx.restore();
         }
 
-        // Actualizar máquina de estados de la Embestida (Tackle)
         if (this.tackleState === 'warn') {
             this.tackleTimer -= dt;
             ctx.save();
-            ctx.strokeStyle = `rgba(217, 56, 30, ${0.45 + Math.sin(performance.now() * 0.03) * 0.35})`;
+            ctx.strokeStyle = `rgba(217, 56, 30, ${0.5 + Math.sin(performance.now() * 0.035) * 0.35})`;
             ctx.lineWidth = 4;
             ctx.setLineDash([12, 8]);
             ctx.beginPath();
@@ -2597,13 +2722,13 @@ const BossState = {
 
             if (this.tackleTimer <= 0) {
                 this.tackleState = 'charge';
-                this.tackleTimer = 0.38;
+                this.tackleTimer = 0.35;
                 core.classList.add('tackle-mode');
                 if (typeof AudioManager !== 'undefined') AudioManager.swordImpactSound();
             }
         } else if (this.tackleState === 'charge') {
             this.tackleTimer -= dt;
-            const progress = Math.min(1, 1 - (this.tackleTimer / 0.38));
+            const progress = Math.min(1, 1 - (this.tackleTimer / 0.35));
             const ease = 1 - Math.pow(1 - progress, 3);
             const nx = this.tackleOriginX + (this.tackleTargetX - this.tackleOriginX) * ease;
             const ny = this.tackleOriginY + (this.tackleTargetY - this.tackleOriginY) * ease;
@@ -2611,12 +2736,10 @@ const BossState = {
             core.style.left = `${(nx / window.innerWidth) * 100}%`;
             core.style.top = `${(ny / window.innerHeight) * 100}%`;
 
-            // Colisión física del placaje contra la nave del jugador
             const distToShip = Math.hypot(nx - this.shipX, ny - this.shipY);
             if (!this.tackleHasHit && distToShip < curPos.radius + 22) {
                 this.tackleHasHit = true;
                 if (this.shieldActive) {
-                    // ¡PARRY CLASH CON EL ESCUDO!
                     ParticleEngine.explode(this.shipX, this.shipY, '#e5c158', 30);
                     if (typeof AudioManager !== 'undefined') AudioManager.railgunFireSound();
                     if (typeof ScreenUtils !== 'undefined') ScreenUtils.triggerShake();
@@ -2624,40 +2747,33 @@ const BossState = {
                     this.spawnDamagePopup(this.shipX, this.shipY - 25, "¡EMBESTIDA BLOQUEADA!", 'blocked');
                 } else {
                     this.tryHitPlayer(this.shipX, this.shipY);
+                    if (this.isDying || this.playerHp <= 0) return;
                 }
             }
 
             if (this.tackleTimer <= 0) {
                 this.tackleState = 'idle';
                 core.classList.remove('tackle-mode');
-                // Al terminar la embestida, regresa suavemente a la zona superior
-                setTimeout(() => { if (this.tackleState === 'idle') this.moveBossCore(); }, 220);
+                // Al terminar la embestida, suelta un anillo de balas y se reposiciona
+                BossAttacks.spawnDanmakuRing(nx, ny, 8, 3.3, 'ring');
+                setTimeout(() => { if (this.tackleState === 'idle' && !this.isDying) this.moveBossCore(); }, 180);
             }
         }
 
-        // Dibujar todas las Espadas (swordsprite.png) que están clavadas en el cuerpo de Saphyniel
+        // Dibujar todas las Espadas (swordsprite.png) clavadas en Saphyniel con su Stroke y Brillo
         if (this.impaledSwords.length > 0) {
-            BossAttacks.initAssets();
-            const sImg = BossAttacks.swordImg;
             this.impaledSwords.forEach(sw => {
                 ctx.save();
                 ctx.translate(curPos.x + sw.offsetX, curPos.y + sw.offsetY);
                 ctx.rotate(sw.angle + Math.PI / 2);
-                if (sImg && sImg.complete && sImg.naturalWidth > 0) {
-                    ctx.shadowColor = '#f7f5ed';
-                    ctx.shadowBlur = 10;
-                    ctx.drawImage(sImg, -15, -40, 30, 80);
-                } else {
-                    ctx.fillStyle = '#f7f5ed';
-                    ctx.fillRect(-3, -35, 6, 55);
-                }
+                BossAttacks.drawEnhancedSword(ctx, 40, 96);
                 ctx.restore();
             });
         }
     },
 
     activateShield() {
-        if (this.shieldActive || this.shieldCooldown > 0 || this.playerHp <= 0) return;
+        if (this.shieldActive || this.shieldCooldown > 0 || this.playerHp <= 0 || this.isDying) return;
         this.shieldActive = true;
         this.shieldTimer = this.shieldDuration;
         this.shieldCooldown = this.shieldMaxCooldown;
@@ -2669,14 +2785,9 @@ const BossState = {
         this.spawnDamagePopup(this.shipX, this.shipY - 28, "ESCUDO YORHA", 'heal');
     },
 
+    // Si weaponLost es true, el Railgun está destruido (las espadas salen solas automáticamente de los bordes)
     activateRailgun() {
-        if (this.playerHp <= 0) return;
-        // Si perdimos el Railgun en la Fase 3, presionar E invoca una Espada del Juicio desde las esquinas
-        if (this.weaponLost && this.phase === 3 && !this.damageLock) {
-            BossAttacks.spawnJudgmentSword(null, 12);
-            return;
-        }
-        if (this.weaponLost || this.damageLock || this.railgunCharge < 100) return;
+        if (this.playerHp <= 0 || this.isDying || this.weaponLost || this.damageLock || this.railgunCharge < 100) return;
 
         this.railgunCharge = 0;
         this.railgunBeamTimer = 0.45;
@@ -2704,7 +2815,7 @@ const BossState = {
     },
 
     dealDamageToBoss(dmg, hitX, hitY, isRailgun = false) {
-        if (this.damageLock || this.weaponLost) return;
+        if (this.damageLock || this.weaponLost || this.isDying) return;
 
         this.currentHp = Math.max(1, this.currentHp - dmg);
         this.recordEvent('hit', hitX, hitY);
@@ -2725,13 +2836,63 @@ const BossState = {
         BossEngine.handleHit(dmg, { x: hitX, y: hitY });
     },
 
+    renderDeathShatterSequence(dt, ctx) {
+        this.deathShockwaveRadius += dt * 320;
+        const maxR = Math.max(window.innerWidth, window.innerHeight) * 0.7;
+
+        if (this.deathShockwaveRadius < maxR) {
+            const alpha = Math.max(0, 1 - this.deathShockwaveRadius / maxR);
+            ctx.save();
+            ctx.strokeStyle = `rgba(218, 212, 187, ${alpha * 0.75})`;
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(this.deathOriginX, this.deathOriginY, this.deathShockwaveRadius, 0, Math.PI * 2);
+            ctx.stroke();
+
+            ctx.strokeStyle = `rgba(217, 56, 30, ${alpha * 0.5})`;
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.arc(this.deathOriginX, this.deathOriginY, this.deathShockwaveRadius * 0.65, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        for (let i = this.deathFragments.length - 1; i >= 0; i--) {
+            const f = this.deathFragments[i];
+            f.x += f.vx * (dt * 60);
+            f.y += f.vy * (dt * 60);
+            f.vx *= 0.985;
+            f.vy = f.vy * 0.985 + 0.04;
+            f.rot += f.vRot;
+            f.life -= f.decay * dt;
+
+            if (f.life <= 0) {
+                this.deathFragments.splice(i, 1);
+                continue;
+            }
+
+            ctx.save();
+            ctx.translate(f.x, f.y);
+            ctx.rotate(f.rot);
+            ctx.globalAlpha = Math.max(0, f.life);
+            ctx.fillStyle = f.color;
+            ctx.shadowColor = f.color;
+            ctx.shadowBlur = 10;
+            ctx.fillRect(-f.size / 2, -f.size / 2, f.size, f.size);
+            ctx.restore();
+        }
+    },
+
     updateAndRenderShip(dt, ctx) {
+        if (this.isDying) {
+            this.renderDeathShatterSequence(dt, ctx);
+            return;
+        }
         if (this.playerHp <= 0) return;
 
-        // Renderizar estelas de velocidad (Blur) y embestidas de Saphyniel
         this.updateBossTackleAndBlur(dt, ctx);
+        if (this.isDying || this.playerHp <= 0) return;
 
-        // 1. Movimiento WASD + Joystick móvil
         let vx = this.joyDx;
         let vy = this.joyDy;
         if (this.keys.w) vy -= 1;
@@ -2750,7 +2911,6 @@ const BossState = {
         this.shipX = Math.max(margin, Math.min(window.innerWidth - margin, this.shipX));
         this.shipY = Math.max(margin + 60, Math.min(window.innerHeight - margin - 20, this.shipY));
 
-        // 2. Actualizar Escudo y Railgun
         const blessing = localStorage.getItem('codex_active_blessing');
         const cooldownMult = blessing === 'silver' ? 1.3 : 1.0;
 
@@ -2767,7 +2927,6 @@ const BossState = {
         }
         this.updateSkillHudBars();
 
-        // 3. Fijación de Blanco con Prioridad de Aggro
         const target = this.getPriorityTarget();
         const aimAngle = Math.atan2(target.y - this.shipY, target.x - this.shipX);
 
@@ -2806,9 +2965,9 @@ const BossState = {
             }
         }
 
-        // 4. Actualizar balas de la nave (Paleta Marfil/Ámbar YoRHa)
         for (let i = this.playerBullets.length - 1; i >= 0; i--) {
             const pb = this.playerBullets[i];
+            if (!pb) continue;
             pb.x += pb.vx * (dt * 60);
             pb.y += pb.vy * (dt * 60);
 
@@ -2826,11 +2985,10 @@ const BossState = {
             ctx.fill();
             ctx.restore();
 
-            // A. Colisión contra Bombas o Cruces
             let hitNode = false;
             for (let j = BossAttacks.nodes.length - 1; j >= 0; j--) {
                 const n = BossAttacks.nodes[j];
-                if (Math.hypot(pb.x - n.x, pb.y - n.y) < n.radius + 6) {
+                if (n && Math.hypot(pb.x - n.x, pb.y - n.y) < n.radius + 6) {
                     n.hp -= 1;
                     this.railgunCharge = Math.min(100, this.railgunCharge + 1.8);
                     ParticleEngine.explode(pb.x, pb.y, '#e5c158', 2);
@@ -2849,11 +3007,10 @@ const BossState = {
                 continue;
             }
 
-            // B. Colisión contra Clones
             let hitClone = false;
             for (let j = BossAttacks.clones.length - 1; j >= 0; j--) {
                 const c = BossAttacks.clones[j];
-                if (c.x && c.y && Math.hypot(pb.x - c.x, pb.y - c.y) < 42) {
+                if (c && c.x && c.y && Math.hypot(pb.x - c.x, pb.y - c.y) < 42) {
                     c.hp -= 1;
                     ParticleEngine.explode(pb.x, pb.y, '#d9381e', 2);
                     if (c.hp <= 0) {
@@ -2870,17 +3027,15 @@ const BossState = {
                 continue;
             }
 
-            // C. Colisión contra el Núcleo de Saphyniel
             const corePos = this.getBossCoreCenter();
             if (Math.hypot(pb.x - corePos.x, pb.y - corePos.y) < corePos.radius) {
                 this.playerBullets.splice(i, 1);
-                this.railgunCharge = Math.min(100, this.railgunCharge + 1.4);
+                this.railgunCharge = Math.min(100, this.railgunCharge + 0.6);
                 ParticleEngine.explode(pb.x, pb.y, '#dad4bb', 2);
                 this.dealDamageToBoss(1, pb.x, pb.y, false);
             }
         }
 
-        // 5. Dibujar haz del Railgun
         if (this.railgunBeamTimer > 0) {
             this.railgunBeamTimer -= dt;
             ctx.save();
@@ -2903,7 +3058,6 @@ const BossState = {
             ctx.restore();
         }
 
-        // 6. Dibujar la Nave YoRHa y su Escudo (Paleta NieR:Automata)
         ctx.save();
         ctx.translate(this.shipX, this.shipY);
 
@@ -2931,7 +3085,6 @@ const BossState = {
 
         ctx.rotate(aimAngle + Math.PI / 2);
 
-        // Propulsores Marfil / Carmesí
         ctx.fillStyle = this.weaponLost ? '#d9381e' : '#f7f5ed';
         ctx.shadowColor = this.weaponLost ? '#d9381e' : '#dad4bb';
         ctx.shadowBlur = 12;
@@ -2941,7 +3094,6 @@ const BossState = {
         ctx.lineTo(7, 14);
         ctx.fill();
 
-        // Casco YoRHa
         ctx.fillStyle = this.weaponLost ? '#8b8778' : '#dad4bb';
         ctx.strokeStyle = '#f7f5ed';
         ctx.lineWidth = 2;
@@ -2996,9 +3148,9 @@ const BossState = {
                 railBox.classList.remove('ready');
                 railBox.classList.add('disabled-weapon');
             }
-            if (railLabel) railLabel.textContent = "ESPADAS DE FE [E]";
-            if (mobRailBtn) mobRailBtn.classList.add('ready');
-            if (mobRailState) mobRailState.textContent = "ESPADA";
+            if (railLabel) railLabel.textContent = "ARMAMENTO: DESTRUIDO";
+            if (mobRailBtn) mobRailBtn.classList.remove('ready');
+            if (mobRailState) mobRailState.textContent = "ROTO";
             return;
         }
 
@@ -3012,6 +3164,7 @@ const BossState = {
     },
 
     tryHitPlayer(x, y) {
+        if (this.isDying || this.playerHp <= 0) return;
         if (this.shieldActive) {
             this.spawnDamagePopup(this.shipX, this.shipY - 20, "BLOQUEADO", 'heal');
             if (typeof AudioManager !== 'undefined') AudioManager.beep(880, 0.06, 'sine', 0.04);
@@ -3023,9 +3176,28 @@ const BossState = {
     },
 
     resetBossEncounter() {
+        this.clearDeathTimers();
+        this.isDying = false;
+        this.deathFragments = [];
+        this.deathShockwaveRadius = 0;
+
+        DialogueSystem.hide();
         BossAttacks.clearAll();
         if (BossEngine.currentPhase && typeof BossEngine.currentPhase.exit === 'function') {
             BossEngine.currentPhase.exit();
+        }
+
+        if (typeof ParticleEngine !== 'undefined') {
+            ParticleEngine.particles = [];
+            ParticleEngine.swords = [];
+            ParticleEngine.petals = [];
+            if (ParticleEngine.ctx && ParticleEngine.canvas) {
+                ParticleEngine.ctx.clearRect(0, 0, ParticleEngine.canvas.width, ParticleEngine.canvas.height);
+            }
+            ParticleEngine.resume();
+        }
+        if (typeof BalatroEngine !== 'undefined' && !BalatroEngine.animId) {
+            BalatroEngine.render();
         }
 
         const blessing = localStorage.getItem('codex_active_blessing');
@@ -3033,6 +3205,9 @@ const BossState = {
         this.playerHp = this.maxPlayerHp;
         this.shipX = window.innerWidth / 2;
         this.shipY = window.innerHeight * 0.78;
+        this.keys = { w: false, a: false, s: false, d: false };
+        this.joyDx = 0;
+        this.joyDy = 0;
         this.playerBullets = [];
         this.afterimages = [];
         this.impaledSwords = [];
@@ -3040,10 +3215,14 @@ const BossState = {
         this.railgunCharge = 50;
         this.shieldActive = false;
         this.shieldCooldown = 0;
+        this.playerIFrames = 0;
         this.weaponLost = false;
 
         document.body.className = 'combat-no-cursor';
         document.getElementById('cinematic-darkness')?.classList.remove('active');
+        document.getElementById('silencio-overlay')?.classList.remove('show');
+        document.getElementById('plastic-horse-overlay')?.classList.remove('show');
+        document.getElementById('carton-sword-overlay')?.classList.remove('show');
 
         const core = document.getElementById('boss-core');
         if (core) {
@@ -3120,7 +3299,7 @@ const BossState = {
     },
 
     damagePlayer() {
-        if (this.playerHp <= 0) return;
+        if (this.playerHp <= 0 || this.isDying) return;
         this.playerHp--;
         if (typeof AudioManager !== 'undefined') AudioManager.beep(90, 0.3, 'sawtooth', 0.08);
         if (typeof ScreenUtils !== 'undefined') ScreenUtils.triggerShake();
@@ -3129,13 +3308,18 @@ const BossState = {
             if (heart) heart.classList.toggle('lost', i > this.playerHp);
         }
         if (this.playerHp <= 0) {
-            BossAttacks.clearAll();
             this.triggerBadEnding();
         }
     },
 
     triggerBadEnding() {
-        BossState.damageLock = true;
+        if (this.isDying) return;
+        this.isDying = true;
+        this.damageLock = true;
+        this.playerBullets = [];
+        this.clearDeathTimers();
+
+        DialogueSystem.hide();
         BossAttacks.clearAll();
         AudioManager.stopBgm();
 
@@ -3143,25 +3327,84 @@ const BossState = {
             BossEngine.currentPhase.exit();
         }
 
-        document.body.className = '';
+        this.deathOriginX = this.shipX;
+        this.deathOriginY = this.shipY;
+        this.deathShockwaveRadius = 5;
+        this.deathFragments = [];
+
+        const palette = ['#f7f5ed', '#dad4bb', '#e5c158', '#d9381e', '#8b8778'];
+        for (let i = 0; i < 65; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const speed = 1.2 + Math.random() * 7.5;
+            this.deathFragments.push({
+                x: this.shipX + (Math.random() - 0.5) * 16,
+                y: this.shipY + (Math.random() - 0.5) * 16,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed - 1.2,
+                size: 4 + Math.random() * 8,
+                rot: Math.random() * Math.PI * 2,
+                vRot: (Math.random() - 0.5) * 0.14,
+                life: 1.0,
+                decay: 0.22 + Math.random() * 0.18,
+                color: palette[i % palette.length]
+            });
+        }
+
+        if (typeof BalatroEngine !== 'undefined') BalatroEngine.triggerHit(this.shipX, this.shipY, 1.8);
+        if (typeof ScreenUtils !== 'undefined') ScreenUtils.triggerShake();
+        if (typeof AudioManager !== 'undefined') {
+            AudioManager.playAudio(BOSS_AUDIO_PATHS.bombExplode, 0.55);
+            AudioManager.beep(110, 0.8, 'sawtooth', 0.08);
+        }
+
+        ParticleEngine.startPetalRain(45);
+        const lyrics = document.getElementById('lyrics-container');
+        if (lyrics) lyrics.innerHTML = '';
+
         window.parent.postMessage({ type: 'UNLOCK_PSALMS_REROLL' }, '*');
 
-        document.getElementById('boss-core').style.display = 'none';
-        document.getElementById('boss-hud').style.display = 'none';
-        document.getElementById('player-hud').style.display = 'none';
+        const t1 = setTimeout(() => {
+            document.getElementById('cinematic-darkness')?.classList.add('active');
+            document.getElementById('boss-hud').style.display = 'none';
+            document.getElementById('player-hud').style.display = 'none';
 
-        AudioManager.playAudio(BOSS_AUDIO_PATHS.defeatLaugh);
-        document.getElementById('game-over-screen')?.classList.add('visible');
-        document.getElementById('retry-btn')?.classList.add('visible');
+            AudioManager.playAudio(BOSS_AUDIO_PATHS.defeatLaugh, 0.65);
+
+            const mockingQuotes = [
+                "¿Escuchas mi risa en medio del silencio? Es todo lo que queda cuando tu nave se deshace en píxeles.",
+                "Tanta prisa por derribar mi santuario... solo para terminar hecho cenizas frente a mí.",
+                "Mírate... reducido a fragmentos de memoria sueltos. ¿Vas a arrastrarte de nuevo o vas a rendirte?"
+            ];
+            const chosenQuote = mockingQuotes[Math.floor(Math.random() * mockingQuotes.length)];
+
+            DialogueSystem.show({
+                text: chosenQuote,
+                speaker: "SAPHYNIEL",
+                tone: "yandere",
+                autoHideTime: 3400,
+                spriteMap: BOSS_SPRITES,
+                callback: () => {
+                    this.showGameOverModal();
+                }
+            });
+        }, 1100);
+        this.deathSequenceTimers.push(t1);
+    },
+
+    showGameOverModal() {
+        DialogueSystem.hide();
+        document.body.className = '';
+        document.getElementById('boss-core').style.display = 'none';
+        const goScreen = document.getElementById('game-over-screen');
+        if (goScreen) goScreen.classList.add('visible');
     },
 
     moveBossCore() {
         const core = document.getElementById('boss-core');
-        if (!core || this.tackleState !== 'idle') return;
+        if (!core || this.tackleState !== 'idle' || this.isDying) return;
         const targetX = isMobile ? Math.random() * 50 + 25 : Math.random() * 62 + 19;
         const targetY = isMobile ? Math.random() * 24 + 18 : Math.random() * 28 + 16;
 
-        // Pulso sutil en el shader al desplazarse
         const cPos = this.getBossCoreCenter();
         if (typeof BalatroEngine !== 'undefined') {
             BalatroEngine.triggerHit(cPos.x, cPos.y, 0.55);
@@ -3269,6 +3512,9 @@ window.addEventListener('keyup', (e) => {
 })();
 
 function initBossEncounterSequence() {
+    if (document.activeElement && typeof document.activeElement.blur === 'function') {
+        document.activeElement.blur();
+    }
     window.focus();
     BossState.resetBossEncounter();
     BossState.battleStartTime = Date.now();
@@ -3320,8 +3566,29 @@ document.getElementById('choice-no')?.addEventListener('click', (e) => {
 });
 
 document.getElementById('retry-btn')?.addEventListener('click', (e) => {
+    e.preventDefault();
     e.stopPropagation();
+    e.currentTarget.blur();
+
+    window.parent.postMessage({ type: 'UNLOCK_ACHIEVEMENT', id: 'perseverance' }, '*');
+    BossState.showCombatAchievementToast("PERSEVERANCIA");
     initBossEncounterSequence();
+});
+
+document.getElementById('surrender-btn')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    e.currentTarget.blur();
+
+    BossState.clearDeathTimers();
+    BossAttacks.clearAll();
+    AudioManager.stopBgm();
+    document.getElementById('game-over-screen')?.classList.remove('visible');
+
+    window.parent.postMessage({
+        type: 'BOSS_SURRENDERED',
+        achievementId: 'fragile_faith'
+    }, '*');
 });
 
 window.addEventListener('message', (e) => {
@@ -3344,8 +3611,8 @@ window.addEventListener('DOMContentLoaded', () => {
 
 === FILE: js/boss/boss-attacks.js ===
 // =========================================================
-// SISTEMA DE ATAQUES YORHA: ESPIRALES, MURO, RED LÁSER,
-// ESPADAS DEL JUICIO (swordsprite.png) Y EMBESTIDAS FÍSICAS
+// SISTEMA DE ATAQUES YORHA: ESPADAS AUTOMÁTICAS CON STROKE Y BRILLO,
+// EMBESTIDAS CONTINUAS Y PROTECCIÓN DE BUCLES EN MUERTE
 // =========================================================
 const BossAttacks = {
     qteSpawnerTimer: null,
@@ -3354,20 +3621,117 @@ const BossAttacks = {
     laserSpawnerTimer: null,
     patternSpawnerTimer: null,
     survivalTimer: null,
+    swordBarrageTimer: null,
     clones: [],
     bullets: [],
     lasers: [],
     nodes: [],
     faithOrbs: [],
-    judgmentSwords: [], // Espadas lanzadas desde las 4 esquinas hacia Saphyniel
+    judgmentSwords: [],
     spiralAngle: 0,
     swordImg: null,
+    glowingSwordCanvas: null,
 
+    // Pre-procesa img/icons/swordsprite.png (que es mayormente negra) para añadirle
+    // un Stroke blanco marfil (#f7f5ed) y un Halo Dorado (#e5c158) de alto contraste
     initAssets() {
         if (!this.swordImg) {
             this.swordImg = new Image();
+            this.swordImg.onload = () => {
+                this.buildGlowingSwordSprite();
+            };
             this.swordImg.src = "img/icons/swordsprite.png";
+        } else if (this.swordImg.complete && !this.glowingSwordCanvas && this.swordImg.naturalWidth > 0) {
+            this.buildGlowingSwordSprite();
         }
+    },
+
+    buildGlowingSwordSprite() {
+        try {
+            const w = 64;
+            const h = 140;
+            const pad = 10;
+
+            // 1. Crear silueta blanca/dorada pura a partir del canal alfa de swordsprite.png
+            const silCanvas = document.createElement('canvas');
+            silCanvas.width = w;
+            silCanvas.height = h;
+            const sCtx = silCanvas.getContext('2d');
+            sCtx.drawImage(this.swordImg, pad, pad, w - pad * 2, h - pad * 2);
+            sCtx.globalCompositeOperation = 'source-in';
+            sCtx.fillStyle = '#f7f5ed';
+            sCtx.fillRect(0, 0, w, h);
+
+            // 2. Componer el sprite final con doble Stroke luminoso + núcleo negro original
+            const outCanvas = document.createElement('canvas');
+            outCanvas.width = w;
+            outCanvas.height = h;
+            const oCtx = outCanvas.getContext('2d');
+
+            oCtx.shadowColor = '#e5c158';
+            oCtx.shadowBlur = 14;
+
+            // Dibujar la silueta desplazada en 8 direcciones para crear un Stroke grueso y brillante
+            const offsets = [
+                [-2.5, 0], [2.5, 0], [0, -2.5], [0, 2.5],
+                [-2, -2], [2, -2], [-2, 2], [2, 2]
+            ];
+            offsets.forEach(([ox, oy]) => {
+                oCtx.drawImage(silCanvas, ox, oy);
+            });
+
+            // Superponer el sprite negro original en el centro
+            oCtx.shadowBlur = 0;
+            oCtx.drawImage(this.swordImg, pad, pad, w - pad * 2, h - pad * 2);
+
+            this.glowingSwordCanvas = outCanvas;
+        } catch (e) {
+            this.glowingSwordCanvas = null;
+        }
+    },
+
+    drawEnhancedSword(ctx, width = 46, height = 110) {
+        this.initAssets();
+        // Halo energético detrás de la hoja para garantizar visibilidad total
+        ctx.save();
+        const grad = ctx.createLinearGradient(0, -height * 0.5, 0, height * 0.5);
+        grad.addColorStop(0, 'rgba(247, 245, 237, 0.95)');
+        grad.addColorStop(0.5, 'rgba(229, 193, 88, 0.55)');
+        grad.addColorStop(1, 'rgba(217, 56, 30, 0.0)');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.moveTo(0, -height * 0.52);
+        ctx.lineTo(width * 0.28, height * 0.25);
+        ctx.lineTo(-width * 0.28, height * 0.25);
+        ctx.closePath();
+        ctx.fill();
+
+        if (this.glowingSwordCanvas) {
+            ctx.shadowColor = '#f7f5ed';
+            ctx.shadowBlur = 16;
+            ctx.drawImage(this.glowingSwordCanvas, -width / 2, -height / 2, width, height);
+        } else if (this.swordImg && this.swordImg.complete && this.swordImg.naturalWidth > 0) {
+            ctx.shadowColor = '#f7f5ed';
+            ctx.shadowBlur = 18;
+            ctx.strokeStyle = '#f7f5ed';
+            ctx.lineWidth = 2.5;
+            ctx.strokeRect(-4, -height * 0.42, 8, height * 0.7);
+            ctx.drawImage(this.swordImg, -width / 2, -height / 2, width, height);
+        } else {
+            ctx.fillStyle = '#09090b';
+            ctx.strokeStyle = '#f7f5ed';
+            ctx.lineWidth = 2.5;
+            ctx.shadowColor = '#e5c158';
+            ctx.shadowBlur = 16;
+            ctx.beginPath();
+            ctx.moveTo(0, -height * 0.46);
+            ctx.lineTo(8, height * 0.15);
+            ctx.lineTo(-8, height * 0.15);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+        }
+        ctx.restore();
     },
 
     getNonOverlappingCoords(marginVw = 18, marginVh = 22) {
@@ -3376,10 +3740,10 @@ const BossAttacks = {
         return { left, top };
     },
 
-    // --- 1. PROYECTILES CON PALETA AUTÉNTICA NIER:AUTOMATA ---
-    // Carmesí Termonuclear (#d9381e / #ff9e80) y Obsidiana Violácea (#1c0d26 / #8a2848)
     spawnDanmakuRing(originX, originY, count = 12, speed = 3.2, pattern = 'ring') {
+        if (BossState.isDying || BossState.playerHp <= 0) return;
         if (BossState.damageLock && BossState.phase !== 3) return;
+
         const isMob = window.innerWidth <= 680;
         const finalCount = isMob ? Math.max(6, Math.floor(count * 0.7)) : count;
         const baseAngle = Math.atan2(BossState.shipY - originY, BossState.shipX - originX);
@@ -3403,11 +3767,11 @@ const BossAttacks = {
         if (typeof AudioManager !== 'undefined') AudioManager.beep(240, 0.04, 'sawtooth', 0.02);
     },
 
-    // NUEVO ATAQUE: Espiral de Relojería (Clockwork Spiral)
     spawnSpiralVolley(arms = 3, bulletsPerArm = 2, speed = 3.4) {
+        if (BossState.isDying || BossState.playerHp <= 0) return;
         if (BossState.damageLock && BossState.phase !== 3) return;
         const core = BossState.getBossCoreCenter();
-        this.spiralAngle += 0.38;
+        this.spiralAngle += 0.42;
 
         for (let a = 0; a < arms; a++) {
             const armAngle = this.spiralAngle + (Math.PI * 2 * a) / arms;
@@ -3428,32 +3792,30 @@ const BossAttacks = {
         }
     },
 
-    // NUEVO ATAQUE: Ráfaga de Francotirador en Cono (Aimed Tri-Burst)
     spawnAimedBurst() {
-        if (BossState.damageLock && BossState.phase !== 3) return;
+        if (BossState.isDying || BossState.playerHp <= 0) return;
         for (let w = 0; w < 3; w++) {
             setTimeout(() => {
-                if (BossState.playerHp <= 0 || (BossState.damageLock && BossState.phase !== 3)) return;
+                if (BossState.playerHp <= 0 || BossState.isDying) return;
                 const core = BossState.getBossCoreCenter();
                 this.spawnDanmakuRing(core.x, core.y, 5, 4.3 + w * 0.5, 'aimed');
             }, w * 180);
         }
     },
 
-    // NUEVO ATAQUE: Muro de Cortina con Hueco (Curtain Wall)
     spawnCurtainWall() {
-        if (BossState.damageLock && BossState.phase !== 3) return;
+        if (BossState.isDying || BossState.playerHp <= 0) return;
         const total = window.innerWidth <= 680 ? 11 : 18;
         const gapIndex = Math.floor(Math.random() * (total - 4)) + 2;
         const stepX = window.innerWidth / total;
 
         for (let i = 0; i <= total; i++) {
-            if (Math.abs(i - gapIndex) <= 1) continue; // Brecha para pasar con la nave
+            if (Math.abs(i - gapIndex) <= 1) continue;
             this.bullets.push({
                 x: i * stepX,
                 y: 65,
                 vx: 0,
-                vy: 2.85,
+                vy: 2.95,
                 radius: 9.5,
                 coreColor: '#1c0d26',
                 ringColor: '#d9381e',
@@ -3463,16 +3825,15 @@ const BossAttacks = {
         if (typeof AudioManager !== 'undefined') AudioManager.beep(190, 0.12, 'sawtooth', 0.03);
     },
 
-    // NUEVO ATAQUE: Red de Láseres Cruzados (Sacred Grid)
     spawnLaserGrid(count = 2) {
         for (let i = 0; i < count; i++) {
-            setTimeout(() => this.spawnTelegraphLaser(), i * 240);
+            setTimeout(() => this.spawnTelegraphLaser(), i * 220);
         }
     },
 
     spawnTelegraphLaser() {
-        if (BossState.damageLock && !BossState.weaponLost) return;
-        const yPos = BossState.shipY + (Math.random() - 0.5) * 160;
+        if (BossState.isDying || BossState.playerHp <= 0) return;
+        const yPos = BossState.shipY + (Math.random() - 0.5) * 150;
         const angle = (Math.random() - 0.5) * 0.65;
         this.lasers.push({
             x: window.innerWidth / 2,
@@ -3480,44 +3841,51 @@ const BossAttacks = {
             angle,
             state: 'warn',
             timer: 0,
-            warnDuration: 1.05,
+            warnDuration: 1.0,
             fireDuration: 0.38,
             hasDamaged: false
         });
         if (typeof AudioManager !== 'undefined') AudioManager.beep(880, 0.09, 'triangle', 0.025);
     },
 
-    // --- 2. ESPADAS DEL JUICIO (img/icons/swordsprite.png) DESDE LAS 4 ESQUINAS ---
-    // El sprite tiene el mango abajo y la hoja hacia arriba (^), por lo que rotamos atan2(dy, dx) + Math.PI / 2
-    spawnJudgmentSword(cornerIndex = null, damage = 14) {
-        if (BossState.phase !== 3 || BossState.currentHp <= 0) return;
+    // --- ESPADAS AUTOMÁTICAS DESDE LOS BORDES Y ESQUINAS QUE ATACAN A SAPHYNIEL ---
+    spawnJudgmentSword(edgeIndex = null, damage = 20) {
+        if (BossState.phase !== 3 || BossState.currentHp <= 0 || BossState.isDying) return;
         this.initAssets();
 
         const w = window.innerWidth;
         const h = window.innerHeight;
-        const corners = [
-            { x: -30, y: -30 },
-            { x: w + 30, y: -30 },
-            { x: -30, y: h + 30 },
-            { x: w + 30, y: h + 30 }
+        // 8 puntos de aparición en los bordes y esquinas de la pantalla
+        const spawnPoints = [
+            { x: -40, y: -40 },
+            { x: w + 40, y: -40 },
+            { x: -40, y: h + 40 },
+            { x: w + 40, y: h + 40 },
+            { x: w * 0.25, y: -50 },
+            { x: w * 0.75, y: -50 },
+            { x: -50, y: h * 0.45 },
+            { x: w + 50, y: h * 0.45 }
         ];
-        const c = cornerIndex !== null ? corners[cornerIndex % 4] : corners[Math.floor(Math.random() * 4)];
+        const pt = edgeIndex !== null
+            ? spawnPoints[edgeIndex % spawnPoints.length]
+            : spawnPoints[Math.floor(Math.random() * spawnPoints.length)];
+
         const core = BossState.getBossCoreCenter();
-        const angle = Math.atan2(core.y - c.y, core.x - c.x);
+        const angle = Math.atan2(core.y - pt.y, core.x - pt.x);
 
         this.judgmentSwords.push({
-            x: c.x,
-            y: c.y,
-            speed: 19,
+            x: pt.x,
+            y: pt.y,
+            speed: 17.5,
             angle,
             damage
         });
 
-        if (typeof AudioManager !== 'undefined') AudioManager.beep(1120, 0.06, 'sawtooth', 0.03);
+        if (typeof AudioManager !== 'undefined') AudioManager.beep(1180, 0.05, 'sawtooth', 0.025);
     },
 
-    // Orbes de Fe dorados en Fase 3 para recargar el Escudo al tocarlos
     spawnFaithOrb() {
+        if (BossState.isDying || BossState.playerHp <= 0) return;
         const coords = this.getNonOverlappingCoords(20, 25);
         this.faithOrbs.push({
             x: (coords.left / 100) * window.innerWidth,
@@ -3527,9 +3895,8 @@ const BossAttacks = {
         });
     },
 
-    // --- 3. BOMBAS Y CRUCES DE CURACIÓN CON PRIORIDAD DE AGGRO ---
     spawnBomb(isGolden = false) {
-        if (BossState.playerHp <= 0) return;
+        if (BossState.playerHp <= 0 || BossState.isDying) return;
         const coords = this.getNonOverlappingCoords(18, 24);
         const x = (coords.left / 100) * window.innerWidth;
         const y = (coords.top / 100) * window.innerHeight;
@@ -3547,7 +3914,7 @@ const BossAttacks = {
     },
 
     spawnQteCross() {
-        if (BossState.playerHp <= 0) return;
+        if (BossState.playerHp <= 0 || BossState.isDying) return;
         const coords = this.getNonOverlappingCoords(18, 24);
         const x = (coords.left / 100) * window.innerWidth;
         const y = (coords.top / 100) * window.innerHeight;
@@ -3561,7 +3928,6 @@ const BossAttacks = {
             timer: 4.8,
             maxTimer: 4.8
         });
-        // Anillo escolta lento alrededor de la cruz de curación
         this.spawnDanmakuRing(x, y, 6, 1.8, 'ring');
     },
 
@@ -3569,7 +3935,6 @@ const BossAttacks = {
         this.spawnQteCross();
     },
 
-    // --- 4. CLONES DE ILUSIÓN ATACANTES ---
     spawnClones() {
         this.clearClones();
         for (let i = 0; i < 2; i++) {
@@ -3616,13 +3981,13 @@ const BossAttacks = {
     },
 
     updateProjectilesAndLasers(dt, ctx) {
-        if (!ctx) return;
+        if (!ctx || BossState.isDying || BossState.playerHp <= 0) return;
         this.initAssets();
 
-        // A. Actualizar Clones Atacantes
+        // A. Clones Atacantes
         for (let i = this.clones.length - 1; i >= 0; i--) {
             const c = this.clones[i];
-            if (!c.el || !document.body.contains(c.el)) {
+            if (!c || !c.el || !document.body.contains(c.el)) {
                 this.clones.splice(i, 1);
                 continue;
             }
@@ -3639,50 +4004,32 @@ const BossAttacks = {
             }
         }
 
-        // B. Actualizar Espadas del Juicio (swordsprite.png) volando hacia Saphyniel
+        // B. Espadas Automáticas (swordsprite.png) volando hacia Saphyniel y bajando su vida a 0%
         const core = BossState.getBossCoreCenter();
         for (let i = this.judgmentSwords.length - 1; i >= 0; i--) {
             const sw = this.judgmentSwords[i];
-            // Guiado dinámico hacia la posición actual del GIF de Saphyniel
+            if (!sw) continue;
+
             sw.angle = Math.atan2(core.y - sw.y, core.x - sw.x);
             sw.x += Math.cos(sw.angle) * sw.speed * (dt * 60);
             sw.y += Math.sin(sw.angle) * sw.speed * (dt * 60);
 
-            // Dibujar estela dorada y el sprite swordsprite.png rotado (punta hacia arriba = angle + Math.PI / 2)
             ctx.save();
             ctx.translate(sw.x, sw.y);
+            // El sprite tiene el mango abajo y la punta hacia arriba (^), rotamos angle + Math.PI / 2
             ctx.rotate(sw.angle + Math.PI / 2);
-
-            if (this.swordImg && this.swordImg.complete && this.swordImg.naturalWidth > 0) {
-                ctx.shadowColor = '#f7f5ed';
-                ctx.shadowBlur = 16;
-                ctx.drawImage(this.swordImg, -18, -48, 36, 96);
-            } else {
-                // Fallback vectorial si el sprite tarda en cargar
-                ctx.fillStyle = '#f7f5ed';
-                ctx.shadowColor = '#e5c158';
-                ctx.shadowBlur = 14;
-                ctx.beginPath();
-                ctx.moveTo(0, -45);
-                ctx.lineTo(7, 15);
-                ctx.lineTo(-7, 15);
-                ctx.closePath();
-                ctx.fill();
-                ctx.fillRect(-16, 15, 32, 5);
-                ctx.fillRect(-4, 20, 8, 18);
-            }
+            this.drawEnhancedSword(ctx, 48, 114);
             ctx.restore();
 
-            // Al impactar a Saphyniel, se clava físicamente en su cuerpo y le resta vida
+            // Impacto contra Saphyniel
             if (Math.hypot(sw.x - core.x, sw.y - core.y) < core.radius * 0.78) {
                 ParticleEngine.explode(sw.x, sw.y, '#f7f5ed', 14);
-                ParticleEngine.explode(sw.x, sw.y, '#d9381e', 8);
+                ParticleEngine.explode(sw.x, sw.y, '#e5c158', 10);
                 if (typeof AudioManager !== 'undefined') AudioManager.swordImpactSound();
                 if (typeof ScreenUtils !== 'undefined') ScreenUtils.triggerShake();
 
-                // Clavar la espada en el cuerpo de Saphyniel (máximo 18 espadas visibles clavadas)
-                if (BossState.impaledSwords.length < 18) {
-                    const impactDist = 28 + Math.random() * 24;
+                if (BossState.impaledSwords.length < 20) {
+                    const impactDist = 24 + Math.random() * 26;
                     BossState.impaledSwords.push({
                         angle: sw.angle,
                         offsetX: -Math.cos(sw.angle) * impactDist,
@@ -3690,16 +4037,24 @@ const BossAttacks = {
                     });
                 }
 
-                BossState.currentHp = Math.max(1, BossState.currentHp - sw.damage);
+                // Bajar la vida de Saphyniel hasta 0% con cada espada clavada
+                BossState.currentHp = Math.max(0, BossState.currentHp - sw.damage);
                 BossState.updateHpBar();
                 BossState.spawnDamagePopup(core.x, core.y, sw.damage, 'normal');
                 this.judgmentSwords.splice(i, 1);
+
+                if (BossState.currentHp <= 0 && typeof SubphaseSurvival !== 'undefined' && !SubphaseSurvival.climaxTriggered) {
+                    SubphaseSurvival.climaxTriggered = true;
+                    SubphaseSurvival.triggerClimax();
+                    return;
+                }
             }
         }
 
-        // C. Actualizar Orbes de Fe (Recargan el Escudo al tocarlos con la nave)
+        // C. Orbes de Fe dorados
         for (let i = this.faithOrbs.length - 1; i >= 0; i--) {
             const orb = this.faithOrbs[i];
+            if (!orb) continue;
             orb.timer -= dt;
             if (orb.timer <= 0) {
                 this.faithOrbs.splice(i, 1);
@@ -3725,9 +4080,10 @@ const BossAttacks = {
             }
         }
 
-        // D. Nodos de Aggro (Bombas y Cruces de Curación con paleta NieR)
+        // D. Bombas y Cruces de Curación
         for (let i = this.nodes.length - 1; i >= 0; i--) {
             const n = this.nodes[i];
+            if (!n) continue;
             n.timer -= dt;
 
             if (n.timer <= 0) {
@@ -3802,9 +4158,10 @@ const BossAttacks = {
             ctx.restore();
         }
 
-        // E. Láseres Telegráficos YoRHa
+        // E. Láseres Telegráficos
         for (let i = this.lasers.length - 1; i >= 0; i--) {
             const l = this.lasers[i];
+            if (!l) continue;
             l.timer += dt;
 
             ctx.save();
@@ -3840,7 +4197,10 @@ const BossAttacks = {
                     const perpDist = Math.abs(-Math.sin(l.angle) * dx + Math.cos(l.angle) * dy);
                     if (perpDist < width * 0.65 + 12) {
                         l.hasDamaged = true;
+                        ctx.restore();
                         BossState.tryHitPlayer(BossState.shipX, BossState.shipY);
+                        if (BossState.isDying || BossState.playerHp <= 0) return;
+                        continue;
                     }
                 }
                 if (l.timer >= l.fireDuration) this.lasers.splice(i, 1);
@@ -3848,9 +4208,12 @@ const BossAttacks = {
             ctx.restore();
         }
 
-        // F. Esferas Danmaku YoRHa
+        // F. Esferas Danmaku YoRHa (Con verificación de muerte para no lanzar TypeError)
         for (let i = this.bullets.length - 1; i >= 0; i--) {
+            if (BossState.isDying || BossState.playerHp <= 0) return;
             const b = this.bullets[i];
+            if (!b) continue;
+
             b.x += b.vx * (dt * 60);
             b.y += b.vy * (dt * 60);
 
@@ -3891,13 +4254,16 @@ const BossAttacks = {
             if (distToShip < b.radius + 11) {
                 this.bullets.splice(i, 1);
                 BossState.tryHitPlayer(b.x, b.y);
+                if (BossState.isDying || BossState.playerHp <= 0) return;
             }
         }
     },
 
-    // --- 5. CLÍMAX FASE 3: ESPADAS DESDE LAS ESQUINAS + EMBESTIDAS DE SAPHYNIEL ---
+    // --- MODO SUPERVIVENCIA Y JUICIO AUTOMÁTICO EN FASE 3 ---
     startSurvivalMode() {
         clearInterval(this.survivalTimer);
+        clearInterval(this.swordBarrageTimer);
+
         const surviveText = document.getElementById('survive-text');
         if (surviveText) {
             surviveText.classList.remove('show');
@@ -3906,34 +4272,42 @@ const BossAttacks = {
             setTimeout(() => surviveText.classList.remove('show'), 3000);
         }
 
-        let tick = 0;
+        // 1. Lluvia Automática de Espadas desde los bordes que bajan la vida de Saphyniel a 0%
+        let swordTick = 0;
+        const dmgPerSword = Math.ceil(BossState.maxHp / 32); // ~32 espadas en 21 segundos llevan su vida exactamente a 0%
+        this.swordBarrageTimer = setInterval(() => {
+            if (BossState.phase !== 3 || BossState.playerHp <= 0 || BossState.isDying || BossState.currentHp <= 0) {
+                clearInterval(this.swordBarrageTimer);
+                return;
+            }
+            this.spawnJudgmentSword(swordTick % 8, dmgPerSword);
+            swordTick++;
+        }, 640);
+
+        // 2. Ataques intensos y Embestidas constantes de Saphyniel cada 1.7s
+        let attackTick = 0;
+        BossState.startBossTackle();
         this.survivalTimer = setInterval(() => {
-            if (BossState.phase !== 3 || BossState.playerHp <= 0 || BossState.damageLock) {
+            if (BossState.phase !== 3 || BossState.playerHp <= 0 || BossState.isDying || BossState.currentHp <= 0) {
                 clearInterval(this.survivalTimer);
                 return;
             }
-            tick++;
+            attackTick++;
 
-            // 1. Disparar espadas (swordsprite.png) desde las esquinas que se clavan en Saphyniel
-            this.spawnJudgmentSword(tick % 4, 15);
-            if (tick % 2 === 0) {
-                setTimeout(() => this.spawnJudgmentSword((tick + 2) % 4, 15), 250);
-            }
-
-            // 2. Ataques desde la posición real del GIF de Saphyniel
             const core = BossState.getBossCoreCenter();
-            this.spawnDanmakuRing(core.x, core.y, 10, 3.3, tick % 2 === 0 ? 'ring' : 'aimed');
+            this.spawnDanmakuRing(core.x, core.y, 12, 3.6, attackTick % 2 === 0 ? 'aimed' : 'ring');
+            this.spawnSpiralVolley(4, 2, 3.6);
 
-            // 3. Cada 2 ciclos, Saphyniel ejecuta su Embestida Física (Tackle) hacia tu nave
-            if (tick % 2 === 1) {
-                BossState.startBossTackle();
+            // Saphyniel embiste constantemente hacia tu nave
+            BossState.startBossTackle();
+
+            if (attackTick % 2 === 0) {
+                this.spawnLaserGrid(2);
             }
-
-            // 4. Generar Orbes de Fe dorados para recargar el escudo
-            if (tick % 3 === 0) {
+            if (attackTick % 3 === 0) {
                 this.spawnFaithOrb();
             }
-        }, 1250);
+        }, 1700);
     },
 
     clearAll() {
@@ -3943,6 +4317,7 @@ const BossAttacks = {
         clearInterval(this.laserSpawnerTimer);
         clearInterval(this.patternSpawnerTimer);
         clearInterval(this.survivalTimer);
+        clearInterval(this.swordBarrageTimer);
 
         this.clearClones();
         this.bullets = [];
@@ -4633,8 +5008,12 @@ const Phase1 = {
     hit50: false,
     hit20: false,
     alertBannerTimer: 0,
+    activeSessionId: 0,
 
     enter() {
+        this.activeSessionId++;
+        const currentSession = this.activeSessionId;
+
         BossState.phase = 1;
         BossState.maxHp = 480;
         BossState.currentHp = 480;
@@ -4663,18 +5042,24 @@ const Phase1 = {
         }
 
         const startCombatTimers = () => {
+            if (this.activeSessionId !== currentSession || BossState.playerHp <= 0 || BossState.isDying) return;
+            BossAttacks.clearAll();
             BossState.damageLock = false;
-            BossAttacks.qteSpawnerTimer = setInterval(() => BossAttacks.spawnQteCross(), 6400);
+
+            BossAttacks.qteSpawnerTimer = setInterval(() => {
+                if (!BossState.damageLock && BossState.playerHp > 0) BossAttacks.spawnQteCross();
+            }, 6400);
+
             BossAttacks.danmakuSpawnerTimer = setInterval(() => {
-                if (!BossState.damageLock) {
+                if (!BossState.damageLock && BossState.playerHp > 0) {
                     const core = BossState.getBossCoreCenter();
                     BossAttacks.spawnDanmakuRing(core.x, core.y, 10, 3.2, 'aimed');
                 }
             }, 3100);
-            // Variedad extra en Fase 1: Espiral de Relojería + Ráfaga Francotirador
+
             let pStep = 0;
             BossAttacks.patternSpawnerTimer = setInterval(() => {
-                if (BossState.damageLock) return;
+                if (BossState.damageLock || BossState.playerHp <= 0) return;
                 pStep++;
                 if (pStep % 3 === 0) BossAttacks.spawnAimedBurst();
                 else BossAttacks.spawnSpiralVolley(3, 2, 3.1);
@@ -4690,9 +5075,10 @@ const Phase1 = {
             text: "Has forzado la puerta de mi santuario. [WASD: MOVER | ESPACIO: ESCUDO | E: RAILGUN]",
             speaker: "SAPHYNIEL // DEIDAD",
             tone: "angry",
-            autoHideTime: 2600,
+            autoHideTime: 2500,
             spriteMap: BOSS_SPRITES,
             callback: () => {
+                if (this.activeSessionId !== currentSession || BossState.playerHp <= 0 || BossState.isDying) return;
                 if (typeof AudioManager !== 'undefined') AudioManager.playAudio(BOSS_AUDIO_PATHS.bossIntro);
                 startCombatTimers();
             }
@@ -4743,6 +5129,7 @@ const Phase1 = {
     },
 
     exit() {
+        this.activeSessionId++;
         BossAttacks.clearAll();
     }
 };
@@ -4754,8 +5141,13 @@ const Phase2 = {
     hit75: false,
     cinematicTriggered: false,
     hit20: false,
+    healInterval: null,
+    activeSessionId: 0,
 
     enter() {
+        this.activeSessionId++;
+        const currentSession = this.activeSessionId;
+
         BossState.phase = 2;
         BossState.maxHp = 680;
         BossState.currentHp = 1;
@@ -4765,24 +5157,37 @@ const Phase2 = {
         this.cinematicTriggered = false;
         this.hit20 = false;
 
+        clearInterval(this.healInterval);
         BossAttacks.clearAll();
         document.body.classList.add('combat-no-cursor', 'phase-2-active');
 
         const startPhase2Timers = () => {
+            if (this.activeSessionId !== currentSession || BossState.playerHp <= 0 || BossState.isDying) return;
+            BossAttacks.clearAll();
             BossState.damageLock = false;
-            BossAttacks.bombSpawnerTimer = setInterval(() => BossAttacks.spawnBomb(), 3400);
-            BossAttacks.qteSpawnerTimer = setInterval(() => BossAttacks.spawnQteCross(), 5800);
-            BossAttacks.laserSpawnerTimer = setInterval(() => BossAttacks.spawnLaserGrid(2), 4500);
+
+            BossAttacks.bombSpawnerTimer = setInterval(() => {
+                if (!BossState.damageLock && BossState.playerHp > 0) BossAttacks.spawnBomb();
+            }, 3400);
+
+            BossAttacks.qteSpawnerTimer = setInterval(() => {
+                if (!BossState.damageLock && BossState.playerHp > 0) BossAttacks.spawnQteCross();
+            }, 5800);
+
+            BossAttacks.laserSpawnerTimer = setInterval(() => {
+                if (!BossState.damageLock && BossState.playerHp > 0) BossAttacks.spawnLaserGrid(2);
+            }, 4500);
+
             BossAttacks.danmakuSpawnerTimer = setInterval(() => {
-                if (!BossState.damageLock) {
+                if (!BossState.damageLock && BossState.playerHp > 0) {
                     const core = BossState.getBossCoreCenter();
                     BossAttacks.spawnDanmakuRing(core.x, core.y, 12, 3.4, 'ring');
                 }
             }, 2800);
-            // Variedad Fase 2: Muro de Cortina con hueco + Espiral Doble
+
             let step = 0;
             BossAttacks.patternSpawnerTimer = setInterval(() => {
-                if (BossState.damageLock) return;
+                if (BossState.damageLock || BossState.playerHp <= 0) return;
                 step++;
                 if (step % 2 === 0) BossAttacks.spawnCurtainWall();
                 else BossAttacks.spawnSpiralVolley(4, 2, 3.4);
@@ -4801,15 +5206,18 @@ const Phase2 = {
         AudioManager.playBgm(BOSS_AUDIO_PATHS.bgmPhase2, 0.52, true);
         DialogueSystem.show({ text: "Si la fuerza es el único idioma que respetas, te responderé sin adornos.", speaker: "SAPHYNIEL // DIVINO", tone: "angry", autoHideTime: 2600, spriteMap: BOSS_SPRITES });
 
-        let healInterval = setInterval(() => {
+        this.healInterval = setInterval(() => {
+            if (this.activeSessionId !== currentSession || BossState.playerHp <= 0 || BossState.isDying) {
+                clearInterval(this.healInterval);
+                return;
+            }
             BossState.currentHp += 28;
-            // Onda de empuje gravitacional hacia abajo durante la transformación
             BossState.shipY = Math.min(window.innerHeight - 50, BossState.shipY + 5);
             ScreenUtils.triggerShake();
             ParticleEngine.explode(window.innerWidth / 2, window.innerHeight * 0.30, '#d9381e', 6);
             if (BossState.currentHp >= BossState.maxHp) {
                 BossState.currentHp = BossState.maxHp;
-                clearInterval(healInterval);
+                clearInterval(this.healInterval);
                 startPhase2Timers();
             }
             BossState.updateHpBar();
@@ -4886,6 +5294,8 @@ const Phase2 = {
     },
 
     exit() {
+        this.activeSessionId++;
+        clearInterval(this.healInterval);
         BossAttacks.clearAll();
     }
 };
@@ -4903,19 +5313,21 @@ const Phase3 = {
     currentSubText: "",
     virtualTime: 99.0,
     introStartTime: 0,
+    activeSessionId: 0,
     countdownTimes: [
         { t: 141.2, txt: "1" }, { t: 142.0, txt: "2" },
         { t: 142.8, txt: "1" }, { t: 143.4, txt: "2" },
         { t: 144.0, txt: "3" }, { t: 144.6, txt: "4" }
     ],
     phase3Beatmap: [
-        119.5, 120.8, 122.2, 123.6, 125.0,
-        145.4, 146.8, 148.4, 150.0, 151.8,
-        154.0, 156.0, 158.0, 160.2, 162.2,
-        164.5, 166.2, 168.0, 170.0, 172.0, 174.0, 176.0, 178.5, 181.0, 183.5
+        119.4, 120.4, 121.4, 122.4, 123.4, 124.4, 125.4, 126.2,
+        145.4, 146.6, 147.8, 149.0, 150.2, 151.4, 152.6,
+        154.0, 155.4, 156.8, 158.2, 159.6, 161.0, 162.4,
+        164.5, 166.0, 167.5, 169.0, 170.5, 172.0, 173.5, 175.0, 176.8, 178.5, 180.5, 182.5, 184.5
     ],
 
     enter() {
+        this.activeSessionId++;
         BossAttacks.clearAll();
         document.getElementById('cinematic-darkness')?.classList.remove('active');
         document.body.classList.remove('phase-2-active');
@@ -4956,7 +5368,6 @@ const Phase3 = {
         }
     },
 
-    // Entrada Cinematográfica (99.0s a 106.5s) con Onda de Latido / Voz ("Who am I?") y Geometría Sagrada
     renderCinematicEntrance(ctx) {
         if (!ctx) return;
         const w = window.innerWidth;
@@ -4976,7 +5387,6 @@ const Phase3 = {
             ctx.stroke();
         }
 
-        // Onda de frecuencia vocal / latido cardíaco
         ctx.strokeStyle = '#f7f5ed';
         ctx.lineWidth = 2.5;
         ctx.shadowColor = '#dad4bb';
@@ -5000,7 +5410,7 @@ const Phase3 = {
     },
 
     update(dt) {
-        if (BossState.phase !== 3 || BossState.playerHp <= 0) return;
+        if (BossState.phase !== 3 || BossState.playerHp <= 0 || BossState.isDying) return;
         this.virtualTime += dt;
         const bgm = AudioManager.bgmTrack;
         const ct = (bgm && !bgm.paused && bgm.currentTime >= 98.5) ? bgm.currentTime : this.virtualTime;
@@ -5024,14 +5434,14 @@ const Phase3 = {
             }
         }
 
-        // BUG CORREGIDO: Los ataques del beatmap nacen SIEMPRE de la posición real del GIF de Saphyniel
         const arenaVisible = (this.cinematicPhase === 3 || (this.cinematicPhase >= 6 && this.cinematicPhase <= 8));
-        if (arenaVisible) {
+        if (arenaVisible && BossState.currentHp > 0) {
             for (let i = this.lastSpawnedBeatIndex + 1; i < this.phase3Beatmap.length; i++) {
                 if (ct >= this.phase3Beatmap[i]) {
                     const realCore = BossState.getBossCoreCenter();
-                    BossAttacks.spawnDanmakuRing(realCore.x, realCore.y, 8, 3.2, i % 2 === 0 ? 'aimed' : 'ring');
-                    if (i % 3 === 0) BossAttacks.spawnSpiralVolley(3, 2, 3.4);
+                    BossAttacks.spawnDanmakuRing(realCore.x, realCore.y, 10, 3.4, i % 2 === 0 ? 'aimed' : 'ring');
+                    if (i % 2 === 1) BossState.startBossTackle();
+                    if (i % 3 === 0) BossAttacks.spawnSpiralVolley(3, 2, 3.5);
                     this.lastSpawnedBeatIndex = i;
                     break;
                 }
@@ -5070,10 +5480,12 @@ const Phase3 = {
                 document.getElementById('boss-aura-farm')?.classList.add('active');
                 BossState.damageLock = false;
                 BossState.weaponLost = false;
+                BossState.startBossTackle();
             }
         } else if (this.cinematicPhase === 3 && ct >= 127.0) {
             this.cinematicPhase = 4;
             BossAttacks.clearAll();
+            BossState.tackleState = 'idle';
             BossState.damageLock = true;
             if (darkness) darkness.classList.add('active');
         } else if (this.cinematicPhase === 4 && ct >= 141.0) {
@@ -5099,8 +5511,6 @@ const Phase3 = {
             this.cinematicPhase = 6;
             document.getElementById('countdown-flash')?.classList.remove('show');
             if (typeof SubphaseOrbitalFall !== 'undefined') SubphaseOrbitalFall.enter();
-            // Durante 145s - 164s Saphyniel también se mueve y lanza espirales desde su posición real
-            BossState.moveBossCore();
         } else if (this.cinematicPhase === 6 && ct >= 153.8) {
             this.cinematicPhase = 7;
             const heroText = document.getElementById('hero-text');
@@ -5115,12 +5525,12 @@ const Phase3 = {
             BossState.startBossTackle();
         } else if (this.cinematicPhase === 7 && ct >= 164.0) {
             this.cinematicPhase = 8;
+            if (typeof SubphaseOrbitalFall !== 'undefined') SubphaseOrbitalFall.exit();
             if (typeof SubphaseSurvival !== 'undefined') SubphaseSurvival.enter();
         } else if (this.cinematicPhase === 8) {
             if (typeof SubphaseSurvival !== 'undefined') SubphaseSurvival.update(ct);
-            if (ct >= 186.5) {
+            if (SubphaseSurvival.climaxTriggered) {
                 this.cinematicPhase = 9;
-                if (typeof SubphaseOrbitalFall !== 'undefined') SubphaseOrbitalFall.exit();
             }
         } else if (this.cinematicPhase === 9 && ct >= 200.5) {
             this.cinematicPhase = 10;
@@ -5136,8 +5546,8 @@ const Phase3 = {
         }
     },
 
-    // Transición Emotiva y Melancólica entre la Caída de Saphyniel y los Créditos
     triggerDefeatDialogueSequence() {
+        const currentSession = this.activeSessionId;
         document.body.classList.remove('combat-no-cursor', 'phase-3-active', 'phase-3-tilt-a', 'phase-3-tilt-b', 'phase-3-tilt-reset', 'hyper-flashback', 'sepia-melancholy', 'glitch-flash', 'phase-3-shatter-zoom');
         const lyrics = document.getElementById('lyrics-container');
         if (lyrics) lyrics.innerHTML = '';
@@ -5154,6 +5564,7 @@ const Phase3 = {
 
         let dIdx = 0;
         const playNextLine = () => {
+            if (this.activeSessionId !== currentSession) return;
             if (dIdx < defeatLines.length) {
                 const cur = defeatLines[dIdx];
                 DialogueSystem.show({
@@ -5184,6 +5595,7 @@ const Phase3 = {
     },
 
     exit() {
+        this.activeSessionId++;
         if (typeof SubphaseFlashback !== 'undefined') SubphaseFlashback.exit();
         if (typeof SubphaseOrbitalFall !== 'undefined') SubphaseOrbitalFall.exit();
         if (typeof SubphaseSurvival !== 'undefined') SubphaseSurvival.exit();
@@ -5196,15 +5608,15 @@ BossEngine.register('phase3', Phase3);
 
 === FILE: js/boss/phases/phase-3/subphase-flashback.js ===
 // =========================================================
-// PUNTO 5: PROYECTOR DE CINE ANTIGUO 35MM Y TEATRO DE RECUERDOS
-// Usa los sprites reales de Saphyniel y la Nave YoRHa con disparos y bombas
+// PROYECTOR DE CINE ANTIGUO 35MM Y TEATRO DE RECUERDOS
+// Usa el icono de núcleo (img/icons/icon.png), core.png y la Nave YoRHa
 // =========================================================
 const SubphaseFlashback = {
     canvas: null,
     ctx: null,
     startTime: 0,
     duration: 12500,
-    avatarImg: null,
+    iconImg: null,
     coreImg: null,
     simBullets: [],
     simBombs: [],
@@ -5220,8 +5632,9 @@ const SubphaseFlashback = {
         this.canvas.style.opacity = '1';
 
         this.startTime = performance.now();
-        this.avatarImg = new Image();
-        this.avatarImg.src = "img/portraits/saphyniel_normal.png";
+        // REQUERIMIENTO: Usar img/icons/icon.png en lugar de un retrato
+        this.iconImg = new Image();
+        this.iconImg.src = "img/icons/icon.png";
         this.coreImg = new Image();
         this.coreImg.src = "img/boss/core.png";
 
@@ -5249,34 +5662,32 @@ const SubphaseFlashback = {
         const ctx = this.ctx;
         const t = elapsed * 0.001;
 
-        // 1. Fondo de celuloide antiguo con parpadeo de proyector (Flicker)
         const flicker = 0.92 + Math.random() * 0.08;
         ctx.fillStyle = `rgba(18, 14, 10, ${0.38 * flicker})`;
         ctx.fillRect(0, 0, w, h);
 
-        // Vibración sutil del proyector (Frame Jitter)
         ctx.save();
         const jitterX = (Math.random() - 0.5) * 3;
         const jitterY = (Math.random() - 0.5) * 3;
         ctx.translate(jitterX, jitterY);
 
-        // 2. Retrato melancólico de Saphyniel al fondo del teatro
-        if (this.avatarImg && this.avatarImg.complete) {
+        // Emblema central del núcleo (img/icons/icon.png) girando lentamente en el teatro antiguo
+        if (this.iconImg && this.iconImg.complete) {
             ctx.save();
-            ctx.globalAlpha = 0.16 * flicker;
-            const imgSize = Math.min(w, h) * 0.65;
-            ctx.drawImage(this.avatarImg, w / 2 - imgSize / 2, h / 2 - imgSize / 2, imgSize, imgSize);
+            ctx.translate(w / 2, h / 2);
+            ctx.rotate(t * 0.18);
+            ctx.globalAlpha = 0.22 * flicker;
+            const imgSize = Math.min(w, h) * 0.48;
+            ctx.drawImage(this.iconImg, -imgSize / 2, -imgSize / 2, imgSize, imgSize);
             ctx.restore();
         }
 
-        // 3. Posición simulada del Núcleo de Saphyniel y de la Nave YoRHa en la grabación
         const bossX = w * 0.5 + Math.sin(t * 1.7) * (w * 0.22);
         const bossY = h * 0.32 + Math.cos(t * 2.3) * (h * 0.08);
 
         const shipX = w * 0.5 + Math.sin(t * 2.6 + 1.2) * (w * 0.28);
         const shipY = h * 0.72 + Math.sin(t * 3.1) * (h * 0.07);
 
-        // Dibujar Núcleo de Saphyniel grabado
         ctx.save();
         ctx.translate(bossX, bossY);
         ctx.strokeStyle = 'rgba(218, 212, 187, 0.75)';
@@ -5290,7 +5701,6 @@ const SubphaseFlashback = {
         }
         ctx.restore();
 
-        // Generar pequeños disparos y bombas random en el recuerdo
         if (now - this.lastSimShot > 140) {
             this.lastSimShot = now;
             const ang = Math.atan2(bossY - shipY, bossX - shipX);
@@ -5320,7 +5730,6 @@ const SubphaseFlashback = {
             });
         }
 
-        // Actualizar y dibujar bombas del recuerdo
         for (let i = this.simBombs.length - 1; i >= 0; i--) {
             const b = this.simBombs[i];
             b.r += 1.2;
@@ -5336,7 +5745,6 @@ const SubphaseFlashback = {
             if (b.alpha <= 0) this.simBombs.splice(i, 1);
         }
 
-        // Actualizar y dibujar disparos del recuerdo
         for (let i = this.simBullets.length - 1; i >= 0; i--) {
             const sb = this.simBullets[i];
             sb.x += sb.vx;
@@ -5352,7 +5760,6 @@ const SubphaseFlashback = {
             }
         }
 
-        // Dibujar el Sprite de la Nave YoRHa en el recuerdo
         const aimAngle = Math.atan2(bossY - shipY, bossX - shipX);
         ctx.save();
         ctx.translate(shipX, shipY);
@@ -5370,7 +5777,6 @@ const SubphaseFlashback = {
         ctx.stroke();
         ctx.restore();
 
-        // 4. Rayones verticales de película antigua y grano
         ctx.strokeStyle = 'rgba(235, 220, 190, 0.22)';
         ctx.lineWidth = 1;
         for (let s = 0; s < 3; s++) {
@@ -5381,7 +5787,6 @@ const SubphaseFlashback = {
             ctx.stroke();
         }
 
-        // 5. Perforaciones laterales de cinta de cine 35mm y cortina de teatro
         ctx.fillStyle = '#050403';
         ctx.fillRect(0, 0, 44, h);
         ctx.fillRect(w - 44, 0, 44, h);
@@ -5393,7 +5798,6 @@ const SubphaseFlashback = {
             ctx.fillRect(w - 30, y, 18, 24);
         }
 
-        // Marca de tiempo de archivo cinematográfico
         ctx.fillStyle = 'rgba(218, 212, 187, 0.85)';
         ctx.font = '14px "Share Tech Mono", monospace';
         ctx.textAlign = 'left';
@@ -5415,11 +5819,13 @@ const SubphaseFlashback = {
 === FILE: js/boss/phases/phase-3/subphase-orbital-fall.js ===
 const SubphaseOrbitalFall = {
     cameraInterval: null,
+    assaultInterval: null,
 
     enter() {
         BossAttacks.clearAll();
-        // PUNTO 6: Saphyniel destruye tu Railgun y tu cañón automático; solo queda el Escudo
+        // Saphyniel destruye el Railgun y el cañón de tu nave; solo tienes tu Escudo
         BossState.weaponLost = true;
+        BossState.damageLock = false; // Permite que los ataques de Saphyniel sigan activos al 100%
         BossState.playerBullets = [];
         BossState.railgunCharge = 0;
         BossState.currentHp = BossState.maxHp;
@@ -5444,6 +5850,7 @@ const SubphaseOrbitalFall = {
         }
 
         setTimeout(() => {
+            if (BossState.isDying || BossState.playerHp <= 0) return;
             AudioManager.playAudio(BOSS_AUDIO_PATHS.ecoOrbital);
             ParticleEngine.explode(window.innerWidth / 2, window.innerHeight * 0.3, '#ffffff', 80);
             ScreenUtils.triggerShake();
@@ -5452,6 +5859,22 @@ const SubphaseOrbitalFall = {
             const aura = document.getElementById('boss-aura-farm');
             if (aura) aura.classList.add('max-power');
             BossState.spawnDamagePopup(BossState.shipX, BossState.shipY - 30, "ARMAMENTO DESTRUIDO // USA TU ESCUDO", 'blocked');
+
+            // Iniciar asalto agresivo de Saphyniel entre 145.8s y 164.0s (Embestidas + Espirales + Muros)
+            let step = 0;
+            BossState.startBossTackle();
+            clearInterval(this.assaultInterval);
+            this.assaultInterval = setInterval(() => {
+                if (BossState.phase !== 3 || BossState.playerHp <= 0 || BossState.isDying) {
+                    clearInterval(this.assaultInterval);
+                    return;
+                }
+                step++;
+                BossState.startBossTackle();
+                BossAttacks.spawnSpiralVolley(4, 2, 3.5);
+                if (step % 2 === 0) BossAttacks.spawnCurtainWall();
+                if (step % 3 === 0) BossAttacks.spawnFaithOrb();
+            }, 2100);
         }, 800);
 
         this.startCameraFX();
@@ -5471,6 +5894,7 @@ const SubphaseOrbitalFall = {
 
     exit() {
         clearInterval(this.cameraInterval);
+        clearInterval(this.assaultInterval);
         document.body.classList.remove('phase-3-tilt-a', 'phase-3-tilt-b', 'phase-3-tilt-reset');
     }
 };
@@ -5479,14 +5903,17 @@ const SubphaseOrbitalFall = {
 === FILE: js/boss/phases/phase-3/subphase-survival.js ===
 // =========================================================
 // SUBFASE SUPERVIVENCIA (164.0s - 186.5s):
-// Saphyniel pierde vida porque las espadas (swordsprite.png) se clavan en ella
-// mientras ella intenta embestir (tackle) tu nave físicamente.
+// Las espadas salen automáticamente de los bordes y bajan la vida de Saphyniel
+// hasta llegar a 0%, momento en el que estalla el efecto y la transición.
 // =========================================================
 const SubphaseSurvival = {
     climaxTriggered: false,
 
     enter() {
         this.climaxTriggered = false;
+        BossState.damageLock = false;
+        BossState.weaponLost = true;
+
         document.getElementById('plastic-horse-overlay')?.classList.remove('show');
         document.getElementById('carton-sword-overlay')?.classList.remove('show');
 
@@ -5496,7 +5923,10 @@ const SubphaseSurvival = {
     },
 
     update(currentTime) {
-        if (currentTime > 186.5 && !this.climaxTriggered) {
+        if (this.climaxTriggered || BossState.isDying || BossState.playerHp <= 0) return;
+
+        // Si el reloj musical llega a 186.5s y aún quedaba algún punto de vida, lanzar ráfaga final y detonar a 0%
+        if (currentTime >= 186.5 || BossState.currentHp <= 0) {
             this.climaxTriggered = true;
             this.triggerClimax();
         }
@@ -5521,7 +5951,6 @@ const SubphaseSurvival = {
             core.classList.add('core-dying-tremble');
         }
 
-        // Disolver las espadas clavadas en una lluvia melancólica de ceniza blanca y pétalos
         const corePos = BossState.getBossCoreCenter();
         BossState.impaledSwords.forEach(sw => {
             ParticleEngine.explode(corePos.x + sw.offsetX, corePos.y + sw.offsetY, '#f7f5ed', 10);
@@ -6184,7 +6613,8 @@ const ParticleEngine = {
         this.resize();
         window.addEventListener('resize', () => this.resize());
         this.running = true;
-        if (!this.animId) this.animate();
+        if (this.animId) cancelAnimationFrame(this.animId);
+        this.animate();
     },
 
     resize() {
@@ -6202,8 +6632,8 @@ const ParticleEngine = {
     },
 
     resume() {
-        if (this.running) return;
         this.running = true;
+        if (this.animId) { cancelAnimationFrame(this.animId); this.animId = null; }
         this.animate();
     },
 
@@ -6234,28 +6664,33 @@ const ParticleEngine = {
 
     animate() {
         if (!this.running) return;
+        // Programar siempre el siguiente fotograma primero para que ningún error detenga el motor
+        this.animId = requestAnimationFrame(() => this.animate());
+
         if (this.ctx && this.canvas) {
-            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            for (let i = this.petals.length - 1; i >= 0; i--) {
-                this.petals[i].update();
-                this.petals[i].draw(this.ctx);
-            }
-            for (let i = this.particles.length - 1; i >= 0; i--) {
-                this.particles[i].update();
-                this.particles[i].draw(this.ctx);
-                if (this.particles[i].life <= 0) this.particles.splice(i, 1);
-            }
-            for (let i = this.swords.length - 1; i >= 0; i--) {
-                this.swords[i].update();
-                this.swords[i].draw(this.ctx);
-                if (this.swords[i].done) this.swords.splice(i, 1);
-            }
-            // Hook unificado: dibuja proyectiles, láseres y nave en el mismo frame sin parpadeos
-            if (typeof this.customOverlayRender === 'function') {
-                this.customOverlayRender(this.ctx);
+            try {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                for (let i = this.petals.length - 1; i >= 0; i--) {
+                    this.petals[i].update();
+                    this.petals[i].draw(this.ctx);
+                }
+                for (let i = this.particles.length - 1; i >= 0; i--) {
+                    this.particles[i].update();
+                    this.particles[i].draw(this.ctx);
+                    if (this.particles[i].life <= 0) this.particles.splice(i, 1);
+                }
+                for (let i = this.swords.length - 1; i >= 0; i--) {
+                    this.swords[i].update();
+                    this.swords[i].draw(this.ctx);
+                    if (this.swords[i].done) this.swords.splice(i, 1);
+                }
+                if (typeof this.customOverlayRender === 'function') {
+                    this.customOverlayRender(this.ctx);
+                }
+            } catch (err) {
+                console.error("[ParticleEngine Render Error]:", err);
             }
         }
-        this.animId = requestAnimationFrame(() => this.animate());
     }
 };
 
@@ -6688,15 +7123,17 @@ function presentEndingEDilemma(endScreen, onComplete) {
 === END FILE ===
 
 === FILE: js/modules/achievements.js ===
-﻿// ==========================================
-// SISTEMA DE LOGROS NIER / RETRO
+// ==========================================
+// SISTEMA DE LOGROS NIER / RETRO (INCLUYE FE FRÁGIL Y PERSEVERANCIA)
 // ==========================================
 const ACHIEVEMENTS_DATA = [
     { id: "init", title: "Unidad Activada", desc: "Inicia y carga la interfaz del Códice.", secret: false },
     { id: "audio_sync", title: "Frecuencia Resonante", desc: "Interactúa con los enlaces o frecuencias sonoras.", secret: false },
     { id: "insomnia", title: "Vigilia Nocturna", desc: "Accede al Códice entre la medianoche y las 5 AM.", secret: false },
-    { id: "glitch_tap", title: "Anomalía de Memoria", desc: "???", secret: true },
-    { id: "codex_deep", title: "Protocolo NieR", desc: "???", secret: true },
+    { id: "fragile_faith", title: "Fe Frágil", desc: "Sucumbe ante el colapso y ríndete tras escuchar la burla de Saphyniel.", secret: false },
+    { id: "perseverance", title: "Perseverancia", desc: "Rechaza la derrota y vuelve a alzarte tras ver tu nave hecha pedazos.", secret: false },
+    { id: "glitch_tap", title: "Anomalía de Memoria", desc: "Provoca la ira de Saphyniel insistiendo sobre su retrato.", secret: true },
+    { id: "codex_deep", title: "Protocolo NieR", desc: "Inspecciona los archivos confidenciales de registro.", secret: true },
     { id: "boss_slayer", title: "Deicidio Trascendente", desc: "Quebranta la voluntad del Códice en combate.", secret: false },
     { id: "platinum", title: "Fin del Registro: [E]", desc: "Desbloquea todos los registros anteriores del Códice.", secret: false, isPlatinum: true }
 ];
@@ -6725,7 +7162,9 @@ const AchievementSystem = {
         this.render();
         this.updateCounter();
 
-        if (this.unlocked.length === ACHIEVEMENTS_DATA.length - 1 && !this.unlocked.includes("platinum")) {
+        const nonPlatinumCount = ACHIEVEMENTS_DATA.filter(a => !a.isPlatinum).length;
+        const unlockedNonPlat = this.unlocked.filter(u => u !== "platinum").length;
+        if (unlockedNonPlat >= nonPlatinumCount && !this.unlocked.includes("platinum")) {
             setTimeout(() => this.unlock("platinum"), 800);
         }
     },

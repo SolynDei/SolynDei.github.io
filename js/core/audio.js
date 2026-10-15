@@ -1,13 +1,15 @@
 // =========================================================
-// GESTOR DE AUDIO NIER (REPRODUCCIÓN NATIVA SIN BLOQUEO CORS)
+// GESTOR DE AUDIO NIER (VOLUMEN MAESTRO AL 65% + SINTETIZADOR AVANZADO)
 // =========================================================
 const AudioManager = {
     ctx: null,
     enabled: true,
+    masterVolume: 0.65, // Reducción global al 65% de todo el audio
     bgmTrack: null,
     pendingBgmUrl: null,
     pendingBgmVol: 0.45,
     pendingBgmLoop: true,
+    lastHitBossSfxTime: 0,
 
     init() {
         if (!this.ctx) {
@@ -24,10 +26,14 @@ const AudioManager = {
         }
     },
 
+    scaleVol(v) {
+        return Math.min(1.0, Math.max(0.0, v * this.masterVolume));
+    },
+
     getAudioPulse() {
         if (!this.enabled || !this.bgmTrack || this.bgmTrack.paused) return 0;
         const t = this.bgmTrack.currentTime || (performance.now() * 0.001);
-        return Math.pow(Math.sin(t * Math.PI * 2.2), 4) * 0.55;
+        return Math.pow(Math.sin(t * Math.PI * 2.3), 4) * 0.6;
     },
 
     toggleSound(buttonId = 'sound-btn') {
@@ -55,7 +61,7 @@ const AudioManager = {
             const gain = this.ctx.createGain();
             osc.type = type;
             osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
-            gain.gain.setValueAtTime(volume, this.ctx.currentTime);
+            gain.gain.setValueAtTime(this.scaleVol(volume), this.ctx.currentTime);
             gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
             osc.connect(gain);
             gain.connect(this.ctx.destination);
@@ -64,14 +70,158 @@ const AudioManager = {
         } catch (e) {}
     },
 
+    // --- NUEVOS SINTETIZADORES WEB AUDIO API ---
+    waterDropSound() {
+        if (!this.enabled) return;
+        this.init();
+        try {
+            if (!this.ctx) return;
+            const now = this.ctx.currentTime;
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(580, now);
+            osc.frequency.exponentialRampToValueAtTime(1850, now + 0.075);
+            gain.gain.setValueAtTime(this.scaleVol(0.065), now);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.23);
+
+            // Eco armónico cristalino
+            setTimeout(() => this.beep(2420, 0.18, 'sine', 0.03), 65);
+        } catch (e) {}
+    },
+
+    laserChargeSound() {
+        if (!this.enabled) return;
+        this.init();
+        try {
+            if (!this.ctx) return;
+            const now = this.ctx.currentTime;
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(280, now);
+            osc.frequency.exponentialRampToValueAtTime(1240, now + 0.35);
+            gain.gain.setValueAtTime(this.scaleVol(0.04), now);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.38);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.39);
+        } catch (e) {}
+    },
+
+    laserFireSynth() {
+        if (!this.enabled) return;
+        this.init();
+        try {
+            if (!this.ctx) return;
+            const now = this.ctx.currentTime;
+            const bufferSize = this.ctx.sampleRate * 0.25;
+            const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+                data[i] = Math.random() * 2 - 1;
+            }
+
+            const noise = this.ctx.createBufferSource();
+            noise.buffer = buffer;
+
+            const filter = this.ctx.createBiquadFilter();
+            filter.type = 'bandpass';
+            filter.frequency.setValueAtTime(1100, now);
+            filter.frequency.exponentialRampToValueAtTime(260, now + 0.24);
+
+            const gain = this.ctx.createGain();
+            gain.gain.setValueAtTime(this.scaleVol(0.09), now);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.24);
+
+            noise.connect(filter);
+            filter.connect(gain);
+            gain.connect(this.ctx.destination);
+            noise.start(now);
+            noise.stop(now + 0.25);
+
+            this.beep(140, 0.22, 'sawtooth', 0.06);
+        } catch (e) {}
+    },
+
+    phaseTransitionBassDrop() {
+        if (!this.enabled) return;
+        this.init();
+        try {
+            if (!this.ctx) return;
+            const now = this.ctx.currentTime;
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(135, now);
+            osc.frequency.exponentialRampToValueAtTime(28, now + 1.45);
+            gain.gain.setValueAtTime(this.scaleVol(0.14), now);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.5);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(now);
+            osc.stop(now + 1.55);
+        } catch (e) {}
+    },
+
+    parryClangSound() {
+        if (!this.enabled) return;
+        this.beep(1340, 0.14, 'square', 0.055);
+        this.beep(1980, 0.22, 'triangle', 0.05);
+        setTimeout(() => this.beep(2640, 0.18, 'sine', 0.04), 30);
+    
+    },
+    // Sonido de temblor cuando la nave rota se niega a morir (Estilo Undertale)
+    undertaleRefuseRumble() {
+        for (let i = 0; i < 6; i++) {
+            setTimeout(() => this.beep(95 + (i % 2) * 25, 0.05, 'square', 0.06), i * 65);
+        }
+    },
+
+    // Sonido clásico cuando los fragmentos se unen ("But it refused")
+    undertaleRefuseHeal() {
+        const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51];
+        notes.forEach((n, idx) => {
+            setTimeout(() => this.beep(n, 0.16, 'square', 0.065), idx * 55);
+        });
+    },
+
+    pitchDownStopBgm(durationMs = 1400) {
+        if (!this.bgmTrack) return;
+        const track = this.bgmTrack;
+        const startVol = track.volume;
+        const steps = 16;
+        const stepTime = durationMs / steps;
+        let currentStep = 0;
+
+        const timer = setInterval(() => {
+            currentStep++;
+            const ratio = Math.max(0, 1 - currentStep / steps);
+            try {
+                track.volume = startVol * ratio;
+                track.playbackRate = Math.max(0.35, 0.35 + ratio * 0.65);
+            } catch (e) {}
+            if (currentStep >= steps) {
+                clearInterval(timer);
+                track.pause();
+                track.playbackRate = 1.0;
+            }
+        }, stepTime);
+    },
+
     podFireSound() {
-        this.beep(1180, 0.03, 'triangle', 0.018);
+        this.beep(1180, 0.03, 'triangle', 0.016);
     },
 
     railgunFireSound() {
-        this.beep(150, 0.45, 'sawtooth', 0.09);
-        this.beep(880, 0.35, 'sine', 0.07);
-        setTimeout(() => this.beep(1760, 0.4, 'triangle', 0.06), 60);
+        this.beep(150, 0.45, 'sawtooth', 0.085);
+        this.beep(880, 0.35, 'sine', 0.065);
+        setTimeout(() => this.beep(1760, 0.4, 'triangle', 0.055), 60);
     },
 
     evadeOverclockSound() {
@@ -113,7 +263,7 @@ const AudioManager = {
                 const freq = pool[Math.floor(Math.random() * pool.length)];
                 osc.type = tone === 'angry' ? 'sawtooth' : 'triangle';
                 osc.frequency.setValueAtTime(freq, this.ctx.currentTime + (k * 0.045));
-                gain.gain.setValueAtTime(0.03, this.ctx.currentTime + (k * 0.045));
+                gain.gain.setValueAtTime(this.scaleVol(0.028), this.ctx.currentTime + (k * 0.045));
                 gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + (k * 0.045) + 0.04);
                 osc.connect(gain);
                 gain.connect(this.ctx.destination);
@@ -148,7 +298,7 @@ const AudioManager = {
     },
 
     swordImpactSound() {
-        this.beep(120, 0.4, 'sawtooth', 0.08);
+        this.beep(120, 0.4, 'sawtooth', 0.075);
         this.beep(880, 0.5, 'triangle', 0.05);
     },
 
@@ -165,7 +315,7 @@ const AudioManager = {
         if (url.includes('rewind.mp3')) { this.synthRewind(); return; }
         try {
             const audio = new Audio(url);
-            audio.volume = Math.min(1, Math.max(0, volume));
+            audio.volume = this.scaleVol(volume);
             audio.play().catch(() => {});
         } catch (e) {}
     },
@@ -182,13 +332,12 @@ const AudioManager = {
                 this.bgmTrack.currentTime = 0;
             }
             const audio = new Audio(trackUrl);
-            audio.volume = Math.min(1, Math.max(0, volume));
+            audio.volume = this.scaleVol(volume);
             audio.loop = loop;
             this.bgmTrack = audio;
             const playPromise = audio.play();
             if (playPromise !== undefined) {
                 playPromise.catch(() => {
-                    // Si el navegador bloquea el autoplay en el iframe, lo reanuda al primer input
                     const unlock = () => {
                         if (this.bgmTrack && this.bgmTrack.paused && this.enabled) {
                             this.bgmTrack.play().catch(() => {});

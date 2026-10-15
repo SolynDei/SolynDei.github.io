@@ -29,6 +29,7 @@ const Phase3 = {
         document.body.classList.add('phase-3-active', 'cinema-wide-bars', 'combat-no-cursor');
 
         AudioManager.playAudio(BOSS_AUDIO_PATHS.vineBoom);
+        AudioManager.playAudio("audio/sfx/superattack.mp3", 0.5);
         if (typeof BalatroEngine !== 'undefined') {
             BalatroEngine.triggerHit(window.innerWidth / 2, window.innerHeight / 2, 1.8);
         }
@@ -65,8 +66,7 @@ const Phase3 = {
 
     renderCinematicEntrance(ctx) {
         if (!ctx) return;
-        const w = window.innerWidth;
-        const h = window.innerHeight;
+        const w = window.innerWidth, h = window.innerHeight;
         const elapsed = (performance.now() - this.introStartTime) * 0.001;
 
         ctx.save();
@@ -116,12 +116,25 @@ const Phase3 = {
         const playerHud = document.getElementById('player-hud');
         const darkness = document.getElementById('cinematic-darkness');
 
+        // Subtítulos MV reactivos al pulso de audio y palabras clave
         if (typeof P3_SUBTITLES !== 'undefined' && mvContainer) {
             const sub = P3_SUBTITLES.find(s => ct >= s.start && ct <= s.end);
             if (sub) {
                 if (this.currentSubText !== sub.text) {
                     this.currentSubText = sub.text;
-                    mvContainer.innerHTML = `<span class="mv-text-beat" data-text="${sub.text}">${sub.text}</span>`;
+                    mvContainer.innerHTML = `<span class="mv-text-beat" id="active-mv-sub" data-text="${sub.text}">${sub.text}</span>`;
+
+                    // Iluminación y onda WebGL en palabras clave de la canción
+                    if (/Hero|Stand up|Uno|Who am I/i.test(sub.text)) {
+                        if (typeof BalatroEngine !== 'undefined') {
+                            BalatroEngine.triggerHit(window.innerWidth / 2, window.innerHeight / 2, 1.4);
+                        }
+                    }
+                }
+                const subEl = document.getElementById('active-mv-sub');
+                if (subEl && typeof AudioManager !== 'undefined') {
+                    const p = AudioManager.getAudioPulse();
+                    subEl.style.transform = `scale(${(1 + p * 0.16).toFixed(3)})`;
                 }
             } else if (this.currentSubText !== "") {
                 this.currentSubText = "";
@@ -160,6 +173,7 @@ const Phase3 = {
             if (ct >= 119.0) {
                 this.cinematicPhase = 3;
                 if (typeof SubphaseFlashback !== 'undefined') SubphaseFlashback.exit();
+                BossState.triggerAnimeImpactFrame();
                 document.body.classList.add('glitch-flash');
                 setTimeout(() => document.body.classList.remove('glitch-flash'), 300);
                 ScreenUtils.triggerShake();
@@ -205,6 +219,7 @@ const Phase3 = {
         if (this.cinematicPhase === 5 && ct >= 145.0) {
             this.cinematicPhase = 6;
             document.getElementById('countdown-flash')?.classList.remove('show');
+            BossState.triggerAnimeImpactFrame();
             if (typeof SubphaseOrbitalFall !== 'undefined') SubphaseOrbitalFall.enter();
         } else if (this.cinematicPhase === 6 && ct >= 153.8) {
             this.cinematicPhase = 7;
@@ -220,12 +235,15 @@ const Phase3 = {
             BossState.startBossTackle();
         } else if (this.cinematicPhase === 7 && ct >= 164.0) {
             this.cinematicPhase = 8;
+            BossState.triggerAnimeImpactFrame();
+            BossState.showSpecialCutin("CLÍMAX // ESPADAS DEL JUICIO", BOSS_SPRITES.yandere);
             if (typeof SubphaseOrbitalFall !== 'undefined') SubphaseOrbitalFall.exit();
             if (typeof SubphaseSurvival !== 'undefined') SubphaseSurvival.enter();
         } else if (this.cinematicPhase === 8) {
             if (typeof SubphaseSurvival !== 'undefined') SubphaseSurvival.update(ct);
             if (SubphaseSurvival.climaxTriggered) {
                 this.cinematicPhase = 9;
+                BossState.triggerAnimeImpactFrame();
             }
         } else if (this.cinematicPhase === 9 && ct >= 200.5) {
             this.cinematicPhase = 10;

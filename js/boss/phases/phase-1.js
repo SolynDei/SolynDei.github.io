@@ -2,10 +2,11 @@ const Phase1 = {
     hit75: false,
     hit50: false,
     hit20: false,
+    transitioning: false,
     alertBannerTimer: 0,
     activeSessionId: 0,
 
-    enter() {
+    enter(isQuickRetry = false) {
         this.activeSessionId++;
         const currentSession = this.activeSessionId;
 
@@ -19,7 +20,8 @@ const Phase1 = {
         this.hit75 = false;
         this.hit50 = false;
         this.hit20 = false;
-        this.alertBannerTimer = 2.6;
+        this.transitioning = false;
+        this.alertBannerTimer = isQuickRetry ? 0 : 2.6;
 
         BossState.updateHpBar();
         BossState.updateCoreSprite();
@@ -33,7 +35,9 @@ const Phase1 = {
         if (typeof AudioManager !== 'undefined') {
             AudioManager.init();
             AudioManager.playBgm(BOSS_AUDIO_PATHS.bgmPhase1, 0.48, true);
-            AudioManager.playAudio(BOSS_AUDIO_PATHS.enrageAlarm, 0.35);
+            if (!isQuickRetry) {
+                AudioManager.playAudio(BOSS_AUDIO_PATHS.enrageAlarm, 0.35);
+            }
         }
 
         const startCombatTimers = () => {
@@ -61,7 +65,8 @@ const Phase1 = {
             }, 1300);
         };
 
-        if (BossEngine.checkDebugParams() === '1') {
+        // Si es un Reintentar directo tras morir (isQuickRetry), arranca sin diálogos
+        if (BossEngine.checkDebugParams() === '1' || isQuickRetry) {
             startCombatTimers();
             return;
         }
@@ -84,8 +89,7 @@ const Phase1 = {
         if (this.alertBannerTimer > 0 && typeof ParticleEngine !== 'undefined' && ParticleEngine.ctx) {
             this.alertBannerTimer -= dt;
             const ctx = ParticleEngine.ctx;
-            const w = window.innerWidth;
-            const h = window.innerHeight;
+            const w = window.innerWidth, h = window.innerHeight;
             ctx.save();
             ctx.fillStyle = `rgba(217, 56, 30, ${Math.min(0.85, this.alertBannerTimer * 0.6)})`;
             ctx.fillRect(0, h * 0.44, w, 46);
@@ -98,10 +102,29 @@ const Phase1 = {
     },
 
     onHit(dmg, coords) {
-        if (BossState.currentHp <= 1) {
+        if (BossState.currentHp <= 1 && !this.transitioning) {
+            this.transitioning = true;
             BossState.currentHp = 1;
+            BossState.damageLock = true;
             BossState.updateHpBar();
-            BossEngine.transitionTo('phase2');
+
+            const cPos = BossState.getBossCoreCenter();
+            BossAttacks.bullets.forEach(b => ParticleEngine.explode(b.x, b.y, '#f7f5ed', 4));
+            BossAttacks.clearAll();
+            ParticleEngine.explode(cPos.x, cPos.y, '#f7f5ed', 45);
+            BossState.triggerAnimeImpactFrame();
+
+            if (typeof AudioManager !== 'undefined') {
+                AudioManager.playAudio(BOSS_AUDIO_PATHS.sealBreak, 0.65);
+                AudioManager.playAudio(BOSS_AUDIO_PATHS.crystalBreak, 0.55);
+                AudioManager.phaseTransitionBassDrop();
+            }
+
+            setTimeout(() => {
+                if (!BossState.isDying && BossState.playerHp > 0) {
+                    BossEngine.transitionTo('phase2');
+                }
+            }, 900);
             return false;
         }
 

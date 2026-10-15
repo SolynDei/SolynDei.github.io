@@ -1,6 +1,6 @@
 // =========================================================
-// SISTEMA DE ATAQUES YORHA: ESPADAS AUTOMÁTICAS CON STROKE Y BRILLO,
-// EMBESTIDAS CONTINUAS Y PROTECCIÓN DE BUCLES EN MUERTE
+// SISTEMA DE ATAQUES YORHA: JUICIO DEL PRISMA, SANTUARIO DE AGUA CRISTALINA,
+// ALAS DE SERAFÍN, OJOS OFANIM Y ESPADAS AUTOMÁTICAS CON STROKE
 // =========================================================
 const BossAttacks = {
     qteSpawnerTimer: null,
@@ -16,62 +16,49 @@ const BossAttacks = {
     nodes: [],
     faithOrbs: [],
     judgmentSwords: [],
+    waterSanctuary: null, // Zona segura y olas cristalinas de la Fase 2
+    suctionParticles: [], // Partículas invertidas en transición Fase 1 -> 2
     spiralAngle: 0,
     swordImg: null,
+    eyeImg: null,
     glowingSwordCanvas: null,
 
-    // Pre-procesa img/icons/swordsprite.png (que es mayormente negra) para añadirle
-    // un Stroke blanco marfil (#f7f5ed) y un Halo Dorado (#e5c158) de alto contraste
     initAssets() {
         if (!this.swordImg) {
             this.swordImg = new Image();
-            this.swordImg.onload = () => {
-                this.buildGlowingSwordSprite();
-            };
+            this.swordImg.onload = () => this.buildGlowingSwordSprite();
             this.swordImg.src = "img/icons/swordsprite.png";
         } else if (this.swordImg.complete && !this.glowingSwordCanvas && this.swordImg.naturalWidth > 0) {
             this.buildGlowingSwordSprite();
+        }
+        if (!this.eyeImg) {
+            this.eyeImg = new Image();
+            this.eyeImg.src = "img/icons/eye.png";
         }
     },
 
     buildGlowingSwordSprite() {
         try {
-            const w = 64;
-            const h = 140;
-            const pad = 10;
-
-            // 1. Crear silueta blanca/dorada pura a partir del canal alfa de swordsprite.png
+            const w = 64, h = 140, pad = 10;
             const silCanvas = document.createElement('canvas');
-            silCanvas.width = w;
-            silCanvas.height = h;
+            silCanvas.width = w; silCanvas.height = h;
             const sCtx = silCanvas.getContext('2d');
             sCtx.drawImage(this.swordImg, pad, pad, w - pad * 2, h - pad * 2);
             sCtx.globalCompositeOperation = 'source-in';
             sCtx.fillStyle = '#f7f5ed';
             sCtx.fillRect(0, 0, w, h);
 
-            // 2. Componer el sprite final con doble Stroke luminoso + núcleo negro original
             const outCanvas = document.createElement('canvas');
-            outCanvas.width = w;
-            outCanvas.height = h;
+            outCanvas.width = w; outCanvas.height = h;
             const oCtx = outCanvas.getContext('2d');
-
             oCtx.shadowColor = '#e5c158';
             oCtx.shadowBlur = 14;
 
-            // Dibujar la silueta desplazada en 8 direcciones para crear un Stroke grueso y brillante
-            const offsets = [
-                [-2.5, 0], [2.5, 0], [0, -2.5], [0, 2.5],
-                [-2, -2], [2, -2], [-2, 2], [2, 2]
-            ];
-            offsets.forEach(([ox, oy]) => {
-                oCtx.drawImage(silCanvas, ox, oy);
-            });
+            const offsets = [[-2.5, 0], [2.5, 0], [0, -2.5], [0, 2.5], [-2, -2], [2, -2], [-2, 2], [2, 2]];
+            offsets.forEach(([ox, oy]) => oCtx.drawImage(silCanvas, ox, oy));
 
-            // Superponer el sprite negro original en el centro
             oCtx.shadowBlur = 0;
             oCtx.drawImage(this.swordImg, pad, pad, w - pad * 2, h - pad * 2);
-
             this.glowingSwordCanvas = outCanvas;
         } catch (e) {
             this.glowingSwordCanvas = null;
@@ -80,7 +67,6 @@ const BossAttacks = {
 
     drawEnhancedSword(ctx, width = 46, height = 110) {
         this.initAssets();
-        // Halo energético detrás de la hoja para garantizar visibilidad total
         ctx.save();
         const grad = ctx.createLinearGradient(0, -height * 0.5, 0, height * 0.5);
         grad.addColorStop(0, 'rgba(247, 245, 237, 0.95)');
@@ -109,8 +95,6 @@ const BossAttacks = {
             ctx.fillStyle = '#09090b';
             ctx.strokeStyle = '#f7f5ed';
             ctx.lineWidth = 2.5;
-            ctx.shadowColor = '#e5c158';
-            ctx.shadowBlur = 16;
             ctx.beginPath();
             ctx.moveTo(0, -height * 0.46);
             ctx.lineTo(8, height * 0.15);
@@ -120,6 +104,127 @@ const BossAttacks = {
             ctx.stroke();
         }
         ctx.restore();
+    },
+
+    // --- ALAS DE SERAFÍN GEOMÉTRICAS + OJOS OFANIM ORBITALES + GRIETAS DE LUZ ---
+    renderBossWingsAndEyes(ctx, dt) {
+        const coreEl = document.getElementById('boss-core');
+        if (!coreEl || coreEl.style.display === 'none' || BossState.isDying) return;
+        this.initAssets();
+
+        const core = BossState.getBossCoreCenter();
+        const t = performance.now() * 0.001;
+        const pulse = (typeof AudioManager !== 'undefined') ? AudioManager.getAudioPulse() : 0;
+
+        ctx.save();
+        ctx.translate(core.x, core.y);
+
+        // 1. Dibujar 6 Alas de Serafín de plumas de luz geométricas en Fases 2 y 3 (o durante ascensión)
+        if (BossState.phase >= 2 || this.suctionParticles.length > 0) {
+            const wingColor = BossState.phase === 3 ? 'rgba(247, 245, 237, 0.42)' : 'rgba(217, 56, 30, 0.42)';
+            const strokeCol = BossState.phase === 3 ? '#f7f5ed' : '#e5c158';
+            const wingPairs = [
+                { baseAng: -0.45, len: 135, flapSpeed: 2.2 },
+                { baseAng: 0.05, len: 160, flapSpeed: 1.8 },
+                { baseAng: 0.52, len: 120, flapSpeed: 2.6 }
+            ];
+
+            wingPairs.forEach((wp, idx) => {
+                const flap = Math.sin(t * wp.flapSpeed + idx) * 0.14;
+                const length = wp.len * (1 + pulse * 0.18);
+
+                [-1, 1].forEach(dir => {
+                    ctx.save();
+                    ctx.scale(dir, 1);
+                    ctx.rotate(wp.baseAng + flap);
+                    ctx.fillStyle = wingColor;
+                    ctx.strokeStyle = strokeCol;
+                    ctx.lineWidth = 1.4;
+                    ctx.beginPath();
+                    ctx.moveTo(28, 0);
+                    ctx.lineTo(length, -18);
+                    ctx.lineTo(length * 0.78, 14);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+                    ctx.restore();
+                });
+            });
+        }
+
+        // 2. Ojos Ofanim (img/icons/eye.png) orbitando el núcleo en Fases 2 y 3
+        if (BossState.phase >= 2 && this.eyeImg && this.eyeImg.complete) {
+            const eyeCount = BossState.phase === 3 ? 6 : 4;
+            const orbitRadius = core.radius + 42 + Math.sin(t * 2.5) * 6;
+            for (let i = 0; i < eyeCount; i++) {
+                const ang = t * 1.1 + (Math.PI * 2 * i) / eyeCount;
+                const ex = Math.cos(ang) * orbitRadius;
+                const ey = Math.sin(ang) * orbitRadius;
+                ctx.save();
+                ctx.translate(ex, ey);
+                ctx.globalAlpha = 0.8;
+                ctx.drawImage(this.eyeImg, -13, -13, 26, 26);
+                ctx.restore();
+            }
+        }
+
+        // 3. Grietas y Cadenas de Luz Dorada en el Clímax de Fase 3 conforme su HP baja a 0%
+        if (BossState.phase === 3 && BossState.currentHp < BossState.maxHp) {
+            const missingRatio = 1 - (BossState.currentHp / BossState.maxHp);
+            const rays = Math.floor(missingRatio * 10);
+            ctx.strokeStyle = '#f7f5ed';
+            ctx.shadowColor = '#e5c158';
+            ctx.shadowBlur = 16;
+            ctx.lineWidth = 2 + missingRatio * 2.5;
+            for (let r = 0; r < rays; r++) {
+                const rayAng = (Math.PI * 2 * r) / Math.max(1, rays) + t * 0.35;
+                const rayLen = 40 + missingRatio * 95;
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(Math.cos(rayAng) * (rayLen * 0.5), Math.sin(rayAng + 0.15) * (rayLen * 0.5));
+                ctx.lineTo(Math.cos(rayAng) * rayLen, Math.sin(rayAng) * rayLen);
+                ctx.stroke();
+            }
+        }
+
+        ctx.restore();
+
+        // 4. Partículas invertidas de succión (Transición Fase 1 -> 2)
+        for (let i = this.suctionParticles.length - 1; i >= 0; i--) {
+            const sp = this.suctionParticles[i];
+            const dx = core.x - sp.x;
+            const dy = core.y - sp.y;
+            const dist = Math.hypot(dx, dy);
+            if (dist < 18) {
+                this.suctionParticles.splice(i, 1);
+                continue;
+            }
+            sp.x += (dx / dist) * sp.speed * (dt * 60);
+            sp.y += (dy / dist) * sp.speed * (dt * 60);
+            sp.speed += 0.35;
+
+            ctx.save();
+            ctx.fillStyle = sp.color;
+            ctx.shadowColor = sp.color;
+            ctx.shadowBlur = 10;
+            ctx.fillRect(sp.x - 3, sp.y - 3, 6, 6);
+            ctx.restore();
+        }
+    },
+
+    spawnSuctionParticles(count = 28) {
+        const w = window.innerWidth, h = window.innerHeight;
+        for (let i = 0; i < count; i++) {
+            const ang = Math.random() * Math.PI * 2;
+            const dist = 220 + Math.random() * 240;
+            const core = BossState.getBossCoreCenter();
+            this.suctionParticles.push({
+                x: core.x + Math.cos(ang) * dist,
+                y: core.y + Math.sin(ang) * dist,
+                speed: 3.5 + Math.random() * 3,
+                color: i % 2 === 0 ? '#f7f5ed' : '#d9381e'
+            });
+        }
     },
 
     getNonOverlappingCoords(marginVw = 18, marginVh = 22) {
@@ -213,6 +318,89 @@ const BossAttacks = {
         if (typeof AudioManager !== 'undefined') AudioManager.beep(190, 0.12, 'sawtooth', 0.03);
     },
 
+    // --- FASE 2 ESTADO A: «JUICIO DEL PRISMA» (COREOGRAFÍA EXCLUSIVA DE RAYOS) ---
+    // MECÁNICA EMPERATRIZ DE LA LUZ (TERRARIA):
+    // Traza líneas de disparo prediciendo la trayectoria de movimiento de la nave
+    spawnPrismCageLasers(waves = 6) {
+        if (BossState.isDying || BossState.playerHp <= 0) return;
+
+        for (let w = 0; w < waves; w++) {
+            setTimeout(() => {
+                if (BossState.isDying || BossState.playerHp <= 0 || BossState.damageLock) return;
+                if (typeof AudioManager !== 'undefined') AudioManager.laserChargeSound();
+
+                // Leer hacia dónde se mueve el jugador en este instante
+                let moveX = BossState.joyDx + (BossState.keys.d ? 1 : 0) - (BossState.keys.a ? 1 : 0);
+                let moveY = BossState.joyDy + (BossState.keys.s ? 1 : 0) - (BossState.keys.w ? 1 : 0);
+
+                // Punto futuro donde estará la nave en 0.45 segundos
+                const predictX = Math.max(60, Math.min(window.innerWidth - 60, BossState.shipX + moveX * 165));
+                const predictY = Math.max(90, Math.min(window.innerHeight - 60, BossState.shipY + moveY * 165));
+
+                // Trazar 3 lanzas de luz que se cruzan sobre la trayectoria futura + 1 directa a la posición actual
+                const baseAng = Math.atan2( moveY || 0.5, moveX || 0.5 );
+                const angles = [baseAng + Math.PI / 2, baseAng + Math.PI / 4, baseAng - Math.PI / 4];
+
+                angles.forEach((ang, i) => {
+                    this.lasers.push({
+                        x: i === 0 ? predictX : BossState.shipX + (Math.random() - 0.5) * 90,
+                        y: i === 0 ? predictY : BossState.shipY + (Math.random() - 0.5) * 90,
+                        angle: ang,
+                        state: 'warn',
+                        timer: 0,
+                        warnDuration: 0.72, // Aviso rápido tipo Emperatriz de la Luz
+                        fireDuration: 0.32,
+                        hasDamaged: false
+                    });
+                });
+            }, w * 620);
+        }
+    },
+
+    spawnClockSweepLasers() {
+        if (BossState.isDying || BossState.playerHp <= 0) return;
+        if (typeof AudioManager !== 'undefined') AudioManager.laserChargeSound();
+        const core = BossState.getBossCoreCenter();
+        for (let step = 0; step < 6; step++) {
+            setTimeout(() => {
+                if (BossState.isDying || BossState.playerHp <= 0) return;
+                const ang = (step * Math.PI) / 6;
+                this.lasers.push({
+                    x: core.x,
+                    y: core.y,
+                    angle: ang,
+                    state: 'warn',
+                    timer: 0,
+                    warnDuration: 0.85,
+                    fireDuration: 0.35,
+                    hasDamaged: false
+                });
+            }, step * 210);
+        }
+    },
+
+    spawnSacredCorridorLasers() {
+        if (BossState.isDying || BossState.playerHp <= 0) return;
+        if (typeof AudioManager !== 'undefined') AudioManager.laserChargeSound();
+        const lanes = 5;
+        const safeLane = Math.floor(Math.random() * lanes);
+        const laneH = (window.innerHeight - 160) / lanes;
+
+        for (let i = 0; i < lanes; i++) {
+            if (i === safeLane) continue;
+            this.lasers.push({
+                x: window.innerWidth / 2,
+                y: 100 + i * laneH + laneH / 2,
+                angle: 0,
+                state: 'warn',
+                timer: 0,
+                warnDuration: 1.05,
+                fireDuration: 0.4,
+                hasDamaged: false
+            });
+        }
+    },
+
     spawnLaserGrid(count = 2) {
         for (let i = 0; i < count; i++) {
             setTimeout(() => this.spawnTelegraphLaser(), i * 220);
@@ -221,6 +409,7 @@ const BossAttacks = {
 
     spawnTelegraphLaser() {
         if (BossState.isDying || BossState.playerHp <= 0) return;
+        if (typeof AudioManager !== 'undefined') AudioManager.laserChargeSound();
         const yPos = BossState.shipY + (Math.random() - 0.5) * 150;
         const angle = (Math.random() - 0.5) * 0.65;
         this.lasers.push({
@@ -233,26 +422,146 @@ const BossAttacks = {
             fireDuration: 0.38,
             hasDamaged: false
         });
-        if (typeof AudioManager !== 'undefined') AudioManager.beep(880, 0.09, 'triangle', 0.025);
     },
 
-    // --- ESPADAS AUTOMÁTICAS DESDE LOS BORDES Y ESQUINAS QUE ATACAN A SAPHYNIEL ---
+    // --- FASE 2 ESTADO B: «SANTUARIO DEL ESPEJO DE AGUA» (ZONAS SEGURAS + OLAS CRISTALINAS) ---
+    startWaterSanctuaryCycle() {
+        if (BossState.isDying || BossState.playerHp <= 0) return;
+        this.bullets = [];
+
+        const radius = window.innerWidth <= 680 ? 75 : 100;
+        const margin = radius + 40;
+        const sx = Math.floor(margin + Math.random() * Math.max(40, window.innerWidth - margin * 2));
+        const sy = Math.floor(window.innerHeight * 0.45 + Math.random() * (window.innerHeight * 0.35));
+
+        this.waterSanctuary = {
+            x: sx,
+            y: sy,
+            radius: radius,
+            circleActive: true, // Se apaga en cuanto sale la 3ra ola
+            dropTimer: 0.9,
+            dropsTriggered: 0,
+            waves: []
+        };
+
+        if (typeof AudioManager !== 'undefined') AudioManager.waterDropSound();
+    },
+
+    updateWaterSanctuary(dt, ctx) {
+        if (!this.waterSanctuary) return;
+        const ws = this.waterSanctuary;
+        ws.dropTimer -= dt;
+
+        // Distancia circular desde tu nave al centro del santuario
+        const distToSafeCenter = Math.hypot(BossState.shipX - ws.x, BossState.shipY - ws.y);
+        const insideSafeCircle = distToSafeCenter <= ws.radius + 10;
+
+        // Generar las 3 oleadas
+        if (ws.dropTimer <= 0 && ws.dropsTriggered < 3) {
+            ws.dropsTriggered++;
+            ws.dropTimer = 1.25;
+            if (typeof AudioManager !== 'undefined') AudioManager.waterDropSound();
+            if (typeof BalatroEngine !== 'undefined') BalatroEngine.triggerHit(ws.x, ws.y, 1.4);
+            ParticleEngine.explode(ws.x, ws.y, '#dad4bb', 16);
+
+            ws.waves.push({
+                x: ws.x,
+                y: ws.y,
+                radius: ws.radius,
+                maxRadius: Math.max(window.innerWidth, window.innerHeight) * 1.15,
+                speed: 450,
+                hasDamaged: false
+            });
+
+            // REGLA 2: En cuanto spawnea la 3ra oleada, el círculo del santuario desaparece
+            if (ws.dropsTriggered >= 3) {
+                ws.circleActive = false;
+            }
+        }
+
+        // Dibujar el Santuario Circular (Solo mientras no hayan salido las 3 olas, y SIN textos)
+        if (ws.circleActive) {
+            ctx.save();
+            ctx.translate(ws.x, ws.y);
+            const ringColor = insideSafeCircle ? '#f7f5ed' : '#e5c158';
+            ctx.fillStyle = insideSafeCircle ? 'rgba(247, 245, 237, 0.09)' : 'rgba(218, 212, 187, 0.05)';
+            ctx.strokeStyle = ringColor;
+            ctx.lineWidth = 2.5;
+            ctx.shadowColor = '#dad4bb';
+            ctx.shadowBlur = 15;
+
+            ctx.beginPath();
+            ctx.arc(0, 0, ws.radius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            // Segundo anillo interior punteado estilo YoRHa
+            ctx.setLineDash([8, 6]);
+            ctx.beginPath();
+            ctx.arc(0, 0, ws.radius - 10, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        // Dibujar las Olas con colores de NieR (#dad4bb y #f7f5ed)
+        const now = performance.now() * 0.005;
+        for (let i = ws.waves.length - 1; i >= 0; i--) {
+            const wv = ws.waves[i];
+            wv.radius += wv.speed * dt;
+
+            ctx.save();
+            ctx.translate(wv.x, wv.y);
+            ctx.strokeStyle = 'rgba(218, 212, 187, 0.88)';
+            ctx.lineWidth = 4.5;
+            ctx.shadowColor = '#f7f5ed';
+            ctx.shadowBlur = 18;
+            ctx.beginPath();
+            const segments = 64;
+            for (let s = 0; s <= segments; s++) {
+                const a = (Math.PI * 2 * s) / segments;
+                const ripple = Math.sin(a * 12 + now * 4) * 5;
+                const rx = Math.cos(a) * (wv.radius + ripple);
+                const ry = Math.sin(a) * (wv.radius + ripple);
+                if (s === 0) ctx.moveTo(rx, ry);
+                else ctx.lineTo(rx, ry);
+            }
+            ctx.closePath();
+            ctx.stroke();
+
+            ctx.strokeStyle = 'rgba(247, 245, 237, 0.55)';
+            ctx.lineWidth = 1.8;
+            ctx.beginPath();
+            ctx.arc(0, 0, Math.max(0, wv.radius - 14), 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.restore();
+
+            if (!wv.hasDamaged && Math.abs(distToSafeCenter - wv.radius) < 22) {
+                wv.hasDamaged = true;
+                if (!insideSafeCircle) {
+                    BossState.tryHitPlayer(BossState.shipX, BossState.shipY);
+                }
+            }
+
+            if (wv.radius > wv.maxRadius) {
+                ws.waves.splice(i, 1);
+            }
+        }
+
+        if (!ws.circleActive && ws.waves.length === 0) {
+            this.waterSanctuary = null;
+        }
+    },
+
     spawnJudgmentSword(edgeIndex = null, damage = 20) {
         if (BossState.phase !== 3 || BossState.currentHp <= 0 || BossState.isDying) return;
         this.initAssets();
 
-        const w = window.innerWidth;
-        const h = window.innerHeight;
-        // 8 puntos de aparición en los bordes y esquinas de la pantalla
+        const w = window.innerWidth, h = window.innerHeight;
         const spawnPoints = [
-            { x: -40, y: -40 },
-            { x: w + 40, y: -40 },
-            { x: -40, y: h + 40 },
-            { x: w + 40, y: h + 40 },
-            { x: w * 0.25, y: -50 },
-            { x: w * 0.75, y: -50 },
-            { x: -50, y: h * 0.45 },
-            { x: w + 50, y: h * 0.45 }
+            { x: -40, y: -40 }, { x: w + 40, y: -40 },
+            { x: -40, y: h + 40 }, { x: w + 40, y: h + 40 },
+            { x: w * 0.25, y: -50 }, { x: w * 0.75, y: -50 },
+            { x: -50, y: h * 0.45 }, { x: w + 50, y: h * 0.45 }
         ];
         const pt = edgeIndex !== null
             ? spawnPoints[edgeIndex % spawnPoints.length]
@@ -261,14 +570,7 @@ const BossAttacks = {
         const core = BossState.getBossCoreCenter();
         const angle = Math.atan2(core.y - pt.y, core.x - pt.x);
 
-        this.judgmentSwords.push({
-            x: pt.x,
-            y: pt.y,
-            speed: 17.5,
-            angle,
-            damage
-        });
-
+        this.judgmentSwords.push({ x: pt.x, y: pt.y, speed: 17.5, angle, damage });
         if (typeof AudioManager !== 'undefined') AudioManager.beep(1180, 0.05, 'sawtooth', 0.025);
     },
 
@@ -290,15 +592,7 @@ const BossAttacks = {
         const y = (coords.top / 100) * window.innerHeight;
         const hp = BossState.phase === 3 ? 6 : 9;
 
-        this.nodes.push({
-            type: 'bomb',
-            x, y,
-            hp, maxHp: hp,
-            radius: 26,
-            timer: 4.3,
-            maxTimer: 4.3,
-            isGolden
-        });
+        this.nodes.push({ type: 'bomb', x, y, hp, maxHp: hp, radius: 26, timer: 4.3, maxTimer: 4.3, isGolden });
     },
 
     spawnQteCross() {
@@ -308,14 +602,7 @@ const BossAttacks = {
         const y = (coords.top / 100) * window.innerHeight;
         const hp = 9;
 
-        this.nodes.push({
-            type: 'cross',
-            x, y,
-            hp, maxHp: hp,
-            radius: 26,
-            timer: 4.8,
-            maxTimer: 4.8
-        });
+        this.nodes.push({ type: 'cross', x, y, hp, maxHp: hp, radius: 26, timer: 4.8, maxTimer: 4.8 });
         this.spawnDanmakuRing(x, y, 6, 1.8, 'ring');
     },
 
@@ -325,6 +612,7 @@ const BossAttacks = {
 
     spawnClones() {
         this.clearClones();
+        if (typeof AudioManager !== 'undefined') AudioManager.playAudio(BOSS_AUDIO_PATHS.trapHeartSpawn, 0.55);
         for (let i = 0; i < 2; i++) {
             const coords = this.getNonOverlappingCoords(20, 22);
             const el = document.createElement('div');
@@ -340,14 +628,7 @@ const BossAttacks = {
                 </div>
             `;
             document.body.appendChild(el);
-            this.clones.push({
-                el,
-                left: coords.left,
-                top: coords.top,
-                hp: 26,
-                maxHp: 26,
-                fireTimer: 2.0 + i * 1.3
-            });
+            this.clones.push({ el, left: coords.left, top: coords.top, hp: 26, maxHp: 26, fireTimer: 2.0 + i * 1.3 });
         }
     },
 
@@ -355,8 +636,7 @@ const BossAttacks = {
         this.clones.forEach(c => {
             if (c.el && document.body.contains(c.el)) {
                 const coords = this.getNonOverlappingCoords(20, 22);
-                c.left = coords.left;
-                c.top = coords.top;
+                c.left = coords.left; c.top = coords.top;
                 c.el.style.left = `${coords.left}%`;
                 c.el.style.top = `${coords.top}%`;
             }
@@ -371,6 +651,15 @@ const BossAttacks = {
     updateProjectilesAndLasers(dt, ctx) {
         if (!ctx || BossState.isDying || BossState.playerHp <= 0) return;
         this.initAssets();
+
+        // Renderizar Alas de Serafín, Ojos Ofanim y partículas de succión
+        this.renderBossWingsAndEyes(ctx, dt);
+
+        // Renderizar Santuario del Espejo de Agua si está activo
+        if (this.waterSanctuary) {
+            this.updateWaterSanctuary(dt, ctx);
+            if (BossState.isDying || BossState.playerHp <= 0) return;
+        }
 
         // A. Clones Atacantes
         for (let i = this.clones.length - 1; i >= 0; i--) {
@@ -392,7 +681,7 @@ const BossAttacks = {
             }
         }
 
-        // B. Espadas Automáticas (swordsprite.png) volando hacia Saphyniel y bajando su vida a 0%
+        // B. Espadas Automáticas (swordsprite.png) volando hacia Saphyniel
         const core = BossState.getBossCoreCenter();
         for (let i = this.judgmentSwords.length - 1; i >= 0; i--) {
             const sw = this.judgmentSwords[i];
@@ -404,17 +693,19 @@ const BossAttacks = {
 
             ctx.save();
             ctx.translate(sw.x, sw.y);
-            // El sprite tiene el mango abajo y la punta hacia arriba (^), rotamos angle + Math.PI / 2
             ctx.rotate(sw.angle + Math.PI / 2);
             this.drawEnhancedSword(ctx, 48, 114);
             ctx.restore();
 
-            // Impacto contra Saphyniel
             if (Math.hypot(sw.x - core.x, sw.y - core.y) < core.radius * 0.78) {
                 ParticleEngine.explode(sw.x, sw.y, '#f7f5ed', 14);
                 ParticleEngine.explode(sw.x, sw.y, '#e5c158', 10);
-                if (typeof AudioManager !== 'undefined') AudioManager.swordImpactSound();
+                if (typeof AudioManager !== 'undefined') {
+                    AudioManager.swordImpactSound();
+                    AudioManager.playAudio(BOSS_AUDIO_PATHS.trapHeartHit, 0.5);
+                }
                 if (typeof ScreenUtils !== 'undefined') ScreenUtils.triggerShake();
+                BossState.triggerCoreRgbGlitch();
 
                 if (BossState.impaledSwords.length < 20) {
                     const impactDist = 24 + Math.random() * 26;
@@ -425,7 +716,6 @@ const BossAttacks = {
                     });
                 }
 
-                // Bajar la vida de Saphyniel hasta 0% con cada espada clavada
                 BossState.currentHp = Math.max(0, BossState.currentHp - sw.damage);
                 BossState.updateHpBar();
                 BossState.spawnDamagePopup(core.x, core.y, sw.damage, 'normal');
@@ -477,7 +767,7 @@ const BossAttacks = {
             if (n.timer <= 0) {
                 if (n.type === 'bomb') {
                     ParticleEngine.explode(n.x, n.y, '#d9381e', 24);
-                    if (typeof AudioManager !== 'undefined') AudioManager.playAudio(BOSS_AUDIO_PATHS.bombExplode);
+                    if (typeof AudioManager !== 'undefined') AudioManager.playAudio(BOSS_AUDIO_PATHS.bombExplode, 0.55);
                     this.spawnDanmakuRing(n.x, n.y, 12, 3.3, 'ring');
                 } else if (n.type === 'cross') {
                     BossState.currentHp = Math.min(BossState.maxHp, BossState.currentHp + 40);
@@ -546,7 +836,7 @@ const BossAttacks = {
             ctx.restore();
         }
 
-        // E. Láseres Telegráficos
+        // E. Láseres Telegráficos (Con laserFireSynth integrado)
         for (let i = this.lasers.length - 1; i >= 0; i--) {
             const l = this.lasers[i];
             if (!l) continue;
@@ -569,7 +859,7 @@ const BossAttacks = {
                 if (l.timer >= l.warnDuration) {
                     l.state = 'fire';
                     l.timer = 0;
-                    if (typeof AudioManager !== 'undefined') AudioManager.swordImpactSound();
+                    if (typeof AudioManager !== 'undefined') AudioManager.laserFireSynth();
                     if (typeof ScreenUtils !== 'undefined') ScreenUtils.triggerShake();
                 }
             } else if (l.state === 'fire') {
@@ -596,7 +886,7 @@ const BossAttacks = {
             ctx.restore();
         }
 
-        // F. Esferas Danmaku YoRHa (Con verificación de muerte para no lanzar TypeError)
+        // F. Esferas Danmaku YoRHa
         for (let i = this.bullets.length - 1; i >= 0; i--) {
             if (BossState.isDying || BossState.playerHp <= 0) return;
             const b = this.bullets[i];
@@ -635,6 +925,7 @@ const BossAttacks = {
             const distToShip = Math.hypot(b.x - BossState.shipX, b.y - BossState.shipY);
             if (BossState.shieldActive && distToShip < b.radius + 36) {
                 ParticleEngine.explode(b.x, b.y, '#dad4bb', 5);
+                if (typeof AudioManager !== 'undefined') AudioManager.playAudio(BOSS_AUDIO_PATHS.antiSpamBlock, 0.3);
                 this.bullets.splice(i, 1);
                 continue;
             }
@@ -647,7 +938,6 @@ const BossAttacks = {
         }
     },
 
-    // --- MODO SUPERVIVENCIA Y JUICIO AUTOMÁTICO EN FASE 3 ---
     startSurvivalMode() {
         clearInterval(this.survivalTimer);
         clearInterval(this.swordBarrageTimer);
@@ -660,9 +950,8 @@ const BossAttacks = {
             setTimeout(() => surviveText.classList.remove('show'), 3000);
         }
 
-        // 1. Lluvia Automática de Espadas desde los bordes que bajan la vida de Saphyniel a 0%
         let swordTick = 0;
-        const dmgPerSword = Math.ceil(BossState.maxHp / 32); // ~32 espadas en 21 segundos llevan su vida exactamente a 0%
+        const dmgPerSword = Math.ceil(BossState.maxHp / 32);
         this.swordBarrageTimer = setInterval(() => {
             if (BossState.phase !== 3 || BossState.playerHp <= 0 || BossState.isDying || BossState.currentHp <= 0) {
                 clearInterval(this.swordBarrageTimer);
@@ -672,7 +961,6 @@ const BossAttacks = {
             swordTick++;
         }, 640);
 
-        // 2. Ataques intensos y Embestidas constantes de Saphyniel cada 1.7s
         let attackTick = 0;
         BossState.startBossTackle();
         this.survivalTimer = setInterval(() => {
@@ -685,16 +973,10 @@ const BossAttacks = {
             const core = BossState.getBossCoreCenter();
             this.spawnDanmakuRing(core.x, core.y, 12, 3.6, attackTick % 2 === 0 ? 'aimed' : 'ring');
             this.spawnSpiralVolley(4, 2, 3.6);
-
-            // Saphyniel embiste constantemente hacia tu nave
             BossState.startBossTackle();
 
-            if (attackTick % 2 === 0) {
-                this.spawnLaserGrid(2);
-            }
-            if (attackTick % 3 === 0) {
-                this.spawnFaithOrb();
-            }
+            if (attackTick % 2 === 0) this.spawnLaserGrid(2);
+            if (attackTick % 3 === 0) this.spawnFaithOrb();
         }, 1700);
     },
 
@@ -713,6 +995,8 @@ const BossAttacks = {
         this.nodes = [];
         this.faithOrbs = [];
         this.judgmentSwords = [];
+        this.waterSanctuary = null;
+        this.suctionParticles = [];
     }
 };
 

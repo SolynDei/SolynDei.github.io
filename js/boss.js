@@ -1,6 +1,6 @@
-﻿// =========================================================
+// =========================================================
 // FILE: js/boss.js
-// NAVE YORHA + ESPADAS AUTOMÁTICAS CON STROKE + EMBESTIDAS + REINICIO LIMPIO
+// NAVE YORHA + CUT-INS + SFX + RENACER UNDERTALE ("BUT IT REFUSED")
 // =========================================================
 const BOSS_AUDIO_PATHS = {
     bgmPhase1: "audio/bgm/boss-music-fase1.mp3",
@@ -41,6 +41,7 @@ const BossState = {
     history: [], battleStartTime: 0, hpAtStart: 0,
 
     isDying: false,
+    rebirthAssembled: false,
     deathSequenceTimers: [],
     deathFragments: [],
     deathShockwaveRadius: 0,
@@ -59,13 +60,14 @@ const BossState = {
     fireRate: 0.085,
     hitsSinceLastMove: 0,
     lastPopupTime: 0,
+    lastHitBossAudioTime: 0,
     aggroRange: 360,
 
     shieldActive: false,
     shieldTimer: 0,
-    shieldDuration: 0.85,
+    shieldDuration: 0.90,
     shieldCooldown: 0,
-    shieldMaxCooldown: 2.10,
+    shieldMaxCooldown: 1.50,
     playerIFrames: 0,
 
     railgunCharge: 0,
@@ -96,6 +98,27 @@ const BossState = {
         this.deathSequenceTimers = [];
     },
 
+    unlockCombatAchievementOnce(achId, displayTitle) {
+        const storageKey = "saphyniel_codex_achievements_v1";
+        let unlockedList = [];
+        try {
+            unlockedList = JSON.parse(localStorage.getItem(storageKey)) || [];
+        } catch (e) {
+            unlockedList = [];
+        }
+
+        const alreadyUnlocked = unlockedList.includes(achId);
+        if (!alreadyUnlocked) {
+            unlockedList.push(achId);
+            localStorage.setItem(storageKey, JSON.stringify(unlockedList));
+            if (displayTitle) {
+                this.showCombatAchievementToast(displayTitle);
+            }
+        }
+        window.parent.postMessage({ type: 'UNLOCK_ACHIEVEMENT', id: achId }, '*');
+        return !alreadyUnlocked;
+    },
+
     showCombatAchievementToast(title) {
         const toast = document.getElementById('boss-ach-toast');
         const titleEl = document.getElementById('boss-ach-toast-title');
@@ -104,6 +127,38 @@ const BossState = {
         toast.classList.add('show');
         if (typeof AudioManager !== 'undefined') AudioManager.liturgicalChime();
         setTimeout(() => toast.classList.remove('show'), 3600);
+    },
+
+    triggerAnimeImpactFrame() {
+        const frame = document.getElementById('anime-impact-frame');
+        if (!frame) return;
+        frame.classList.remove('active');
+        void frame.offsetWidth;
+        frame.classList.add('active');
+        setTimeout(() => frame.classList.remove('active'), 180);
+    },
+
+    showSpecialCutin(titleText = "JUICIO DIVINO", portraitSrc = BOSS_SPRITES.angry) {
+        let banner = document.getElementById('boss-special-cutin');
+        if (!banner) {
+            banner = document.createElement('div');
+            banner.id = 'boss-special-cutin';
+            banner.className = 'boss-special-cutin';
+            banner.innerHTML = `<img id="cutin-banner-img" src="${portraitSrc}" alt="Cutin"><div class="cutin-title" id="cutin-banner-text">${titleText}</div>`;
+            document.body.appendChild(banner);
+        } else {
+            document.getElementById('cutin-banner-img').src = portraitSrc;
+            document.getElementById('cutin-banner-text').textContent = titleText;
+        }
+        banner.classList.add('active');
+        setTimeout(() => banner.classList.remove('active'), 850);
+    },
+
+    triggerCoreRgbGlitch() {
+        const img = document.getElementById('boss-core-img');
+        if (!img) return;
+        img.classList.add('rgb-glitch');
+        setTimeout(() => img.classList.remove('rgb-glitch'), 220);
     },
 
     getBossCoreCenter() {
@@ -151,7 +206,6 @@ const BossState = {
         const cPos = this.getBossCoreCenter();
         this.tackleOriginX = cPos.x;
         this.tackleOriginY = cPos.y;
-        // Apunta directamente hacia la posición actual de tu nave
         this.tackleTargetX = Math.max(70, Math.min(window.innerWidth - 70, this.shipX));
         this.tackleTargetY = Math.max(90, Math.min(window.innerHeight - 70, this.shipY));
         this.tackleState = 'warn';
@@ -236,10 +290,14 @@ const BossState = {
                 this.tackleHasHit = true;
                 if (this.shieldActive) {
                     ParticleEngine.explode(this.shipX, this.shipY, '#e5c158', 30);
-                    if (typeof AudioManager !== 'undefined') AudioManager.railgunFireSound();
+                    this.triggerAnimeImpactFrame();
+                    if (typeof AudioManager !== 'undefined') {
+                        AudioManager.parryClangSound();
+                        AudioManager.playAudio(BOSS_AUDIO_PATHS.antiSpamBlock, 0.6);
+                    }
                     if (typeof ScreenUtils !== 'undefined') ScreenUtils.triggerShake();
                     if (typeof BalatroEngine !== 'undefined') BalatroEngine.triggerHit(this.shipX, this.shipY, 1.8);
-                    this.spawnDamagePopup(this.shipX, this.shipY - 25, "¡EMBESTIDA BLOQUEADA!", 'blocked');
+                    this.spawnDamagePopup(this.shipX, this.shipY - 25, "¡PARRY // EMBESTIDA BLOQUEADA!", 'blocked');
                 } else {
                     this.tryHitPlayer(this.shipX, this.shipY);
                     if (this.isDying || this.playerHp <= 0) return;
@@ -249,13 +307,11 @@ const BossState = {
             if (this.tackleTimer <= 0) {
                 this.tackleState = 'idle';
                 core.classList.remove('tackle-mode');
-                // Al terminar la embestida, suelta un anillo de balas y se reposiciona
                 BossAttacks.spawnDanmakuRing(nx, ny, 8, 3.3, 'ring');
                 setTimeout(() => { if (this.tackleState === 'idle' && !this.isDying) this.moveBossCore(); }, 180);
             }
         }
 
-        // Dibujar todas las Espadas (swordsprite.png) clavadas en Saphyniel con su Stroke y Brillo
         if (this.impaledSwords.length > 0) {
             this.impaledSwords.forEach(sw => {
                 ctx.save();
@@ -280,7 +336,6 @@ const BossState = {
         this.spawnDamagePopup(this.shipX, this.shipY - 28, "ESCUDO YORHA", 'heal');
     },
 
-    // Si weaponLost es true, el Railgun está destruido (las espadas salen solas automáticamente de los bordes)
     activateRailgun() {
         if (this.playerHp <= 0 || this.isDying || this.weaponLost || this.damageLock || this.railgunCharge < 100) return;
 
@@ -290,9 +345,13 @@ const BossState = {
         this.railgunTargetX = target.x;
         this.railgunTargetY = target.y;
 
+        this.triggerAnimeImpactFrame();
+        this.triggerCoreRgbGlitch();
+
         if (typeof AudioManager !== 'undefined') {
             AudioManager.railgunFireSound();
             AudioManager.playAudio(BOSS_AUDIO_PATHS.ecoOrbital, 0.55);
+            AudioManager.playAudio(BOSS_AUDIO_PATHS.hitBoss, 0.65);
         }
         if (typeof ScreenUtils !== 'undefined') ScreenUtils.triggerShake();
         if (typeof BalatroEngine !== 'undefined') BalatroEngine.triggerHit(target.x, target.y, 1.5);
@@ -317,6 +376,13 @@ const BossState = {
         this.updateHpBar();
 
         const now = performance.now();
+        if (!isRailgun && now - this.lastHitBossAudioTime > 420) {
+            this.lastHitBossAudioTime = now;
+            if (typeof AudioManager !== 'undefined') {
+                AudioManager.playAudio(BOSS_AUDIO_PATHS.hitBoss, 0.35);
+            }
+        }
+
         if (isRailgun || now - this.lastPopupTime > 190) {
             this.lastPopupTime = now;
             this.spawnDamagePopup(hitX, hitY, isRailgun ? `RAILGUN -${dmg}` : dmg, isRailgun ? 'blocked' : 'normal');
@@ -356,8 +422,10 @@ const BossState = {
             const f = this.deathFragments[i];
             f.x += f.vx * (dt * 60);
             f.y += f.vy * (dt * 60);
-            f.vx *= 0.985;
-            f.vy = f.vy * 0.985 + 0.04;
+            if (!f.noGravity) {
+                f.vx *= 0.985;
+                f.vy = f.vy * 0.985 + 0.04;
+            }
             f.rot += f.vRot;
             f.life -= f.decay * dt;
 
@@ -374,6 +442,28 @@ const BossState = {
             ctx.shadowColor = f.color;
             ctx.shadowBlur = 10;
             ctx.fillRect(-f.size / 2, -f.size / 2, f.size, f.size);
+            ctx.restore();
+        }
+
+        // Si las piezas ya se unieron en el centro ("But it refused"), dibujar la nave recién reparada brillando
+        if (this.rebirthAssembled) {
+            ctx.save();
+            ctx.translate(this.shipX, this.shipY);
+            ctx.fillStyle = '#f7f5ed';
+            ctx.strokeStyle = '#e5c158';
+            ctx.lineWidth = 2.5;
+            ctx.shadowColor = '#f7f5ed';
+            ctx.shadowBlur = 24;
+            ctx.beginPath();
+            ctx.moveTo(0, -22);
+            ctx.lineTo(18, 15);
+            ctx.lineTo(6, 10);
+            ctx.lineTo(0, 16);
+            ctx.lineTo(-6, 10);
+            ctx.lineTo(-18, 15);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
             ctx.restore();
         }
     },
@@ -414,11 +504,11 @@ const BossState = {
             this.shieldTimer -= dt;
             if (this.shieldTimer <= 0) this.shieldActive = false;
         } else if (this.shieldCooldown > 0) {
-            this.shieldCooldown = Math.max(0, this.shieldCooldown - dt * cooldownMult);
+            this.shieldCooldown = Math.max(0, this.shieldCooldown - dt * cooldownMult * (this.weaponLost ? 1.5 : 1.0));
         }
 
         if (!this.damageLock && !this.weaponLost && this.railgunCharge < 100) {
-            this.railgunCharge = Math.min(100, this.railgunCharge + dt * 14 * cooldownMult);
+            this.railgunCharge = Math.min(100, this.railgunCharge + dt * 9 * cooldownMult);
         }
         this.updateSkillHudBars();
 
@@ -485,11 +575,14 @@ const BossState = {
                 const n = BossAttacks.nodes[j];
                 if (n && Math.hypot(pb.x - n.x, pb.y - n.y) < n.radius + 6) {
                     n.hp -= 1;
-                    this.railgunCharge = Math.min(100, this.railgunCharge + 1.8);
+                    this.railgunCharge = Math.min(100, this.railgunCharge + 1.2);
                     ParticleEngine.explode(pb.x, pb.y, '#e5c158', 2);
                     if (n.hp <= 0) {
                         ParticleEngine.explode(n.x, n.y, '#dad4bb', 18);
-                        if (typeof AudioManager !== 'undefined') AudioManager.beep(880, 0.08, 'sine', 0.05);
+                        if (typeof AudioManager !== 'undefined') {
+                            const sfxUrl = n.type === 'bomb' ? BOSS_AUDIO_PATHS.crystalBreak : BOSS_AUDIO_PATHS.sealBreak;
+                            AudioManager.playAudio(sfxUrl, 0.55);
+                        }
                         this.spawnDamagePopup(n.x, n.y, n.type === 'bomb' ? "DESACTIVADA" : "SELLO ROTO", 'heal');
                         BossAttacks.nodes.splice(j, 1);
                     }
@@ -510,6 +603,7 @@ const BossState = {
                     ParticleEngine.explode(pb.x, pb.y, '#d9381e', 2);
                     if (c.hp <= 0) {
                         ParticleEngine.explode(c.x, c.y, '#d9381e', 18);
+                        if (typeof AudioManager !== 'undefined') AudioManager.playAudio(BOSS_AUDIO_PATHS.crystalBreak, 0.55);
                         if (c.el) c.el.remove();
                         BossAttacks.clones.splice(j, 1);
                     }
@@ -525,7 +619,7 @@ const BossState = {
             const corePos = this.getBossCoreCenter();
             if (Math.hypot(pb.x - corePos.x, pb.y - corePos.y) < corePos.radius) {
                 this.playerBullets.splice(i, 1);
-                this.railgunCharge = Math.min(100, this.railgunCharge + 0.6);
+                this.railgunCharge = Math.min(100, this.railgunCharge + 0.65);
                 ParticleEngine.explode(pb.x, pb.y, '#dad4bb', 2);
                 this.dealDamageToBoss(1, pb.x, pb.y, false);
             }
@@ -662,7 +756,10 @@ const BossState = {
         if (this.isDying || this.playerHp <= 0) return;
         if (this.shieldActive) {
             this.spawnDamagePopup(this.shipX, this.shipY - 20, "BLOQUEADO", 'heal');
-            if (typeof AudioManager !== 'undefined') AudioManager.beep(880, 0.06, 'sine', 0.04);
+            if (typeof AudioManager !== 'undefined') {
+                AudioManager.parryClangSound();
+                AudioManager.playAudio(BOSS_AUDIO_PATHS.antiSpamBlock, 0.5);
+            }
             return;
         }
         if (this.playerIFrames > 0) return;
@@ -673,6 +770,7 @@ const BossState = {
     resetBossEncounter() {
         this.clearDeathTimers();
         this.isDying = false;
+        this.rebirthAssembled = false;
         this.deathFragments = [];
         this.deathShockwaveRadius = 0;
 
@@ -771,13 +869,16 @@ const BossState = {
     },
 
     updateHpBar() {
-        const pct = Math.max(0, Math.round((this.currentHp / this.maxHp) * 100));
+        const ratio = Math.max(0, this.currentHp / this.maxHp);
+        const pct = Math.round(ratio * 100);
         const fill = document.getElementById('boss-hp-fill');
         const num = document.getElementById('boss-hp-num');
+        const core = document.getElementById('boss-core');
         if (fill) fill.style.width = `${pct}%`;
         if (num) num.textContent = `[${pct}%]`;
+        if (core) core.classList.toggle('critical-hp', ratio > 0 && ratio <= 0.25);
         if (typeof BalatroEngine !== 'undefined') {
-            BalatroEngine.setBossHpRatio(this.currentHp / this.maxHp);
+            BalatroEngine.setBossHpRatio(ratio);
         }
     },
 
@@ -796,7 +897,10 @@ const BossState = {
     damagePlayer() {
         if (this.playerHp <= 0 || this.isDying) return;
         this.playerHp--;
-        if (typeof AudioManager !== 'undefined') AudioManager.beep(90, 0.3, 'sawtooth', 0.08);
+        if (typeof AudioManager !== 'undefined') {
+            AudioManager.playAudio(BOSS_AUDIO_PATHS.trapHeartHit, 0.55);
+            AudioManager.beep(90, 0.3, 'sawtooth', 0.08);
+        }
         if (typeof ScreenUtils !== 'undefined') ScreenUtils.triggerShake();
         for (let i = 1; i <= this.maxPlayerHp; i++) {
             const heart = document.getElementById(`heart-${i}`);
@@ -810,6 +914,7 @@ const BossState = {
     triggerBadEnding() {
         if (this.isDying) return;
         this.isDying = true;
+        this.rebirthAssembled = false;
         this.damageLock = true;
         this.playerBullets = [];
         this.clearDeathTimers();
@@ -892,6 +997,93 @@ const BossState = {
         document.getElementById('boss-core').style.display = 'none';
         const goScreen = document.getElementById('game-over-screen');
         if (goScreen) goScreen.classList.add('visible');
+    },
+
+    // --- CAPÍTULOS 4 Y 5: EFECTO UNDERTALE ("BUT IT REFUSED") AL REINTENTAR ---
+    triggerUndertaleRebirth() {
+        this.clearDeathTimers();
+        DialogueSystem.hide();
+        document.getElementById('game-over-screen')?.classList.remove('visible');
+        document.getElementById('cinematic-darkness')?.classList.add('active');
+        document.body.className = 'combat-no-cursor';
+
+        if (typeof ParticleEngine !== 'undefined') {
+            ParticleEngine.petals = [];
+            ParticleEngine.resume();
+        }
+        BossEngine.startLoop();
+
+        const cx = window.innerWidth / 2;
+        const cy = window.innerHeight * 0.72;
+        this.shipX = cx;
+        this.shipY = cy;
+
+        this.isDying = true;
+        this.rebirthAssembled = false;
+        this.deathShockwaveRadius = 99999;
+        this.deathFragments = [];
+
+        // Colocar las piezas rotas de la nave flotando en dos mitades fracturadas
+        for (let i = 0; i < 42; i++) {
+            const side = i % 2 === 0 ? -1 : 1;
+            const spreadX = side * (28 + Math.random() * 55);
+            const spreadY = (Math.random() - 0.5) * 70;
+            this.deathFragments.push({
+                x: cx + spreadX,
+                y: cy + spreadY,
+                vx: 0,
+                vy: 0,
+                size: 5 + (i % 3) * 2,
+                rot: Math.random() * Math.PI * 2,
+                vRot: 0.08,
+                life: 1.0,
+                decay: 0,
+                noGravity: true,
+                color: i % 3 === 0 ? '#e5c158' : '#f7f5ed'
+            });
+        }
+
+        // Etapa 1 (0.0s - 0.65s): Temblor intenso de las piezas rotas ("...Pero se negó a morir")
+        if (typeof AudioManager !== 'undefined' && typeof AudioManager.undertaleRefuseRumble === 'function') {
+            AudioManager.undertaleRefuseRumble();
+        }
+        const shakeInterval = setInterval(() => {
+            this.deathFragments.forEach(f => {
+                f.x += (Math.random() - 0.5) * 7;
+                f.y += (Math.random() - 0.5) * 7;
+            });
+        }, 35);
+
+        // Etapa 2 (0.65s): Las piezas viajan magnéticamente al centro y reconstruyen la nave
+        const tAssemble = setTimeout(() => {
+            clearInterval(shakeInterval);
+            if (typeof AudioManager !== 'undefined' && typeof AudioManager.undertaleRefuseHeal === 'function') {
+                AudioManager.undertaleRefuseHeal();
+            }
+            this.deathFragments.forEach(f => {
+                f.vx = (cx - f.x) / 14;
+                f.vy = (cy - f.y) / 14;
+            });
+        }, 650);
+
+        // Etapa 3 (0.95s): Mostrar la nave ensamblada brillando en el centro
+        const tGlow = setTimeout(() => {
+            this.deathFragments = [];
+            this.rebirthAssembled = true;
+            ParticleEngine.explode(cx, cy, '#e5c158', 24);
+        }, 950);
+
+        // Etapa 4 (1.35s): Arrancar la batalla inmediatamente SIN diálogos
+        const tStart = setTimeout(() => {
+            this.rebirthAssembled = false;
+            this.resetBossEncounter();
+            this.battleStartTime = Date.now();
+            this.history = [];
+            BossEngine.startLoop();
+            BossEngine.transitionTo('phase1', true); // true = salta todos los diálogos
+        }, 1350);
+
+        this.deathSequenceTimers.push(tAssemble, tGlow, tStart);
     },
 
     moveBossCore() {
@@ -1020,9 +1212,9 @@ function initBossEncounterSequence() {
     if (debugParam) {
         if (debugParam.startsWith('3')) BossEngine.transitionTo('phase3');
         else if (debugParam === '2') BossEngine.transitionTo('phase2');
-        else BossEngine.transitionTo('phase1');
+        else BossEngine.transitionTo('phase1', false);
     } else {
-        BossEngine.transitionTo('phase1');
+        BossEngine.transitionTo('phase1', false);
     }
 }
 
@@ -1060,16 +1252,17 @@ document.getElementById('choice-no')?.addEventListener('click', (e) => {
     });
 });
 
+// BOTÓN REINTENTAR: Activa la reparación estilo Undertale ("But it refused") y arranca sin diálogos
 document.getElementById('retry-btn')?.addEventListener('click', (e) => {
     e.preventDefault();
     e.stopPropagation();
     e.currentTarget.blur();
 
-    window.parent.postMessage({ type: 'UNLOCK_ACHIEVEMENT', id: 'perseverance' }, '*');
-    BossState.showCombatAchievementToast("PERSEVERANCIA");
-    initBossEncounterSequence();
+    BossState.unlockCombatAchievementOnce('perseverance', 'PERSEVERANCIA');
+    BossState.triggerUndertaleRebirth();
 });
 
+// BOTÓN RENDIRSE: Guarda en localStorage y regresa a la Bio
 document.getElementById('surrender-btn')?.addEventListener('click', (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -1080,6 +1273,7 @@ document.getElementById('surrender-btn')?.addEventListener('click', (e) => {
     AudioManager.stopBgm();
     document.getElementById('game-over-screen')?.classList.remove('visible');
 
+    BossState.unlockCombatAchievementOnce('fragile_faith', null);
     window.parent.postMessage({
         type: 'BOSS_SURRENDERED',
         achievementId: 'fragile_faith'
