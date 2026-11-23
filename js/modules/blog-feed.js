@@ -1,5 +1,13 @@
 window.BlogFeed = {
-    posts: [], activeFilter: "all", useSupabase: false, cfg: null,
+    posts: [],
+    filteredPosts: [],
+    renderedCount: 0,
+    batchSize: 6,
+    activeFilter: "all",
+    useSupabase: false,
+    cfg: null,
+    scrollObserver: null,
+    videoObserver: null,
 
     normalizeBaseUrl(raw) {
         return String(raw || "").trim().replace(/\/rest\/v1\/?$/i, "").replace(/\/+$/, "");
@@ -16,18 +24,29 @@ window.BlogFeed = {
         const sb = cfg?.supabase;
         this.useSupabase = Boolean(sb && sb.url && sb.anonKey);
         const badge = document.getElementById("feed-source-badge");
-        if (badge) badge.textContent = this.useSupabase ? "SUPABASE + LOCAL" : "LOCAL MODE";
+        if (badge) badge.textContent = this.useSupabase ? "LIVE ARCHIVE" : "ARCHIVE";
 
         document.querySelectorAll("#feed-filters .pill-btn").forEach((btn) => {
             btn.onclick = () => {
                 this.activeFilter = btn.getAttribute("data-filter");
                 document.querySelectorAll("#feed-filters .pill-btn").forEach((b) => b.classList.remove("active"));
                 btn.classList.add("active");
-                this.renderFeed();
+                this.renderFeed(true);
             };
         });
         const refBtn = document.getElementById("btn-refresh-feed");
         if (refBtn) refBtn.onclick = () => this.loadPosts(true);
+
+        if (!this.videoObserver && "IntersectionObserver" in window) {
+            this.videoObserver = new IntersectionObserver((entries) => {
+                entries.forEach((entry) => {
+                    if (!entry.isIntersecting && entry.target && !entry.target.paused) {
+                        entry.target.pause();
+                    }
+                });
+            }, { threshold: 0.1 });
+        }
+
         await this.loadPosts(false);
     },
 
@@ -40,13 +59,12 @@ window.BlogFeed = {
                 const res = await fetch(`${base}/rest/v1/posts?select=*&order=published_at.desc`, {
                     headers: this.buildHeaders(key)
                 });
-                if (res.ok) remotePosts = await res.json();
+                if (res.ok) remotePosts = (await res.json()).map((p) => ({ ...p, _source: "supabase" }));
             } catch {}
         }
 
-        // Si ya hay posts en Supabase, los combina con los locales o muestra los remotos ordenados por fecha (más viejos al fondo)
-        const localPosts = Array.isArray(this.cfg?.samplePosts) ? this.cfg.samplePosts : [];
-        const combined = remotePosts.length ? [...remotePosts, ...localPosts] : [...localPosts];
+        const localPosts = (Array.isArray(this.cfg?.samplePosts) ? this.cfg.samplePosts : []).map((p) => ({ ...p, _source: "local" }));
+        const combined = [...remotePosts, ...localPosts];
         const seen = new Set();
         this.posts = combined.filter((p) => {
             const k = String(p.id || p.title);
@@ -56,7 +74,7 @@ window.BlogFeed = {
         }).sort((a, b) => new Date(b.published_at || 0) - new Date(a.published_at || 0));
 
         this.renderLatest();
-        this.renderFeed();
+        this.renderFeed(true);
         this.renderGallery();
         if (notify) window.ReworkApp?.toast("FEED ACTUALIZADO");
     },
@@ -64,25 +82,13 @@ window.BlogFeed = {
     parseMedia(url, category = "") {
         const u = String(url || "").trim();
         if (!u) return null;
-
-        // YouTube (watch, youtu.be, shorts)
         const yt = u.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
         if (yt) return { kind: "youtube", id: yt[1], embed: `https://www.youtube.com/embed/${yt[1]}?rel=0` };
-
-        // TikTok (/video/ID)
         const tt = u.match(/tiktok\.com\/.*\/video\/(\d+)/);
         if (tt) return { kind: "tiktok", id: tt[1], embed: `https://www.tiktok.com/player/v1/${tt[1]}?music_info=1&description=1` };
-
-        // Spotify (track, album, playlist, episode)
         const sp = u.match(/open\.spotify\.com\/(track|album|playlist|episode)\/([a-zA-Z0-9]+)/);
         if (sp) return { kind: "spotify", embed: `https://open.spotify.com/embed/${sp[1]}/${sp[2]}?utm_source=generator&theme=0` };
-
-        // Video directo MP4/WEBM/OGG
-        if (category === "video" || /\.(mp4|webm|ogg)(\?.*)?$/i.test(u)) {
-            return { kind: "video", src: u };
-        }
-
-        // Imagen o GIF
+        if (category === "video" || /\.(mp4|webm|ogg)(\?.*)?$/i.test(u)) return { kind: "video", src: u };
         return { kind: "image", src: u };
     },
 
@@ -97,7 +103,7 @@ window.BlogFeed = {
 
         const loader = document.createElement("div");
         loader.className = "nb-loader-overlay";
-        loader.innerHTML = `<div class="nb-loader-stripe"></div><div class="nb-loader-label">[ LOADING ${parsed.kind.toUpperCase()} // ... ]</div>`;
+        loader.innerHTML = `<div class="nb-loader-stripe"></div><div class="nb-loader-label">[ LOADING ${parsed.kind.toUpperCase()} ]</div>`;
         wrap.appendChild(loader);
 
         const show404 = () => {
@@ -107,36 +113,19 @@ window.BlogFeed = {
                     <div class="nb-error-head"><span>ERR_MEDIA_MISSING</span><span>[ 404 ]</span></div>
                     <div class="nb-error-body">
                         <div class="nb-error-code">404 // NOT FOUND</div>
-                        <div class="nb-error-msg">La imagen o video no se encontró o no pudo cargarse.</div>
-                        <div class="nb-error-path">${this.esc(post.media_url)}</div>
+                        <div class="nb-error-msg">Archivo multimedia no disponible.</div>
                     </div>
                 </div>`;
         };
 
-        if (parsed.kind === "youtube") {
-            wrap.classList.add("is-embed-yt");
+        if (parsed.kind === "youtube" || parsed.kind === "tiktok" || parsed.kind === "spotify") {
+            wrap.classList.add(parsed.kind === "youtube" ? "is-embed-yt" : (parsed.kind === "tiktok" ? "is-embed-tiktok" : "is-embed-spotify"));
             const ifr = document.createElement("iframe");
             ifr.src = parsed.embed;
-            ifr.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
+            ifr.loading = "lazy";
+            if (parsed.kind === "spotify") ifr.height = "152";
+            ifr.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen";
             ifr.allowFullscreen = true;
-            ifr.onload = () => wrap.classList.remove("is-loading");
-            setTimeout(() => wrap.classList.remove("is-loading"), 2200);
-            wrap.appendChild(ifr);
-        } else if (parsed.kind === "tiktok") {
-            wrap.classList.add("is-embed-tiktok");
-            const ifr = document.createElement("iframe");
-            ifr.src = parsed.embed;
-            ifr.allow = "autoplay; encrypted-media; fullscreen";
-            ifr.allowFullscreen = true;
-            ifr.onload = () => wrap.classList.remove("is-loading");
-            setTimeout(() => wrap.classList.remove("is-loading"), 2600);
-            wrap.appendChild(ifr);
-        } else if (parsed.kind === "spotify") {
-            wrap.classList.add("is-embed-spotify");
-            const ifr = document.createElement("iframe");
-            ifr.src = parsed.embed;
-            ifr.height = "152";
-            ifr.allow = "autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture";
             ifr.onload = () => wrap.classList.remove("is-loading");
             setTimeout(() => wrap.classList.remove("is-loading"), 2200);
             wrap.appendChild(ifr);
@@ -148,16 +137,21 @@ window.BlogFeed = {
             vid.preload = "metadata";
             vid.onloadeddata = () => wrap.classList.remove("is-loading");
             vid.onerror = show404;
+            if (this.videoObserver) this.videoObserver.observe(vid);
             wrap.appendChild(vid);
         } else {
             const img = document.createElement("img");
             img.src = parsed.src;
             img.alt = post.title || "Media";
             img.loading = "lazy";
+            img.decoding = "async";
             img.onload = () => wrap.classList.remove("is-loading");
             img.onerror = show404;
             img.addEventListener("click", () => {
-                if (document.body.classList.contains("studio-edit-mode")) return;
+                if (document.body.classList.contains("studio-edit-mode")) {
+                    window.parent.postMessage({ type: "STUDIO_SELECT_POST", postId: String(post.id), source: post._source || "local" }, "*");
+                    return;
+                }
                 window.ReworkApp.openMediaModal("image", parsed.src, post.title, post.content);
             });
             wrap.appendChild(img);
@@ -169,7 +163,7 @@ window.BlogFeed = {
         const strip = document.getElementById("latest-posts-strip");
         if (!strip) return;
         const top = this.posts.slice(0, 3);
-        if (!top.length) { strip.innerHTML = `<div class="dc-idle-msg">&gt; SIN ENTRADAS TODAVÍA_</div>`; return; }
+        if (!top.length) { strip.innerHTML = `<div class="dc-idle-msg">&gt; AÚN NO HAY PUBLICACIONES_</div>`; return; }
         strip.innerHTML = "";
         top.forEach((p) => {
             const row = document.createElement("div");
@@ -180,33 +174,64 @@ window.BlogFeed = {
         });
     },
 
-    renderFeed() {
+    renderFeed(reset = true) {
         const list = document.getElementById("posts-feed-list");
         if (!list) return;
-        const filtered = this.activeFilter === "all" ? this.posts : this.posts.filter((p) => (p.category || "post") === this.activeFilter);
-        if (!filtered.length) {
-            list.innerHTML = `<article class="tac-window"><div class="post-card-body"><div class="dc-idle-msg">&gt; SIN ENTRADAS EN ESTA CATEGORÍA_</div></div></article>`;
-            return;
+
+        if (reset) {
+            if (this.scrollObserver) { this.scrollObserver.disconnect(); this.scrollObserver = null; }
+            this.filteredPosts = this.activeFilter === "all"
+                ? this.posts
+                : this.posts.filter((p) => (p.category || "post") === this.activeFilter);
+            this.renderedCount = 0;
+            list.innerHTML = "";
+            if (!this.filteredPosts.length) {
+                list.innerHTML = `<article class="tac-window"><div class="post-card-body"><div class="dc-idle-msg">&gt; SIN ENTRADAS EN ESTA CATEGORÍA_</div></div></article>`;
+                return;
+            }
         }
+
+        // Quitar el centinela anterior si existe
+        list.querySelector(".feed-load-more-wrap")?.remove();
+
+        const nextBatch = this.filteredPosts.slice(this.renderedCount, this.renderedCount + this.batchSize);
         const likedSet = this.getLiked();
-        list.innerHTML = "";
-        filtered.forEach((post) => {
+
+        nextBatch.forEach((post) => {
+            const rawTags = Array.isArray(post.tags) ? post.tags : [];
+            const fxTags = rawTags.filter((t) => /^fx:/i.test(t)).map((t) => t.toLowerCase());
+            const visibleTags = rawTags.filter((t) => !/^fx:/i.test(t));
+
             const card = document.createElement("article");
-            card.className = "tac-window rb-spotlight";
+            const fxClasses = [];
+            if (fxTags.includes("fx:chroma")) fxClasses.push("post-fx-chroma");
+            if (fxTags.includes("fx:crt")) fxClasses.push("post-fx-crt");
+            if (fxTags.includes("fx:tilt")) fxClasses.push("post-fx-tilt");
+            if (fxTags.includes("fx:glow")) fxClasses.push("post-fx-glow");
+
+            card.className = `tac-window rb-spotlight ${fxClasses.join(" ")}`.trim();
+
             const isLiked = likedSet.has(String(post.id));
             const likesCount = Number(post.likes_count || 0) + (isLiked && !this.useSupabase ? 1 : 0);
-            const tags = Array.isArray(post.tags) ? post.tags : [];
+            const titleClasses = [
+                "post-title",
+                fxTags.includes("fx:glitch") ? "glitch-text" : "",
+                fxTags.includes("fx:decrypt") ? "rb-decrypt" : ""
+            ].filter(Boolean).join(" ");
 
             card.innerHTML = `
                 <div class="tac-window-header">
                     <span>ENTRY // ${(post.category || "POST").toUpperCase()}</span>
-                    <span>${this.fmtDate(post.published_at)}</span>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <button type="button" class="studio-post-edit-btn">✎ EDITAR POST</button>
+                        <span>${this.fmtDate(post.published_at)}</span>
+                    </div>
                 </div>
                 <div class="post-card-body">
-                    <h2 class="post-title">${this.esc(post.title)}</h2>
+                    <h2 class="${titleClasses}" data-text="${this.esc(post.title)}">${this.esc(post.title)}</h2>
                     <div class="post-media-slot"></div>
                     ${post.content ? `<p class="post-text">${this.esc(post.content)}</p>` : ""}
-                    ${tags.length ? `<div class="post-tags-row">${tags.map((t) => `<span class="post-tag">#${this.esc(t)}</span>`).join("")}</div>` : ""}
+                    ${visibleTags.length ? `<div class="post-tags-row">${visibleTags.map((t) => `<span class="post-tag">#${this.esc(t)}</span>`).join("")}</div>` : ""}
                     <div class="post-actions-bar">
                         <button type="button" class="tac-btn-xs like-btn ${isLiked ? "liked" : ""}">♥ LIKE (<span class="like-num">${likesCount}</span>)</button>
                         <button type="button" class="tac-btn-xs btn-comments">⌘ COMENTARIOS</button>
@@ -222,6 +247,11 @@ window.BlogFeed = {
                         </form>
                     </div>
                 </div>`;
+
+            card.querySelector(".studio-post-edit-btn")?.addEventListener("click", (e) => {
+                e.stopPropagation();
+                window.parent.postMessage({ type: "STUDIO_SELECT_POST", postId: String(post.id), source: post._source || "local" }, "*");
+            });
 
             const mediaNode = this.createNeoBruteMediaNode(post);
             if (mediaNode) card.querySelector(".post-media-slot").appendChild(mediaNode);
@@ -241,8 +271,34 @@ window.BlogFeed = {
                 f.reset();
                 this.loadComments(post.id);
             });
+
             list.appendChild(card);
+            if (fxTags.includes("fx:decrypt") && window.ReactBitsFX) {
+                window.ReactBitsFX.decrypt(card.querySelector(".post-title"), 420);
+            }
         });
+
+        this.renderedCount += nextBatch.length;
+
+        // Si quedan más posts, insertar botón + carga automática al acercarse al final
+        if (this.renderedCount < this.filteredPosts.length) {
+            const rem = this.filteredPosts.length - this.renderedCount;
+            const wrap = document.createElement("div");
+            wrap.className = "feed-load-more-wrap";
+            wrap.innerHTML = `<button type="button" class="tac-btn">[ CARGAR MÁS POSTS (${rem} restantes) ]</button>`;
+            wrap.querySelector("button").onclick = () => this.renderFeed(false);
+            list.appendChild(wrap);
+
+            if ("IntersectionObserver" in window) {
+                this.scrollObserver = new IntersectionObserver((entries) => {
+                    if (entries.some((e) => e.isIntersecting)) {
+                        this.scrollObserver.disconnect();
+                        this.renderFeed(false);
+                    }
+                }, { rootMargin: "220px" });
+                this.scrollObserver.observe(wrap);
+            }
+        }
     },
 
     renderGallery() {
@@ -252,7 +308,7 @@ window.BlogFeed = {
             const m = this.parseMedia(p.media_url, p.category);
             return m && (m.kind === "image" || m.kind === "video");
         });
-        if (!items.length) { grid.innerHTML = `<div class="dc-idle-msg">&gt; SUBE FOTOS, GIFS O VIDEOS PARA VER LA GALERÍA_</div>`; return; }
+        if (!items.length) { grid.innerHTML = `<div class="dc-idle-msg">&gt; AÚN NO HAY ARCHIVOS EN LA GALERÍA_</div>`; return; }
         grid.innerHTML = "";
         items.forEach((p) => {
             const m = this.parseMedia(p.media_url, p.category);
@@ -260,7 +316,7 @@ window.BlogFeed = {
             tile.className = "media-tile";
             tile.innerHTML = m.kind === "video"
                 ? `<video class="media-tile-thumb" src="${this.esc(m.src)}" muted preload="metadata"></video><div class="media-tile-cap">▶ ${this.esc(p.title)}</div>`
-                : `<img class="media-tile-thumb" src="${this.esc(m.src)}" alt="${this.esc(p.title)}" loading="lazy" onerror="this.style.display='none';this.parentElement.insertAdjacentHTML('afterbegin','<div style=padding:20px;font-family:monospace;font-size:0.7rem;text-align:center;>404 // NOT FOUND</div>');"><div class="media-tile-cap">${this.esc(p.title)}</div>`;
+                : `<img class="media-tile-thumb" src="${this.esc(m.src)}" alt="${this.esc(p.title)}" loading="lazy" decoding="async" onerror="this.style.display='none';this.parentElement.insertAdjacentHTML('afterbegin','<div style=padding:20px;font-family:monospace;font-size:0.7rem;text-align:center;>404 // NOT FOUND</div>');"><div class="media-tile-cap">${this.esc(p.title)}</div>`;
             tile.onclick = () => window.ReworkApp.openMediaModal(m.kind, m.src, p.title, p.content);
             grid.appendChild(tile);
         });

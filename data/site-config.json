@@ -14,12 +14,12 @@
     "steamProxyUrl": "https://billowing-mountain-74c3steam-proxy.tachyondeuwi.workers.dev/",
     "blurbs": [
       {
-        "heading": "ABOUT // BIENVENIDA",
-        "text": "Espacio personal diseñado como sistema modular. Aquí conviven mi blog con fotos, videos, embeds e historias, mi música favorita, mis juegos y secretos ocultos entre archivos."
+        "heading": "ARCHIVE // BITÁCORA",
+        "text": "Espacio personal donde guardo fotos, música, clips, proyectos jugables y notas sueltas sin algoritmos ni anuncios."
       },
       {
-        "heading": "SYSTEM // NOTA",
-        "text": "Activa PERF: LITE arriba si usas una PC sin aceleración de hardware. Toca cualquier imagen para abrir el Inspector de Análisis."
+        "heading": "SYSTEM // NAVEGACIÓN",
+        "text": "Explora las pestañas de arriba, revisa el visor de imágenes o abre la terminal en Arcade si te gusta buscar secretos."
       }
     ]
   },
@@ -200,7 +200,7 @@
     ],
     "steamHighlights": {
       "handle": "tachydeuwi",
-      "statusText": "Perfil público de Steam // Conecta tu Cloudflare Worker para stats en vivo",
+      "statusText": "Registro de partidas y logros destacados",
       "featuredAchievements": [
         {
           "game": "NieR:Automata",
@@ -264,117 +264,46 @@
     "url": "https://rlvxyekfmamyyuxrdczw.supabase.co",
     "anonKey": "sb_publishable_l_AssEzuN8k2_vBl0cW_Jg_tlgVU7zk"
   },
-  "samplePosts": [
-    {
-      "id": "entry-005",
-      "title": "REWORK v2 // BARRA SUPERIOR, EMBEDS Y STUDIO INTERACTIVO",
-      "category": "post",
-      "published_at": "2026-11-22T18:10:00",
-      "content": "Los posts ahora se ordenan automáticamente por fecha (los más antiguos quedan al fondo) y aceptan fotos, GIFs, videos MP4, YouTube, TikTok y Spotify directo en el feed.\n\nPista ARG: abre CMD arriba a la derecha o presiona Ctrl+K y escribe HELP.",
-      "media_url": "",
-      "tags": [
-        "update",
-        "blog",
-        "studio"
-      ],
-      "likes_count": 5
-    },
-    {
-      "id": "entry-004",
-      "title": "CLIP DE YOUTUBE EMBEBIDO // ARCHIVO AUDIOVISUAL",
-      "category": "video",
-      "published_at": "2026-11-21T20:00:00",
-      "content": "Prueba de reproductor de YouTube integrado directo en un post con marco neo-brutalist de carga.",
-      "media_url": "https://www.youtube.com/watch?v=7x0aPZ8tQvA",
-      "tags": [
-        "youtube",
-        "video",
-        "music"
-      ],
-      "likes_count": 3
-    },
-    {
-      "id": "entry-003",
-      "title": "GIF EN MOVIMIENTO // CORE FASE 3",
-      "category": "photo",
-      "published_at": "2026-11-19T16:40:00",
-      "content": "Soporte nativo para GIFs animados y fotos con el Inspector de Análisis (toca la imagen para probar INVERT o RED SCAN).",
-      "media_url": "img/boss/boos_fase3.gif",
-      "tags": [
-        "gif",
-        "bossfight",
-        "pixel"
-      ],
-      "likes_count": 6
-    },
-    {
-      "id": "entry-002",
-      "title": "TRACK EN ROTACIÓN // SPOTIFY EMBED",
-      "category": "story",
-      "published_at": "2026-11-16T23:15:00",
-      "content": "También puedes pegar links de canciones o playlists de Spotify y se incrustan con reproductor directo aquí mismo.",
-      "media_url": "https://open.spotify.com/track/2WfaOiMkCvy7F5fcp2zZ8L",
-      "tags": [
-        "spotify",
-        "music",
-        "vibe"
-      ],
-      "likes_count": 4
-    },
-    {
-      "id": "entry-001",
-      "title": "PRUEBA DE ERROR 404 NEO-BRUTALIST (POST ANTIGUO)",
-      "category": "photo",
-      "published_at": "2026-11-10T12:00:00",
-      "content": "Este post más antiguo queda al fondo por fecha y además demuestra cómo se ve el fallback neo-brutalist cuando una imagen no se encuentra (puedes tocarla en el Studio para reemplazarla).",
-      "media_url": "img/uploads/archivo_inexistente_demo.png",
-      "tags": [
-        "demo",
-        "neobrute",
-        "404"
-      ],
-      "likes_count": 1
-    }
-  ],
+  "samplePosts": [],
   "arcade": [
     {
-      "id": "saphyniel-bossfight",
-      "title": "SAPHYNIEL // ENCOUNTER",
       "status": "SEALED MEMORY",
-      "type": "bossfight",
-      "src": "boss.html",
+      "id": "saphyniel-bossfight",
       "thumb": "img/boss/core.png",
-      "description": "Memoria sellada del códice anterior. Bullet-heaven de 3 fases + ruta secreta Fase [S] con intro narrativa.",
+      "title": "SAPHYNIEL // ENCOUNTER",
+      "src": "boss.html",
       "tags": [
         "BOSSFIGHT",
         "NARRATIVE",
         "PC / MÓVIL"
-      ]
+      ],
+      "description": "Memoria sellada del códice. Combate bullet-heaven de 3 fases con cinemáticas y ruta secreta Fase [S].",
+      "type": "bossfight"
     },
     {
-      "id": "arg-terminal",
-      "title": "PLAYGROUND // TERMINAL DE SECRETOS",
-      "status": "ACTIVE",
-      "type": "terminal",
-      "thumb": "img/icons/eye.png",
-      "description": "Consola interactiva para ingresar códigos descubiertos en posts, frases aleatorias e imágenes.",
+      "description": "Consola interactiva para probar comandos y códigos ocultos repartidos por el archivo.",
       "tags": [
         "PUZZLE",
         "ARG",
         "COMANDOS"
-      ]
+      ],
+      "status": "ACTIVE",
+      "id": "arg-terminal",
+      "type": "terminal",
+      "title": "PLAYGROUND // TERMINAL",
+      "thumb": "img/icons/eye.png"
     },
     {
-      "id": "future-puzzle-slot",
-      "title": "ARCHIVO_03 // GRAN PUZZLE",
-      "status": "COMING SOON",
-      "type": "placeholder",
-      "thumb": "img/icons/icon.png",
-      "description": "Ranura reservada para futuros puzzles multicapa y minijuegos HTML5.",
+      "description": "Frecuencia sellada. Próximamente nuevos acertijos y experimentos interactivos.",
       "tags": [
-        "EXTENSIBLE",
+        "ENCRYPTED",
         "MYSTERY"
-      ]
+      ],
+      "status": "LOCKED",
+      "id": "future-puzzle-slot",
+      "type": "placeholder",
+      "title": "ARCHIVO_03 // SEÑAL ENCRIPTADA",
+      "thumb": "img/icons/icon.png"
     }
   ]
 }

@@ -492,3 +492,151 @@ body.studio-edit-mode.is-ptr-dragging {
         display: none !important;
     }
 }
+/* RENDIMIENTO FEED (LAZY RENDER SIN SALTOS DE SCROLL) */
+.posts-feed-list > article {
+    content-visibility: auto;
+    contain-intrinsic-size: 420px;
+}
+.feed-load-more-wrap {
+    display: flex;
+    justify-content: center;
+    padding: 8px 0 4px;
+}
+
+/* BOTÓN DE EDICIÓN DIRECTA DE POSTS EN STUDIO */
+.studio-post-edit-btn {
+    display: none;
+    background: #00e5ff !important;
+    color: #050507 !important;
+    border: 1.5px solid #050507 !important;
+    padding: 2px 8px;
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    font-weight: 800;
+    cursor: pointer;
+}
+body.studio-edit-mode .studio-post-edit-btn {
+    display: inline-block;
+}
+
+/* EFECTOS REACTBITS POR POST (ACTIVADOS CON TAGS fx:*) */
+.post-fx-chroma {
+    border-color: var(--accent) !important;
+    box-shadow: -3px 0 0 rgba(255, 46, 61, 0.75), 3px 0 0 rgba(0, 229, 255, 0.75), var(--shadow-hard) !important;
+}
+.post-fx-crt::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(0deg, rgba(0,0,0,0.16) 0px, rgba(0,0,0,0.16) 1px, transparent 1px, transparent 3px);
+}
+.post-fx-tilt {
+    transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+.post-fx-tilt:hover {
+    transform: perspective(900px) rotateX(1.6deg) rotateY(-1.6deg) translateY(-2px);
+}
+.post-fx-glow {
+    box-shadow: 0 0 24px rgba(255, 255, 255, 0.14), var(--shadow-hard) !important;
+}
+body.perf-lite .post-fx-crt::after { display: none !important; }
+body.perf-lite .post-fx-tilt:hover { transform: none !important; }
+/* =========================================================
+   OCULTAR BARRA DE SCROLL NATIVA EN PC Y TELÉFONOS
+========================================================= */
+html, body, * {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+}
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+*::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+}
+
+/* =========================================================
+   SCROLLBAR PERSONALIZADA NEO-BRUTALIST DINÁMICA E INTERACTIVA
+========================================================= */
+.nb-scrollbar-track {
+    position: fixed;
+    top: 64px;
+    right: 6px;
+    bottom: 14px;
+    width: 14px;
+    z-index: 650;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.22s ease, width 0.16s ease;
+    display: flex;
+    justify-content: center;
+    touch-action: none;
+}
+
+.nb-scrollbar-track.is-visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.nb-scrollbar-track.is-hidden-fit {
+    display: none !important;
+}
+
+.nb-scrollbar-rail {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-soft);
+    transition: width 0.14s ease, border-color 0.14s ease;
+}
+
+.nb-scrollbar-track:hover .nb-scrollbar-rail,
+.nb-scrollbar-track.is-dragging .nb-scrollbar-rail {
+    width: 8px;
+    border-color: var(--border);
+}
+
+.nb-scrollbar-thumb {
+    position: absolute;
+    top: 0;
+    width: 6px;
+    min-height: 34px;
+    background: var(--accent);
+    border: 1.5px solid var(--accent-inv);
+    box-shadow: 2px 2px 0px var(--accent-inv), 0 0 0 1px var(--border);
+    cursor: grab;
+    will-change: transform, height;
+    transition: width 0.14s ease, background-color 0.14s ease;
+}
+
+.nb-scrollbar-track:hover .nb-scrollbar-thumb,
+.nb-scrollbar-track.is-dragging .nb-scrollbar-thumb {
+    width: 10px;
+    box-shadow: 3px 3px 0px var(--border-soft), 0 0 0 1.5px var(--border);
+}
+
+.nb-scrollbar-track.is-dragging .nb-scrollbar-thumb {
+    cursor: grabbing;
+}
+
+@media (max-width: 959px) {
+    .nb-scrollbar-track {
+        top: 106px;
+        bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+        right: 4px;
+        width: 16px;
+    }
+    .nb-scrollbar-rail {
+        width: 3px;
+    }
+    .nb-scrollbar-thumb {
+        width: 6px;
+    }
+    .nb-scrollbar-track.is-dragging .nb-scrollbar-thumb {
+        width: 11px;
+    }
+}

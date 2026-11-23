@@ -779,3 +779,141 @@ window.ReworkApp = {
 };
 
 window.addEventListener("DOMContentLoaded", () => window.ReworkApp.init());
+// ============================================================================
+// MOTOR DE SCROLLBAR NEO-BRUTALIST DINÁMICA E INTERACTIVA (PC + MÓVIL)
+// ============================================================================
+(function initNeoBruteScrollbar() {
+    let track, thumb, hideTimer = null, isDragging = false, dragOffsetY = 0;
+
+    function mount() {
+        if (document.getElementById("nb-scrollbar-track")) return;
+        track = document.createElement("div");
+        track.id = "nb-scrollbar-track";
+        track.className = "nb-scrollbar-track";
+        track.setAttribute("aria-hidden", "true");
+        track.innerHTML = `<div class="nb-scrollbar-rail"></div><div class="nb-scrollbar-thumb" id="nb-scrollbar-thumb"></div>`;
+        document.body.appendChild(track);
+        thumb = document.getElementById("nb-scrollbar-thumb");
+
+        bindEvents();
+        updateGeometry();
+    }
+
+    function getMetrics() {
+        const docH = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
+        const viewH = window.innerHeight;
+        const maxScroll = Math.max(0, docH - viewH);
+        const trackH = track ? track.clientHeight : viewH;
+        const thumbH = maxScroll > 0 ? Math.max(36, Math.min(trackH * 0.55, (viewH / docH) * trackH)) : trackH;
+        return { docH, viewH, maxScroll, trackH, thumbH };
+    }
+
+    function updateGeometry() {
+        if (!track || !thumb) return;
+        const { maxScroll, trackH, thumbH } = getMetrics();
+        if (maxScroll <= 12 || document.body.classList.contains("is-locked")) {
+            track.classList.add("is-hidden-fit");
+            track.classList.remove("is-visible");
+            return;
+        }
+        track.classList.remove("is-hidden-fit");
+        const ratio = Math.min(1, Math.max(0, window.scrollY / maxScroll));
+        const y = ratio * Math.max(0, trackH - thumbH);
+        thumb.style.height = `${thumbH.toFixed(1)}px`;
+        thumb.style.transform = `translateY(${y.toFixed(1)}px)`;
+    }
+
+    function revealTemporarily(ms = 1150) {
+        if (!track || track.classList.contains("is-hidden-fit")) return;
+        track.classList.add("is-visible");
+        clearTimeout(hideTimer);
+        hideTimer = setTimeout(() => {
+            if (!isDragging && !track.matches(":hover")) {
+                track.classList.remove("is-visible");
+            }
+        }, ms);
+    }
+
+    function scrollToTrackClientY(clientY, offset = null) {
+        const rect = track.getBoundingClientRect();
+        const { maxScroll, trackH, thumbH } = getMetrics();
+        if (maxScroll <= 0) return;
+        const usable = Math.max(1, trackH - thumbH);
+        const targetTop = offset === null
+            ? (clientY - rect.top - thumbH / 2)
+            : (clientY - rect.top - offset);
+        const ratio = Math.min(1, Math.max(0, targetTop / usable));
+        window.scrollTo({ top: ratio * maxScroll, behavior: "auto" });
+    }
+
+    function bindEvents() {
+        window.addEventListener("scroll", () => {
+            updateGeometry();
+            revealTemporarily(1100);
+        }, { passive: true });
+
+        window.addEventListener("resize", updateGeometry, { passive: true });
+
+        // En PC: revelar al acercar el cursor al borde derecho
+        window.addEventListener("pointermove", (e) => {
+            if (e.pointerType !== "mouse" || isDragging) return;
+            if (e.clientX >= window.innerWidth - 28) {
+                updateGeometry();
+                revealTemporarily(1500);
+            }
+        }, { passive: true });
+
+        track.addEventListener("pointerenter", () => {
+            clearTimeout(hideTimer);
+            updateGeometry();
+            track.classList.add("is-visible");
+        });
+
+        track.addEventListener("pointerleave", () => {
+            if (!isDragging) revealTemporarily(700);
+        });
+
+        track.addEventListener("pointerdown", (e) => {
+            e.preventDefault();
+            const thumbRect = thumb.getBoundingClientRect();
+            isDragging = true;
+            track.classList.add("is-dragging", "is-visible");
+            track.setPointerCapture?.(e.pointerId);
+
+            if (e.clientY >= thumbRect.top && e.clientY <= thumbRect.bottom) {
+                dragOffsetY = e.clientY - thumbRect.top;
+            } else {
+                dragOffsetY = null;
+                scrollToTrackClientY(e.clientY, null);
+                dragOffsetY = thumb.clientHeight / 2;
+            }
+        });
+
+        track.addEventListener("pointermove", (e) => {
+            if (!isDragging) return;
+            e.preventDefault();
+            scrollToTrackClientY(e.clientY, dragOffsetY);
+        });
+
+        const endDrag = () => {
+            if (!isDragging) return;
+            isDragging = false;
+            track.classList.remove("is-dragging");
+            revealTemporarily(900);
+        };
+        track.addEventListener("pointerup", endDrag);
+        track.addEventListener("pointercancel", endDrag);
+
+        // Recalcular al cambiar de pestaña o cargar nuevos posts
+        if ("MutationObserver" in window) {
+            const mo = new MutationObserver(() => requestAnimationFrame(updateGeometry));
+            mo.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["class", "style"] });
+        }
+    }
+
+    if (document.readyState === "loading") {
+        window.addEventListener("DOMContentLoaded", mount);
+    } else {
+        mount();
+    }
+})();
