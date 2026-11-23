@@ -483,12 +483,12 @@
         "img": "https://i.pinimg.com/1200x/1e/47/e4/1e47e4323a80b0cd4423bdc3f7c6b351.jpg"
       },
       {
-        "name": "Flynn Rider",
-        "img": "https://static.wikia.nocookie.net/disney/images/8/84/Profile_-_Flynn_Rider.jpeg/revision/latest/scale-to-width-down/249?cb=20260612124729",
-        "note": "",
         "id": "ch-20",
+        "name": "Flynn Rider",
+        "source": "Enredados",
         "rank": "",
-        "source": "Enredados"
+        "note": "",
+        "img": "https://i.pinimg.com/1200x/9c/7e/4b/9c7e4b2ddce3eec8eb849eeecb435006.jpg"
       },
       {
         "name": "Frieren",
@@ -523,12 +523,12 @@
         "img": "https://i.pinimg.com/736x/d1/9a/0d/d19a0df2e4cb5f4d3087c25bfa52d6d8.jpg"
       },
       {
-        "name": "Gaspi",
-        "img": "https://static.wikia.nocookie.net/youtube/images/f/f3/GaspiAppearance.webp/revision/latest/scale-to-width-down/360?cb=20260615050134",
-        "note": "",
         "id": "ch-25",
+        "name": "Gaspi",
+        "source": "En paz descanse...",
         "rank": "",
-        "source": "En paz descanse..."
+        "note": "",
+        "img": "https://i.pinimg.com/736x/1e/a2/d7/1ea2d70af548973c5bbc964033722c65.jpg"
       },
       {
         "id": "ch-26",
@@ -547,12 +547,12 @@
         "img": "https://i.pinimg.com/736x/43/c6/51/43c65170d72b4ba1f5783ff61ccff5bf.jpg"
       },
       {
-        "name": "MonsterDroiid",
-        "img": "https://static.wikia.nocookie.net/youtubepedia/images/9/9b/MonsterDroiid.jpg/revision/latest/scale-to-width-down/360?cb=20180604092709&path-prefix=es",
-        "note": "",
         "id": "ch-28",
+        "name": "MonsterDroiid",
+        "source": "YouTube Favorito",
         "rank": "",
-        "source": "YouTube Favorito"
+        "note": "",
+        "img": "https://yt3.googleusercontent.com/ytc/AIdro_kvw6J4epoYIV9heThxro7yoVRUPusGSEKJJndgfMSNANw=s900-c-k-c0x00ffffff-no-rj"
       },
       {
         "id": "ch-29",
