@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=JetBrains+Mono:wght@400;600;700;800&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/rework.css?v=20261122b">
+    <link rel="stylesheet" href="css/rework.css?v=20261123b">
 </head>
 <body class="perf-full is-locked">
     <canvas id="fx-grid-canvas" aria-hidden="true"></canvas>
@@ -132,6 +132,59 @@
             </form>
         </div>
     </div>
+
+    <!-- PIZARRÓN COMUNITARIO DE FIRMAS PIXEL-ART (EN ARCADE) -->
+    <div id="signature-wall-modal" class="steam-nb-modal" aria-hidden="true">
+        <div class="steam-nb-window sig-wall-window">
+            <div class="steam-nb-topbar">
+                <span>ARCADE // PIZARRÓN DE FIRMAS PIXEL-ART</span>
+                <div class="steam-nb-top-actions">
+                    <span id="sig-wall-count" style="font-size:0.64rem;">0 FIRMAS</span>
+                    <button type="button" class="tac-btn-xs danger" id="sig-wall-close">[ ✕ CERRAR ]</button>
+                </div>
+            </div>
+            <div class="hazard-strip"></div>
+            <div class="sig-wall-layout">
+                <div class="sig-pad-panel">
+                    <div class="sig-pad-head">DIBUJA TU FIRMA (64×32 PIXEL ART)</div>
+                    <div class="sig-canvas-frame">
+                        <canvas id="sig-pixel-canvas"></canvas>
+                    </div>
+                    <div class="sig-tools-row">
+                        <button type="button" class="sig-swatch active" data-sig-color="#f4f4f0" style="background:#f4f4f0;" title="Blanco"></button>
+                        <button type="button" class="sig-swatch" data-sig-color="#2d9cff" style="background:#2d9cff;" title="Azul"></button>
+                        <button type="button" class="sig-swatch" data-sig-color="#ff7a1a" style="background:#ff7a1a;" title="Naranja"></button>
+                        <button type="button" class="sig-swatch" data-sig-color="#ff3847" style="background:#ff3847;" title="Rojo"></button>
+                        <button type="button" class="sig-swatch" data-sig-color="#ffd966" style="background:#ffd966;" title="Dorado"></button>
+                        <button type="button" class="sig-swatch" data-sig-color="#00e5ff" style="background:#00e5ff;" title="Cian"></button>
+                        <button type="button" class="sig-swatch" data-sig-color="#8e8e9a" style="background:#8e8e9a;" title="Gris"></button>
+                        <button type="button" class="tac-btn-xs" id="sig-btn-eraser">BORRAR</button>
+                    </div>
+                    <div class="sig-tools-row">
+                        <button type="button" class="tac-btn-xs primary" data-sig-size="1">1px</button>
+                        <button type="button" class="tac-btn-xs" data-sig-size="2">2px</button>
+                        <button type="button" class="tac-btn-xs" data-sig-size="3">3px</button>
+                        <button type="button" class="tac-btn-xs" id="sig-btn-undo">↶ UNDO</button>
+                        <button type="button" class="tac-btn-xs" id="sig-btn-clear">LIMPIAR</button>
+                    </div>
+                    <form class="sig-form" id="sig-submit-form">
+                        <input type="text" id="sig-author-input" class="tac-input" placeholder="Tu firma / apodo..." maxlength="24" required>
+                        <input type="text" id="sig-note-input" class="tac-input" placeholder="Mensaje corto opcional..." maxlength="80">
+                        <button type="submit" class="tac-btn primary">ESTAMPAR EN EL PIZARRÓN ✓</button>
+                    </form>
+                </div>
+                <div class="sig-board-panel">
+                    <div class="sig-pad-head">MURO CRECIENTE (SIN SUPERPOSICIÓN)</div>
+                    <div class="sig-mosaic-wall" id="sig-mosaic-wall">
+                        <div class="dc-idle-msg">&gt; CARGANDO FIRMAS...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BOTÓN DISCRETO SUBIR ARRIBA -->
+    <button type="button" id="btn-back-to-top" class="back-to-top-btn" aria-label="Subir arriba" title="Subir arriba">↑ TOP</button>
 
     <div id="sys-toast" class="sys-toast" role="status" aria-live="polite"></div>
 
@@ -328,6 +381,37 @@
 
             <!-- 02: ABOUT ME REACTIVO -->
             <div id="view-about" class="stage-view">
+                <!-- MINIPOSTS / CASES SOBRE MÍ (GUSTOS, DISGUSTOS, VIBRA, FAQ) -->
+                <section class="tac-window rb-spotlight">
+                    <div class="tac-window-header">
+                        <span class="rb-decrypt" data-text="ABOUT ME // FICHAS, GUSTOS, DISGUSTOS & FAQ">ABOUT ME // FICHAS, GUSTOS, DISGUSTOS &amp; FAQ</span>
+                        <span>DOSSIER</span>
+                    </div>
+                    <div class="hazard-strip"></div>
+                    <div class="about-block-pad">
+                        <div class="filter-pills" id="about-mp-filters">
+                            <button type="button" class="pill-btn active" data-mp-filter="all">TODOS</button>
+                            <button type="button" class="pill-btn" data-mp-filter="gusto">GUSTOS</button>
+                            <button type="button" class="pill-btn" data-mp-filter="disgusto">NOPE</button>
+                            <button type="button" class="pill-btn" data-mp-filter="vibra">VIBRA</button>
+                            <button type="button" class="pill-btn" data-mp-filter="faq">FAQ</button>
+                        </div>
+                        <div class="about-mp-grid" id="about-miniposts-grid"></div>
+                    </div>
+                </section>
+
+                <!-- APARTADO ESPECIAL: BÚSCAME EN ESTOS PERSONAJES (ICONOS 1:1) -->
+                <section class="tac-window rb-spotlight">
+                    <div class="tac-window-header">
+                        <span class="rb-decrypt" data-text="SI ALGÚN DÍA NO ESTOY, BÚSCAME EN ESTOS PERSONAJES">SI ALGÚN DÍA NO ESTOY, BÚSCAME EN ESTOS PERSONAJES</span>
+                        <span>1:1 ECHOES</span>
+                    </div>
+                    <div class="hazard-strip"></div>
+                    <div class="about-block-pad">
+                        <div class="char-echoes-grid" id="char-echoes-grid"></div>
+                        <div class="reactive-inspector" id="char-echoes-inspector" style="display:none;"></div>
+                    </div>
+                </section>
                 <section class="tac-window rb-spotlight">
                     <div class="tac-window-header">
                         <span class="rb-decrypt" data-text="ABOUT ME // LEAGUE OF LEGENDS">ABOUT ME // LEAGUE OF LEGENDS</span>
@@ -345,7 +429,7 @@
                         <span class="header-with-icon"><span class="inline-icon" data-icon="music"></span> MÚSICA FAVORITA // REACTIVO</span>
                         <span>CURATED</span>
                     </div>
-                    <div class="about-block-pad"><div class="reactive-cards-grid" id="about-music-grid"></div></div>
+                    <div class="about-block-pad"><div class="reactive-cards-grid" id="about-music-grid"></div><div id="about-playlist-embed"></div></div>
                 </section>
 
                 <section class="tac-window rb-spotlight">
@@ -418,9 +502,10 @@
         <button type="button" class="mob-nav-btn" data-view="view-media"><span class="inline-icon" data-icon="media"></span><span>MEDIA</span></button>
     </nav>
 
-    <script src="js/modules/icons.js?v=20261122b"></script>
-    <script src="js/modules/reactbits-fx.js?v=20261122b"></script>
-    <script src="js/modules/blog-feed.js?v=20261122b"></script>
-    <script src="js/rework-app.js?v=20261122b"></script>
+    <script src="js/modules/icons.js?v=20261123b"></script>
+    <script src="js/modules/reactbits-fx.js?v=20261123b"></script>
+    <script src="js/modules/blog-feed.js?v=20261123b"></script>
+    <script src="js/rework-app.js?v=20261123b"></script>
+    <script src="js/modules/about-and-board.js?v=20261123b"></script>
 </body>
 </html>

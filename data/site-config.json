@@ -2,11 +2,11 @@
   "profile": {
     "name": "SAPHYNIEL",
     "uid": "SOLYNDEI",
-    "pronouns": "she / her // digital archive",
-    "mood": "compilando ideas entre música y código",
+    "pronouns": "Sol / Saphy // she / her",
+    "mood": "Un support que le gusta ser DPS (peak 11:00 PM)",
     "avatar": "img/uploads/20261122_203138_descarga_-_2026-11-20T141756.844.jpg",
     "banner": "",
-    "bio": "Archivo personal, blog visual y laboratorio interactivo de juegos, música y experimentos web.",
+    "bio": "Búnker virtual donde puedes entrar a ver, escuchar música y curiosear sin romper nada. Ángeles, estética táctica y Adoru 42.",
     "siteUrl": "https://solyndei.github.io/",
     "discordId": "409107659153735680",
     "discordHandle": "tachydeuwi",
@@ -14,25 +14,26 @@
     "steamProxyUrl": "https://billowing-mountain-74c3steam-proxy.tachyondeuwi.workers.dev/",
     "blurbs": [
       {
-        "heading": "ARCHIVE // BITÁCORA",
-        "text": "Espacio personal donde guardo fotos, música, clips, proyectos jugables y notas sueltas sin algoritmos ni anuncios."
+        "heading": "WELCOME // EL BÚNKER",
+        "text": "Holaaaa, así que eres curioso... jeje ya tenemos algo en común :p. Esta página es mi espacio independiente: aquí guardo mi día a día, música, clips, juegos y proyectos sin algoritmos."
       },
       {
-        "heading": "SYSTEM // NAVEGACIÓN",
-        "text": "Explora las pestañas de arriba, revisa el visor de imágenes o abre la terminal en Arcade si te gusta buscar secretos."
+        "heading": "ADORU 42 // VIBRA",
+        "text": "Comfy, seria y nocturna (a las 11:00 PM es cuando mejor funciono). Fan del minimalismo crudo, los ángeles, lo militar/táctico, los gatos y modificar todo con 200 mods."
       }
     ]
   },
   "splashQuotes": [
-    "Also try NieR:Automata!",
-    "Furina C6 F2P certified.",
-    "0% algoritmos, 100% código a mano.",
-    "Now with 100% less hardware acceleration needed!",
-    "Kindred never misses a mark... almost.",
-    "Have you checked RED SCAN on that image?",
-    "Shelter // Everything Goes On.",
-    "Project Zomboid: esta es la historia de cómo moriste.",
-    "Type 'HELP' in the Playground terminal."
+    "Un support que le gusta ser DPS.",
+    "El mundo es un escenario.",
+    "JUEGA BALATROOO y NieR:Automata POR FAVOR.",
+    "Holaaaa, así que eres curioso... ya tenemos algo en común :p",
+    "Adoru 42 // Peak performance a las 11:00 PM.",
+    "Top 2 Kindred LAN / Top 7 Shyvana LAN.",
+    "Vamos bien, Saphy cuarenteña.",
+    "No soy fría, solo ahorro energía :3",
+    "Origami — The Rare Occasions.",
+    "puto el que lo lea jeje"
   ],
   "themeTokens": {
     "uiScale": 1,
@@ -121,83 +122,121 @@
   "aboutMe": {
     "champions": [
       {
-        "name": "KINDRED",
-        "title": "Los Cazadores Eternos",
-        "role": "JUNGLA // MAIN",
+        "rank": "Peak Top 2 LAN",
         "mastery": "Nivel 38 • 385,000 pts",
-        "rank": "Esmeralda IV",
-        "quote": "Nunca uno... sin el otro.",
-        "img": "img/champions/kindred.jpg"
+        "img": "img/champions/kindred.jpg",
+        "quote": "Nunca uno... sin el otro. Mi Top 3 de personajes favoritos.",
+        "role": "JUNGLA // TOP 2 LAN",
+        "name": "KINDRED",
+        "title": "Los Cazadores Eternos"
       },
       {
-        "name": "SHYVANA",
-        "title": "La Hija del Dragón",
-        "role": "JUNGLA / BRUISER",
+        "rank": "Peak Top 7 LAN",
         "mastery": "Nivel 22 • 216,000 pts",
-        "rank": "Esmeralda IV",
-        "quote": "Nacida entre brasas, forjada en furia.",
-        "img": "img/champions/shyvana.jpg"
+        "img": "img/champions/shyvana.jpg",
+        "quote": "Nacida entre brasas. Llegué a ser Top 7 de LAN con ella.",
+        "role": "JUNGLA / BRUISER // TOP 7 LAN",
+        "name": "SHYVANA",
+        "title": "La Hija del Dragón"
       },
       {
-        "name": "KAYLE",
-        "title": "La Justiciera",
-        "role": "TOP // HYPER-SCALING",
-        "mastery": "Nivel 15 • 138,000 pts",
         "rank": "Esmeralda IV",
+        "mastery": "Nivel 15 • 138,000 pts",
+        "img": "img/champions/kayle.jpg",
         "quote": "Incluso la luz más alta proyecta sombras.",
-        "img": "img/champions/kayle.jpg"
+        "role": "TOP // HYPER-SCALING",
+        "name": "KAYLE",
+        "title": "La Justiciera"
       }
     ],
     "favoriteMusic": [
       {
-        "title": "Everything Goes On",
-        "artist": "Porter Robinson",
-        "vibe": "Melancólico / Electrónica",
-        "note": "De esas canciones que se quedan resonando de madrugada.",
-        "url": "https://open.spotify.com/track/3W5x9p5dK0oX38zG3h23W5"
+        "note": "De esas canciones con versos que se te quedan tatuados en la cabeza.",
+        "title": "Origami",
+        "url": "https://open.spotify.com/search/Origami%20The%20Rare%20Occasions",
+        "vibe": "Indie Rock // Favorita",
+        "artist": "The Rare Occasions"
       },
       {
-        "title": "Hero / Iron Lotus",
-        "artist": "Mili",
-        "vibe": "Orquestal / Bossfight",
-        "note": "Energía pura para diseñar fases de jefes.",
-        "url": "https://open.spotify.com/search/Mili%20Hero"
+        "note": "La que guardo para momentos tranquilos y sesiones de madrugada.",
+        "title": "Stress Relief",
+        "url": "https://open.spotify.com/search/Stress%20Relief%20Late%20Night%20Drive%20Home",
+        "vibe": "Melancólico / Noche",
+        "artist": "Late Night Drive Home"
       },
       {
-        "title": "Relayouter",
-        "artist": "inabakumori",
-        "vibe": "Vocaloid / Monocromo",
-        "note": "Estética blanco y negro hecha canción.",
-        "url": "https://open.spotify.com/search/inabakumori%20Relayouter"
+        "note": "Indispensable en mi rotación diaria.",
+        "title": "Nothing Has Changed",
+        "url": "https://open.spotify.com/search/Nothing%20Has%20Changed%20The%20Polar%20Boys",
+        "vibe": "Indie / Chill",
+        "artist": "The Polar Boys"
       },
       {
-        "title": "Tek It",
-        "artist": "Cafuné",
-        "vibe": "Indie / Shoegaze",
-        "note": "Perfecta para sesiones largas de modding o dibujo.",
-        "url": "https://open.spotify.com/search/Cafune%20Tek%20It"
+        "note": "Mi soundtrack favorito junto con Vague Hope de NieR:Automata.",
+        "title": "La Vaguelette (Tema de Furina)",
+        "url": "https://open.spotify.com/search/La%20Vaguelette%20HOYO-MiX",
+        "vibe": "OST // Genshin Impact",
+        "artist": "HOYO-MiX"
+      },
+      {
+        "note": "J-Pop puro que nunca me canso de repetir.",
+        "title": "Odoriko",
+        "url": "https://open.spotify.com/search/Odoriko%20Vaundy",
+        "vibe": "J-Pop / Groove",
+        "artist": "Vaundy"
+      },
+      {
+        "note": "Mágica, elegante y nostálgica.",
+        "title": "La Seine",
+        "url": "https://open.spotify.com/search/La%20Seine%20Un%20Monstre%20a%20Paris",
+        "vibe": "Clásico / Soundtrack",
+        "artist": "Un Monstruo en París"
+      },
+      {
+        "note": "Si esta página tuviera un tema principal de entrada, sería este.",
+        "title": "Prophecy",
+        "url": "https://open.spotify.com/search/Prophecy%20Zenless%20Zone%20Zero",
+        "vibe": "Opening de la Web",
+        "artist": "Zenless Zone Zero OST"
+      },
+      {
+        "note": "PXNDX para escuchar todo el día sin aburrirme, y MYSTICAL MAGICAL para subir el ánimo al instante.",
+        "title": "PXNDX & MYSTICAL MAGICAL",
+        "url": "https://open.spotify.com/search/PXNDX",
+        "vibe": "Rock / Boost",
+        "artist": "Rock / Ánimo"
       }
     ],
     "favoriteGames": [
       {
-        "name": "Project Zomboid",
-        "tag": "SURVIVAL // MODDED",
-        "detail": "Build 42 con mods tácticos, armas y RV Interior."
+        "detail": "JUEGA NIER:AUTOMATA POR FAVOR. La historia, Vague Hope y su estética definieron esta página.",
+        "name": "NieR:Automata",
+        "tag": "OBLIGATORIO // HISTORIA"
       },
       {
-        "name": "Helldivers 2",
-        "tag": "CO-OP // MODDING",
-        "detail": "Farm de Super Credits, shaders y mods propios."
+        "detail": "JUEGA BALATROOO. Adictivo y con uno de mis personajes favoritos (Jimbo).",
+        "name": "Balatro",
+        "tag": "INFALTABLE // ROGUELIKE"
       },
       {
+        "detail": "Caminar por Teyvat con Furina (mi comfort character), pelear contra Arlecchino y jugar con Belle.",
         "name": "Genshin Impact & ZZZ",
-        "tag": "ACTION RPG",
-        "detail": "Furina C6 F2P y rotaciones infinitas en Nueva Eridu."
+        "tag": "LORE & EXPLORACIÓN"
       },
       {
-        "name": "NieR:Automata & Persona 5",
-        "tag": "INSPIRACIÓN UI",
-        "detail": "La columna vertebral estética de todo este archivo."
+        "detail": "Esa basura a la que siempre regreso. Support o Tank de corazón.",
+        "name": "League of Legends",
+        "tag": "TOP 2 KINDRED / TOP 7 SHYVANA"
+      },
+      {
+        "detail": "Instalar 200 mods, rolear, builds de veneno, sigilo, snipers y outfits.",
+        "name": "Project Zomboid & Skyrim",
+        "tag": "200 MODS // SIGILO"
+      },
+      {
+        "detail": "Los que mejores recuerdos y risas me dan con amigos.",
+        "name": "Helldivers 2 & Toram Online",
+        "tag": "CO-OP // ANÉCDOTAS"
       }
     ],
     "steamHighlights": {
@@ -220,7 +259,374 @@
           "rarity": "VETERAN"
         }
       ]
-    }
+    },
+    "codingPlaylistUrl": "https://open.spotify.com/playlist/6l9tGh3W9coE77sKXIEO7v?si=lkHjj3xgQLmbPQn0_nzUQA",
+    "miniposts": [
+      {
+        "type": "vibra",
+        "text": "Mi PC se llama 'Adoru 42' y armarla con mi propio dinero y esfuerzo es uno de mis recuerdos favoritos. Funciono mejor a las 11:00 PM, en invierno u otoño, con estética negra/blanca (y acentos azul y naranja).",
+        "title": "ADORU 42 & HORARIO NOCTURNO",
+        "img": "",
+        "id": "mp-1"
+      },
+      {
+        "type": "gusto",
+        "text": "Adoro las hamburguesas, la Coca-Cola no puede faltar y mi snack de madrugada es pan blanco. En cuanto a animales: amo a los gatos y tengo uno que me alegra el día junto a mi PC y mi música.",
+        "title": "COMFORT FOOD & ANTOJOS",
+        "img": "",
+        "id": "mp-2"
+      },
+      {
+        "type": "gusto",
+        "text": "Me relajan el lo-fi, sonidos de armas recargando, teclados mecánicos y ASMR táctico. Puedo hablar horas del lore de Elden Ring, Genshin y LoL. Colecciono imágenes y latas de bebidas (sí, soy esa).",
+        "title": "SONIDOS, LORE & COLECCIONES",
+        "img": "",
+        "id": "mp-3"
+      },
+      {
+        "type": "gusto",
+        "text": "Top series: Anime de NieR:Automata, Breaking Bad, The Amazing Digital Circus y Hora de Aventura. Película que nunca me cansa: Al Filo del Mañana. Manga que me marcó: Tokyo Ghoul. Adoro el estilo manga y los impact frames.",
+        "title": "CINE, ANIME & ARTE",
+        "img": "",
+        "id": "mp-4"
+      },
+      {
+        "type": "disgusto",
+        "text": "Comida: nada de cebolla, vísceras ni grasa. Redes: prefiero evitar el ruido de TikTok y Facebook. En chat: detesto el spam de '¿estás ahí?', los 'hola cómo estás' diarios sin tema, las respuestas cortantes sin reciprocidad y cualquier coqueteo sin conocerte (instablock).",
+        "title": "LO QUE EVITO // NOPE",
+        "img": "",
+        "id": "mp-5"
+      },
+      {
+        "type": "vibra",
+        "text": "No soy fría, solo tomo distancia con gente nueva o estoy ahorrando energía :3. Con mis amigos cercanos soy extrovertida, burlona y de humor negro o brainrot. Valoro la gente curiosa que aprende por su cuenta y disfruta jugar para despejarse.",
+        "title": "CÓMO SOY EN REALIDAD",
+        "img": "",
+        "id": "mp-6"
+      },
+      {
+        "type": "faq",
+        "text": "Acepto si te conozco primero. Si agregas y nunca hablamos, posiblemente termine haciendo limpieza después.",
+        "title": "FAQ // ¿Aceptas solicitudes en Discord o Steam?",
+        "id": "mp-7"
+      },
+      {
+        "type": "faq",
+        "text": "Entra directo con una noticia, un tema interesante, un debate o algo de juegos/música. Nada de saludos repetitivos diarios, piropos raros ni contenido NSFW. Te aprecio y quiero, no hagas nada malo por favor.",
+        "title": "FAQ // ¿Cómo saludarme o dejarme un mensaje?",
+        "id": "mp-8"
+      },
+      {
+        "type": "faq",
+        "text": "Para nada, el repositorio está libre con recursos 100% gratis para que armes tu propia versión. Si me avisas que te inspiraste en ella, me haría muy feliz uvu.",
+        "title": "FAQ // ¿Te molesta si me inspiro en tu web o código?",
+        "id": "mp-9"
+      },
+      {
+        "type": "faq",
+        "text": "Es una versión de mí que quise representar sin ser la protagonista. Y sí, habrá más juegos y secretos hechos con cariño poco a poco.",
+        "title": "FAQ // ¿Qué es el Bossfight en Arcade?",
+        "id": "mp-10"
+      }
+    ],
+    "characterEchoes": [
+      {
+        "name": "Belle",
+        "img": "https://i.pinimg.com/originals/58/12/b9/5812b9d14affbfa27d47ff6b235ca790.gif",
+        "note": "SIN DUDA SOY ESA — TOP 1 ABSOLUTO.",
+        "id": "ch-1",
+        "rank": "TOP 1",
+        "source": "Zenless Zone Zero"
+      },
+      {
+        "name": "Furina",
+        "img": "https://i.pinimg.com/originals/8e/74/e1/8e74e183ec51d30b15b636d30cb15ec4.gif",
+        "note": "MI TOP 2 — Comfort character. 'El mundo es un escenario'.",
+        "id": "ch-2",
+        "rank": "TOP 2",
+        "source": "Genshin Impact"
+      },
+      {
+        "name": "Kindred",
+        "img": "https://i.pinimg.com/originals/9c/d4/76/9cd4763e693040365aa229578b1211c0.gif",
+        "note": "MI TOP 3 — Peak Top 2 LAN. Nunca uno sin el otro.",
+        "id": "ch-3",
+        "rank": "TOP 3",
+        "source": "League of Legends"
+      },
+      {
+        "name": "Kurisu Makise",
+        "img": "https://s4.anilist.co/file/anilistcdn/character/large/b34470-Jw2LXZBL5R8i.png",
+        "note": "La pelirroja de Steins;Gate.",
+        "id": "ch-4",
+        "rank": "",
+        "source": "Steins;Gate"
+      },
+      {
+        "name": "Futaba Sakura",
+        "img": "https://s4.anilist.co/file/anilistcdn/character/large/b121635-x3rT0I5xKaDu.png",
+        "note": "",
+        "id": "ch-5",
+        "rank": "",
+        "source": "Persona 5"
+      },
+      {
+        "id": "ch-6",
+        "name": "Gohan (Gran Saiyaman)",
+        "source": "Dragon Ball Z",
+        "rank": "",
+        "note": "",
+        "img": "https://i.pinimg.com/736x/e9/b0/c9/e9b0c9040a38a50c33582a21b8c839f8.jpg"
+      },
+      {
+        "id": "ch-7",
+        "name": "Kula Diamond",
+        "source": "King of Fighters",
+        "rank": "",
+        "note": "",
+        "img": "https://i.pinimg.com/736x/00/1d/d3/001dd35be586a7537585dcd1fd96fc92.jpg"
+      },
+      {
+        "id": "ch-8",
+        "name": "Veliona",
+        "source": "Honkai Impact 3rd",
+        "rank": "",
+        "note": "",
+        "img": "https://i.pinimg.com/736x/f5/4c/2a/f54c2ac04d750a31877dbd31a9989b3c.jpg"
+      },
+      {
+        "id": "ch-9",
+        "name": "Eve",
+        "source": "Stellar Blade",
+        "rank": "",
+        "note": "",
+        "img": "https://i.pinimg.com/736x/b8/5f/a3/b85fa3310ef90ef3c71efd199f6c3312.jpg"
+      },
+      {
+        "id": "ch-10",
+        "name": "Tony Stark",
+        "source": "Marvel",
+        "rank": "",
+        "note": "",
+        "img": "https://i.pinimg.com/1200x/97/a3/f0/97a3f0d8b7269af1e55758f7e6df2379.jpg"
+      },
+      {
+        "id": "ch-11",
+        "name": "Sung Jin-Woo",
+        "source": "Solo Leveling",
+        "rank": "",
+        "note": "",
+        "img": "https://i.pinimg.com/736x/d0/95/54/d09554142432e0213503c652203ca647.jpg"
+      },
+      {
+        "id": "ch-12",
+        "name": "Connor",
+        "source": "Detroit: Become Human",
+        "rank": "",
+        "note": "",
+        "img": "https://i.pinimg.com/736x/41/12/e5/4112e5796c272a278e7f538d9bbcdf5a.jpg"
+      },
+      {
+        "id": "ch-13",
+        "name": "Firekeeper",
+        "source": "Dark Souls III",
+        "rank": "",
+        "note": "",
+        "img": "https://i.pinimg.com/736x/26/60/e0/2660e07700d4a0293c75027b4f4e6410.jpg"
+      },
+      {
+        "id": "ch-14",
+        "name": "Zelda",
+        "source": "BOTW / TOTK",
+        "rank": "",
+        "note": "",
+        "img": "https://i.pinimg.com/1200x/ce/a9/a0/cea9a0fe263566301a6bf3225eef8904.jpg"
+      },
+      {
+        "id": "ch-15",
+        "name": "Subaru Natsuki",
+        "source": "Re:Zero",
+        "rank": "",
+        "note": "",
+        "img": "https://i.pinimg.com/736x/f3/0d/52/f30d52263b00c49add91287a877752f7.jpg"
+      },
+      {
+        "id": "ch-16",
+        "name": "Sleepy Mita",
+        "source": "MiSide",
+        "rank": "",
+        "note": "",
+        "img": "https://i.pinimg.com/736x/ac/99/cc/ac99ccbca411d88132c35d56deb71adc.jpg"
+      },
+      {
+        "id": "ch-17",
+        "name": "Ansi-chan",
+        "source": "Streamer",
+        "rank": "",
+        "note": "",
+        "img": "https://i.pinimg.com/736x/18/54/01/1854018e11a14ce6fcfdecf947f1cf0b.jpg"
+      },
+      {
+        "id": "ch-18",
+        "name": "Princesa Yogurt de Helado",
+        "source": "Personaje",
+        "rank": "",
+        "note": "",
+        "img": "https://i.pinimg.com/1200x/97/29/ed/9729ed2cf08d1bc6c70c0eb849ace02f.jpg"
+      },
+      {
+        "id": "ch-19",
+        "name": "Layla",
+        "source": "Genshin Impact",
+        "rank": "",
+        "note": "",
+        "img": "https://i.pinimg.com/1200x/1e/47/e4/1e47e4323a80b0cd4423bdc3f7c6b351.jpg"
+      },
+      {
+        "name": "Flynn Rider",
+        "img": "https://static.wikia.nocookie.net/disney/images/8/84/Profile_-_Flynn_Rider.jpeg/revision/latest/scale-to-width-down/249?cb=20260612124729",
+        "note": "",
+        "id": "ch-20",
+        "rank": "",
+        "source": "Enredados"
+      },
+      {
+        "name": "Frieren",
+        "img": "https://s4.anilist.co/file/anilistcdn/character/large/b176754-PCnpqIOkjhFk.png",
+        "note": "",
+        "id": "ch-21",
+        "rank": "",
+        "source": "Sousou no Frieren"
+      },
+      {
+        "id": "ch-22",
+        "name": "Jujalag",
+        "source": "YouTube / Streamer",
+        "rank": "",
+        "note": "",
+        "img": "https://i.pinimg.com/1200x/93/d6/08/93d608fdd0c8f2a17f5b170bb75ea002.jpg"
+      },
+      {
+        "name": "Agnes Tachyon",
+        "img": "https://s4.anilist.co/file/anilistcdn/character/large/b235974-cneziP6JuaiT.png",
+        "note": "",
+        "id": "ch-23",
+        "rank": "",
+        "source": "Uma Musume"
+      },
+      {
+        "id": "ch-24",
+        "name": "Pomni",
+        "source": "The Amazing Digital Circus",
+        "rank": "",
+        "note": "",
+        "img": "https://i.pinimg.com/736x/d1/9a/0d/d19a0df2e4cb5f4d3087c25bfa52d6d8.jpg"
+      },
+      {
+        "name": "Gaspi",
+        "img": "https://static.wikia.nocookie.net/youtube/images/f/f3/GaspiAppearance.webp/revision/latest/scale-to-width-down/360?cb=20260615050134",
+        "note": "",
+        "id": "ch-25",
+        "rank": "",
+        "source": "En paz descanse..."
+      },
+      {
+        "id": "ch-26",
+        "name": "Modeus",
+        "source": "Helltaker",
+        "rank": "",
+        "note": "",
+        "img": "https://i.pinimg.com/1200x/f1/35/1f/f1351fac137f362630855ecdb7ba8fa3.jpg"
+      },
+      {
+        "id": "ch-27",
+        "name": "Jimbo",
+        "source": "Balatro",
+        "rank": "",
+        "note": "Juega Balatro.",
+        "img": "https://i.pinimg.com/736x/43/c6/51/43c65170d72b4ba1f5783ff61ccff5bf.jpg"
+      },
+      {
+        "name": "MonsterDroiid",
+        "img": "https://static.wikia.nocookie.net/youtubepedia/images/9/9b/MonsterDroiid.jpg/revision/latest/scale-to-width-down/360?cb=20180604092709&path-prefix=es",
+        "note": "",
+        "id": "ch-28",
+        "rank": "",
+        "source": "YouTube Favorito"
+      },
+      {
+        "id": "ch-29",
+        "name": "Dante",
+        "source": "Devil May Cry",
+        "rank": "",
+        "note": "",
+        "img": "https://i.pinimg.com/736x/14/81/f4/1481f4eadf126b5ff647d1a67721989b.jpg"
+      },
+      {
+        "id": "ch-30",
+        "name": "Águila 1 (Eagle-1)",
+        "source": "Helldivers 2",
+        "rank": "",
+        "note": "",
+        "img": "https://i.pinimg.com/1200x/2f/0b/c9/2f0bc9a1619b9ae9fa9cecc010167800.jpg"
+      },
+      {
+        "id": "ch-31",
+        "name": "Un Tanque",
+        "source": "Militar / Meme",
+        "rank": "",
+        "note": "XDD",
+        "img": "https://i.pinimg.com/736x/4f/73/f1/4f73f1d68f4768f00573246694ee7a24.jpg"
+      },
+      {
+        "id": "ch-32",
+        "name": "Zero",
+        "source": "Drakengard 3",
+        "rank": "",
+        "note": "",
+        "img": "https://i.pinimg.com/736x/2d/98/21/2d9821126fd469777e26d9c455abf25d.jpg"
+      },
+      {
+        "id": "ch-33",
+        "name": "Elysia",
+        "source": "Honkai Impact 3rd",
+        "rank": "",
+        "note": "",
+        "img": "https://i.pinimg.com/736x/69/50/9d/69509de71dd13f237a30ec468522e451.jpg"
+      },
+      {
+        "id": "ch-34",
+        "name": "Ame-chan",
+        "source": "Needy Streamer Overload",
+        "rank": "",
+        "note": "",
+        "img": "https://i.pinimg.com/736x/99/be/f7/99bef75324f252552139373dd3c1f1e9.jpg"
+      },
+      {
+        "id": "ch-35",
+        "name": "Lobo (Wolf)",
+        "source": "Sekiro",
+        "rank": "",
+        "note": "",
+        "img": "https://i.pinimg.com/736x/ba/9c/1b/ba9c1baeffbcc442ee54aa78e492ffc7.jpg"
+      },
+      {
+        "id": "ch-36",
+        "name": "10H",
+        "source": "NieR",
+        "rank": "",
+        "note": "",
+        "img": "https://i.pinimg.com/736x/75/80/65/75806581208fcf3bc5e0e8e34606554f.jpg"
+      },
+      {
+        "id": "ch-37",
+        "name": "Melina",
+        "source": "Elden Ring",
+        "rank": "",
+        "note": "",
+        "img": "https://i.pinimg.com/1200x/56/85/0f/56850f1f13ede551e91a82064c2c43ae.jpg"
+      }
+    ]
   },
   "playlist": [
     {
@@ -289,6 +695,19 @@
       ],
       "description": "Memoria sellada del códice. Combate bullet-heaven de 3 fases con cinemáticas y ruta secreta Fase [S].",
       "type": "bossfight"
+    },
+    {
+      "description": "Pizarrón pixel-art comunitario: dibuja tu firma o pixel-art y estámpalo en el muro. Cada firma tiene su propio espacio y el muro crece con cada visitante.",
+      "tags": [
+        "PIXEL ART",
+        "GUESTBOOK",
+        "LIVE"
+      ],
+      "status": "LIVE PIXEL WALL",
+      "id": "signature-wall",
+      "type": "signature_wall",
+      "title": "PIZARRÓN // MURO DE FIRMAS",
+      "thumb": "img/icons/icon.png"
     },
     {
       "description": "Consola interactiva para probar comandos y códigos ocultos repartidos por el archivo.",
