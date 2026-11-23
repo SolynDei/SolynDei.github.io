@@ -68,8 +68,10 @@
     "profileOrder": [
       "latestPosts",
       "blurbs",
+      "steamCard",
       "featuredBoss"
-    ]
+    ],
+    "showSteamCard": true
   },
   "socials": [
     {

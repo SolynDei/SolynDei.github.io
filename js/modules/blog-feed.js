@@ -82,14 +82,58 @@ window.BlogFeed = {
     parseMedia(url, category = "") {
         const u = String(url || "").trim();
         if (!u) return null;
-        const yt = u.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-        if (yt) return { kind: "youtube", id: yt[1], embed: `https://www.youtube.com/embed/${yt[1]}?rel=0` };
-        const tt = u.match(/tiktok\.com\/.*\/video\/(\d+)/);
-        if (tt) return { kind: "tiktok", id: tt[1], embed: `https://www.tiktok.com/player/v1/${tt[1]}?music_info=1&description=1` };
-        const sp = u.match(/open\.spotify\.com\/(track|album|playlist|episode)\/([a-zA-Z0-9]+)/);
-        if (sp) return { kind: "spotify", embed: `https://open.spotify.com/embed/${sp[1]}/${sp[2]}?utm_source=generator&theme=0` };
-        if (category === "video" || /\.(mp4|webm|ogg)(\?.*)?$/i.test(u)) return { kind: "video", src: u };
-        return { kind: "image", src: u };
+
+        // 1. Spotify: soporta /intl-es/, /intl-en/, /embed/, track, album, playlist, episode, artist, show
+        const sp = u.match(/open\.spotify\.com\/(?:intl-[a-z0-9-]+\/)?(?:embed\/)?(track|album|playlist|episode|artist|show)\/([a-zA-Z0-9]+)/i);
+        if (sp) {
+            const type = sp[1].toLowerCase();
+            return {
+                kind: "spotify",
+                spType: type,
+                embed: `https://open.spotify.com/embed/${type}/${sp[2]}?utm_source=generator&theme=0`,
+                raw: u
+            };
+        }
+        if (/spotify\.(?:link|app\.link)\//i.test(u)) {
+            return { kind: "extlink", label: "SPOTIFY (LINK CORTO)", raw: u };
+        }
+
+        // 2. YouTube: watch, shorts, live, embed, music.youtube, youtu.be
+        const yt = u.match(/(?:(?:www\.|m\.|music\.)?youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|embed\/|live\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/i);
+        if (yt) {
+            return {
+                kind: "youtube",
+                id: yt[1],
+                embed: `https://www.youtube.com/embed/${yt[1]}?rel=0`,
+                raw: u
+            };
+        }
+
+        // 3. TikTok: /video/ID, /photo/ID o embed
+        const tt = u.match(/tiktok\.com\/(?:@[^\/\s?]+\/)?(?:video|photo)\/(\d+)/i) || u.match(/tiktok\.com\/(?:embed\/v\d|player\/v\d)\/(\d+)/i);
+        if (tt) {
+            return {
+                kind: "tiktok",
+                id: tt[1],
+                embed: `https://www.tiktok.com/embed/v2/${tt[1]}`,
+                raw: u
+            };
+        }
+        if (/(?:vm|vt)\.tiktok\.com\//i.test(u)) {
+            return { kind: "extlink", label: "TIKTOK CLIP (LINK CORTO)", raw: u };
+        }
+
+        // 4. Video directo MP4/WEBM/OGG
+        if (/\.(mp4|webm|ogg)(\?.*)?$/i.test(u)) {
+            return { kind: "video", src: u, raw: u };
+        }
+
+        // 5. Cualquier otro enlace web que no sea imagen
+        if (category === "video" && !/\.(jpg|jpeg|png|gif|webp|avif|svg)(\?.*)?$/i.test(u) && /^https?:\/\//i.test(u)) {
+            return { kind: "extlink", label: "VIDEO / ENLACE EXTERNO", raw: u };
+        }
+
+        return { kind: "image", src: u, raw: u };
     },
 
     createNeoBruteMediaNode(post) {
@@ -98,8 +142,18 @@ window.BlogFeed = {
 
         const useLoader = this.cfg?.effects?.neoBruteLoaders !== false;
         const wrap = document.createElement("div");
-        wrap.className = "nb-media-frame" + (useLoader ? " is-loading" : "");
+        wrap.className = "nb-media-frame" + (useLoader && parsed.kind !== "extlink" ? " is-loading" : "");
         wrap.setAttribute("data-editable-post-img", String(post.id));
+
+        if (parsed.kind === "extlink") {
+            wrap.innerHTML = `
+                <div class="nb-extlink-card">
+                    <div class="nb-extlink-kicker">${this.esc(parsed.label)}</div>
+                    <div class="nb-extlink-url">${this.esc(parsed.raw)}</div>
+                    <a href="${this.esc(parsed.raw)}" target="_blank" rel="noopener" class="tac-btn primary">ABRIR ENLACE ↗</a>
+                </div>`;
+            return wrap;
+        }
 
         const loader = document.createElement("div");
         loader.className = "nb-loader-overlay";
@@ -119,16 +173,40 @@ window.BlogFeed = {
         };
 
         if (parsed.kind === "youtube" || parsed.kind === "tiktok" || parsed.kind === "spotify") {
-            wrap.classList.add(parsed.kind === "youtube" ? "is-embed-yt" : (parsed.kind === "tiktok" ? "is-embed-tiktok" : "is-embed-spotify"));
+            wrap.classList.add(
+                parsed.kind === "youtube" ? "is-embed-yt" : (parsed.kind === "tiktok" ? "is-embed-tiktok" : "is-embed-spotify")
+            );
+
             const ifr = document.createElement("iframe");
             ifr.src = parsed.embed;
-            ifr.loading = "lazy";
-            if (parsed.kind === "spotify") ifr.height = "152";
-            ifr.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen";
+            ifr.referrerPolicy = "strict-origin-when-cross-origin";
+            ifr.frameBorder = "0";
             ifr.allowFullscreen = true;
+
+            if (parsed.kind === "spotify") {
+                const h = (parsed.spType === "playlist" || parsed.spType === "album" || parsed.spType === "artist") ? 352 : 152;
+                ifr.style.height = h + "px";
+                ifr.style.minHeight = h + "px";
+                wrap.style.minHeight = h + "px";
+                ifr.allow = "autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture";
+            } else if (parsed.kind === "tiktok") {
+                ifr.style.height = "580px";
+                ifr.style.minHeight = "580px";
+                ifr.scrolling = "no";
+                ifr.allow = "autoplay; encrypted-media; fullscreen";
+            } else {
+                ifr.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+            }
+
             ifr.onload = () => wrap.classList.remove("is-loading");
-            setTimeout(() => wrap.classList.remove("is-loading"), 2200);
+            setTimeout(() => wrap.classList.remove("is-loading"), 1800);
             wrap.appendChild(ifr);
+
+            const labelMap = { youtube: "YOUTUBE", tiktok: "TIKTOK", spotify: "SPOTIFY" };
+            const foot = document.createElement("div");
+            foot.className = "nb-embed-foot";
+            foot.innerHTML = `<span>${labelMap[parsed.kind]} EMBED</span><a href="${this.esc(parsed.raw)}" target="_blank" rel="noopener" class="tac-btn-xs">ABRIR EN ${labelMap[parsed.kind]} ↗</a>`;
+            wrap.appendChild(foot);
         } else if (parsed.kind === "video") {
             const vid = document.createElement("video");
             vid.src = parsed.src;
@@ -191,7 +269,6 @@ window.BlogFeed = {
             }
         }
 
-        // Quitar el centinela anterior si existe
         list.querySelector(".feed-load-more-wrap")?.remove();
 
         const nextBatch = this.filteredPosts.slice(this.renderedCount, this.renderedCount + this.batchSize);
@@ -280,7 +357,6 @@ window.BlogFeed = {
 
         this.renderedCount += nextBatch.length;
 
-        // Si quedan más posts, insertar botón + carga automática al acercarse al final
         if (this.renderedCount < this.filteredPosts.length) {
             const rem = this.filteredPosts.length - this.renderedCount;
             const wrap = document.createElement("div");

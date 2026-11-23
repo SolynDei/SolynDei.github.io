@@ -383,7 +383,7 @@ window.ReworkApp = {
         const visMap = {
             discord: l.showDiscordWidget !== false, music: l.showMusicPlayer !== false,
             socials: l.showSocials !== false, latestPosts: l.showLatestPostsOnProfile !== false,
-            featuredBoss: l.showFeaturedBoss !== false, stamps: l.showStamps !== false
+            steamCard: l.showSteamCard !== false, featuredBoss: l.showFeaturedBoss !== false, stamps: l.showStamps !== false
         };
         Object.entries(visMap).forEach(([k, v]) => { const el = document.querySelector(`[data-module="${k}"]`); if (el) el.style.display = v ? "" : "none"; });
 
@@ -429,6 +429,7 @@ window.ReworkApp = {
         }
         window.ReactBitsFX.renderStickers(cfg.floatingStickers || []);
         this.renderAboutMe(cfg.aboutMe || {}, p);
+        this.loadAndRenderSteamProfile(cfg);
         this.initMusicPlayer(cfg.playlist || []);
         this.initLanyard(p.discordId, p.discordHandle);
         this.renderArcade(cfg.arcade || []);
@@ -917,3 +918,229 @@ window.addEventListener("DOMContentLoaded", () => window.ReworkApp.init());
         mount();
     }
 })();
+// ============================================================================
+// PERFIL DE STEAM 1:1 EN ESTILO NEO-BRUTALIST (DATOS EN VIVO DEL WORKER)
+// ============================================================================
+Object.assign(window.ReworkApp, {
+    steamLiveData: null,
+
+    async loadAndRenderSteamProfile(cfg) {
+        const p = cfg?.profile || {};
+        const about = cfg?.aboutMe || {};
+        const stMeta = about.steamHighlights || {};
+
+        if (!this._steamBound) {
+            this._steamBound = true;
+            document.getElementById("btn-expand-steam-top")?.addEventListener("click", () => this.openSteamProfileModal());
+            document.getElementById("steam-nb-close")?.addEventListener("click", () => this.closeSteamProfileModal());
+            document.getElementById("steam-profile-modal")?.addEventListener("click", (e) => {
+                if (e.target.id === "steam-profile-modal") this.closeSteamProfileModal();
+            });
+            window.addEventListener("keydown", (e) => { if (e.key === "Escape") this.closeSteamProfileModal(); });
+        }
+
+        // Render preliminar inmediato con datos locales
+        this.renderSteamMiniCard(p, stMeta, this.steamLiveData);
+
+        if (p.steamProxyUrl && !this._steamFetched) {
+            this._steamFetched = true;
+            try {
+                const res = await fetch(p.steamProxyUrl);
+                if (res.ok) {
+                    this.steamLiveData = await res.json();
+                    this.renderSteamMiniCard(p, stMeta, this.steamLiveData);
+                    if (document.getElementById("steam-profile-modal")?.classList.contains("active")) {
+                        this.renderSteamFullModal();
+                    }
+                }
+            } catch {}
+        }
+    },
+
+    renderSteamMiniCard(profile, stMeta, live) {
+        const box = document.getElementById("steam-mini-card");
+        if (!box) return;
+        const name = live?.personaName || stMeta.handle || "tachydeuwi";
+        const avatar = live?.avatar || profile.avatar || "img/portraits/saphyniel_normal.png";
+        const gamesCount = live?.totalGames ? `${live.totalGames} JUEGOS` : "STEAM ARCHIVE";
+        const recent0 = live?.recentGames?.[0];
+        const recentTxt = recent0
+            ? `Reciente: ${recent0.name} (${(recent0.playtime_forever / 60).toFixed(1)}h)`
+            : (stMeta.statusText || "Perfil Neo-Brutalist 1:1");
+
+        box.innerHTML = `
+            <div class="steam-mini-left">
+                <img class="steam-mini-av" src="${this.esc(avatar)}" alt="Steam" onerror="this.src='img/icons/icon.png'">
+                <div style="min-width:0;">
+                    <div class="steam-mini-name">${this.esc(name)}</div>
+                    <div class="steam-mini-sub">${this.esc(recentTxt)}</div>
+                    <div class="steam-mini-stats">
+                        <span class="steam-stat-chip">${this.esc(gamesCount)}</span>
+                        <span class="steam-stat-chip">ESTILO: NEO-BRUTE</span>
+                        ${live?.level ? `<span class="steam-stat-chip">LVL ${live.level}</span>` : ""}
+                    </div>
+                </div>
+            </div>
+            <button type="button" class="tac-btn primary rb-magnet" id="btn-expand-steam-main">VER PERFIL 1:1 ⤢</button>
+        `;
+        box.querySelector("#btn-expand-steam-main")?.addEventListener("click", () => this.openSteamProfileModal());
+
+        // También agregar botón de abrir modal 1:1 dentro de la pestaña ABOUT
+        const aboutSteam = document.getElementById("steam-showcase");
+        if (aboutSteam && !aboutSteam.querySelector(".btn-open-steam-nb")) {
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "tac-btn-xs primary btn-open-steam-nb";
+            btn.style.alignSelf = "flex-start";
+            btn.textContent = "[ EXPANDIR PERFIL STEAM 1:1 ⤢ ]";
+            btn.onclick = () => this.openSteamProfileModal();
+            aboutSteam.appendChild(btn);
+        }
+    },
+
+    openSteamProfileModal() {
+        const modal = document.getElementById("steam-profile-modal");
+        if (!modal) return;
+        this.renderSteamFullModal();
+        modal.classList.add("active");
+        modal.setAttribute("aria-hidden", "false");
+        document.body.style.overflow = "hidden";
+        this.beep(640, 0.05, "square", 0.03);
+    },
+
+    closeSteamProfileModal() {
+        const modal = document.getElementById("steam-profile-modal");
+        if (!modal) return;
+        modal.classList.remove("active");
+        modal.setAttribute("aria-hidden", "true");
+        document.body.style.overflow = "";
+    },
+
+    renderSteamFullModal() {
+        const body = document.getElementById("steam-nb-body");
+        if (!body) return;
+        const p = this.cfg?.profile || {};
+        const about = this.cfg?.aboutMe || {};
+        const stMeta = about.steamHighlights || {};
+        const live = this.steamLiveData || {};
+
+        const extLink = document.getElementById("steam-nb-ext-link");
+        if (extLink && p.steamUrl) extLink.href = p.steamUrl;
+
+        const name = live.personaName || stMeta.handle || "tachydeuwi";
+        const avatar = live.avatar || p.avatar || "img/portraits/saphyniel_normal.png";
+        const totalGames = live.totalGames || 56;
+        const level = live.level || 15;
+        const stateNames = ["OFFLINE", "ONLINE", "BUSY", "AWAY", "SNOOZE", "LOOKING TO TRADE", "LOOKING TO PLAY"];
+        const statusStr = live.gameExtraInfo
+            ? `IN-GAME: ${live.gameExtraInfo}`
+            : (live.personaState !== undefined ? (stateNames[live.personaState] || "ONLINE") : "ARCHIVE LINKED");
+
+        const recent = Array.isArray(live.recentGames) ? live.recentGames : [];
+        const total2wHrs = recent.reduce((acc, g) => acc + ((g.playtime_2weeks || 0) / 60), 0);
+        const maxHrs = Math.max(10, ...recent.map((g) => (g.playtime_forever || 0) / 60));
+        const achs = stMeta.featuredAchievements || [];
+
+        const recentHtml = recent.length
+            ? recent.map((g) => {
+                const hrs = ((g.playtime_forever || 0) / 60).toFixed(1);
+                const hrs2w = g.playtime_2weeks ? `${(g.playtime_2weeks / 60).toFixed(1)} hrs últimas 2 sem` : "En biblioteca";
+                const pct = Math.min(100, Math.max(8, (((g.playtime_forever || 0) / 60) / maxHrs) * 100));
+                const cap = `https://cdn.akamai.steamstatic.com/steam/apps/${g.appid}/header.jpg`;
+                return `
+                    <a href="https://store.steampowered.com/app/${g.appid}" target="_blank" rel="noopener" class="steam-game-row">
+                        <img class="steam-game-capsule" src="${cap}" alt="${this.esc(g.name)}" loading="lazy" onerror="this.src='img/icons/icon.png'">
+                        <div style="min-width:0;">
+                            <div class="steam-game-title">${this.esc(g.name)}</div>
+                            <div class="steam-game-meta">${hrs} hrs totales • ${hrs2w}</div>
+                            <div class="steam-hrs-bar"><div class="steam-hrs-fill" style="width:${pct.toFixed(1)}%"></div></div>
+                        </div>
+                    </a>`;
+            }).join("")
+            : `<div class="dc-idle-msg">&gt; Sin actividad reciente pública en las últimas 2 semanas (o tu perfil de detalles de juegos está en privado).</div>`;
+
+        const steamOnlyFallback = [
+            { name: "Project Zomboid", tag: "150+ HRS // MODDED" },
+            { name: "Helldivers 2", tag: "CO-OP // SUPER EARTH" },
+            { name: "NieR:Automata", tag: "ENDING [E]" },
+            { name: "Elden Ring", tag: "SOULSLIKE" },
+            { name: "Crimson Desert", tag: "ACTION RPG" }
+        ];
+        const topList = Array.isArray(live.topGames) && live.topGames.length
+            ? live.topGames.slice(0, 5).map((g) => `
+                <div class="steam-side-stat-row">
+                    <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${this.esc(g.name)}</span>
+                    <strong>${((g.playtime_forever || 0) / 60).toFixed(0)}h</strong>
+                </div>`).join("")
+            : steamOnlyFallback.map((g) => `
+                <div class="steam-side-stat-row">
+                    <span>${this.esc(g.name)}</span>
+                    <small style="color:var(--ink-dim);">${this.esc(g.tag)}</small>
+                </div>`).join("");
+
+        body.innerHTML = `
+            <section class="steam-nb-hero">
+                <div class="steam-nb-avatar-box"><img src="${this.esc(avatar)}" alt="${this.esc(name)}"></div>
+                <div>
+                    <div class="steam-nb-persona">${this.esc(name)}</div>
+                    <div class="steam-nb-handle">ID: ${this.esc(stMeta.handle || "tachydeuwi")} // STEAM NEO-BRUTE EDITION</div>
+                    <p class="steam-nb-summary">${this.esc(p.bio || "")}</p>
+                </div>
+                <div class="steam-nb-level-card">
+                    <div class="steam-nb-lvl-row">
+                        <span style="font-size:0.72rem;font-weight:800;">STEAM LEVEL</span>
+                        <span class="steam-nb-lvl-badge">${this.esc(level)}</span>
+                    </div>
+                    <div class="steam-nb-badge-strip"><span>STATUS</span><strong>${this.esc(statusStr)}</strong></div>
+                    <div class="steam-nb-badge-strip"><span>THEME</span><span>MONOCHROME 1:1</span></div>
+                </div>
+            </section>
+
+            <div class="steam-nb-grid">
+                <div class="steam-nb-col">
+                    <section class="steam-nb-box">
+                        <div class="steam-nb-box-head">
+                            <span>SHOWCASE // ACTIVIDAD RECIENTE</span>
+                            <span>${total2wHrs.toFixed(1)} HRS / 2 SEM</span>
+                        </div>
+                        <div class="steam-nb-box-body">${recentHtml}</div>
+                    </section>
+
+                    <section class="steam-nb-box">
+                        <div class="steam-nb-box-head">
+                            <span>ACHIEVEMENT SHOWCASE // LOGROS DESTACADOS</span>
+                            <span>${achs.length} PINNED</span>
+                        </div>
+                        <div class="steam-nb-box-body">
+                            <div class="steam-showcase-achs">
+                                ${achs.map((a) => `
+                                    <div class="steam-ach-tile">
+                                        <span class="steam-ach-tag">${this.esc(a.rarity || "UNLOCKED")}</span>
+                                        <strong style="font-size:0.76rem;margin-top:4px;">${this.esc(a.title)}</strong>
+                                        <small style="color:var(--ink-dim);font-size:0.62rem;">${this.esc(a.game)}</small>
+                                    </div>`).join("")}
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <aside class="steam-nb-col">
+                    <section class="steam-nb-box">
+                        <div class="steam-nb-box-head"><span>LIBRARY // RESUMEN</span><span>STATS</span></div>
+                        <div class="steam-nb-box-body">
+                            <div class="steam-side-stat-row"><span>JUEGOS EN BIBLIOTECA</span><strong>${this.esc(totalGames)}</strong></div>
+                            <div class="steam-side-stat-row"><span>ACTIVIDAD (2 SEM)</span><strong>${total2wHrs.toFixed(1)}h</strong></div>
+                            <div class="steam-side-stat-row"><span>JUEGOS RECIENTES</span><strong>${recent.length}</strong></div>
+                            <div class="steam-side-stat-row"><span>LOGROS DESTACADOS</span><strong>${achs.length}</strong></div>
+                        </div>
+                    </section>
+
+                    <section class="steam-nb-box">
+                        <div class="steam-nb-box-head"><span>FAVORITOS &amp; MÁS JUGADOS</span><span>TOP</span></div>
+                        <div class="steam-nb-box-body">${topList}</div>
+                    </section>
+                </aside>
+            </div>
+        `;
+    }
+});
