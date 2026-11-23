@@ -13,7 +13,7 @@ IGNORED_DIRS = {
     ".vscode",
     "dist",
     "build",
-    "local_cache"
+    "local_cache", "_studio", "_backup_codex"
 }
 
 IGNORED_FILES = {

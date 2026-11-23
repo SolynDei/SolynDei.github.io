@@ -1,4 +1,4 @@
-﻿const CODEX_DATA = {
+const CODEX_DATA = {
     discordId: "409107659153735680",
     discordUserCopy: "laska.com.tv",
     uniqueVisitsKey: "saphyniel-codex",
@@ -119,3 +119,108 @@
         }
     ]
 };
+
+// === [CONFIGURACION DE MI BLOG PERSONAL] ===
+// En esta sección puedes agregar, editar o borrar libremente tus diálogos,
+// tus Gustos (con foto, categoría, título y descripción), tus Disgustos y tus Preguntas (FAQ).
+
+CODEX_DATA.avatarDialogues = [
+    { text: "¿Hay alguien ahí afuera...? Hace mucho que nadie se detiene a mirar este lugar en silencio.", tone: "low" },
+    { text: "Construí este refugio con fragmentos de lo que amo para tener adónde volver cuando todo pesa.", tone: "low" },
+    { text: "Por favor, toca el cristal con suavidad... mis recuerdos están tejidos en estas líneas.", tone: "mid" },
+    { text: "¿Por qué insistes tanto en golpear la barrera? ¿Acaso buscas quebrar mi calma?", tone: "mid" },
+    { text: "Has roto el sello de la artillería orbital... Ahora tienes con qué demoler mi refugio, o dejarlo en paz.", tone: "low" }
+];
+
+CODEX_DATA.railgunDialogues = {
+    unlocked: "El sello del Cañón Orbital ha caído. Si arrastras la mira hacia cualquier bloque —o usas [APUNTAR]— lo reducirás a cenizas... pero por favor, no apuntes hacia mí.",
+    firstDestroy: "Ese fragmento guardaba parte de mi calma... Puedes reconstruirlo con [RESTAURAR] cuando quieras.",
+    comboDestroy: "Cada espacio que borras deja un eco más frío en este santuario...",
+    restored: "Gracias por devolver las piezas a su lugar. El silencio vuelve a ser amable.",
+    avatarHit1: "Ese disparo dio directo contra mi sello... Por favor, detente. No quiero tener que alzar mis armas contra ti.",
+    avatarHit2: "El cristal que me protege se está agrietando... Un impacto más sobre mí y me obligarás a defender este refugio.",
+    avatarHit3: "Lo entiendo... ni siquiera aquí pude quedarme en paz. Si deseas reducirlo todo a silencio, ven conmigo."
+};
+
+// ---------------------------------------------------------
+// 1. COSAS QUE ME GUSTAN (AFINIDADES)
+// Puedes cambiar "img" por cualquier foto en tu carpeta (ej: "img/gustos/foto.jpg") o un link https://
+// ---------------------------------------------------------
+CODEX_DATA.likes = [
+    {
+        img: "img/champions/kindred.jpg",
+        tag: "PERSONAJE",
+        title: "Kindred // La Cordera y el Lobo",
+        desc: "La dualidad poética de la muerte en calma y la cacería inevitable; su estética, sus diálogos y su música son de mis cosas favoritas."
+    },
+    {
+        img: "img/portraits/saphyniel_normal.png",
+        tag: "ESTÉTICA & MUNDOS",
+        title: "NieR & Atmósferas Melancólicas",
+        desc: "Las historias que mezclan arquitectura sacra, interfaces limpias, pianos tristes y personajes que buscan sentido en medio del silencio."
+    },
+    {
+        img: "img/champions/shyvana.jpg",
+        tag: "VIDEOJUEGOS",
+        title: "Noches de Partidas y Música",
+        desc: "Perderse horas jugando con buena música de fondo, perfeccionando mecánicas o simplemente compartiendo el rato en Discord."
+    },
+    {
+        img: "img/champions/kayle.jpg",
+        tag: "ARTE & SONIDO",
+        title: "Coros Solemnes y Violines",
+        desc: "Las bandas sonoras orquestales que empiezan como un susurro y terminan rompiendo el escenario en el clímax."
+    }
+];
+
+// ---------------------------------------------------------
+// 2. COSAS QUE NO ME GUSTAN (DISONANCIAS)
+// ---------------------------------------------------------
+CODEX_DATA.dislikes = [
+    {
+        title: "El Ruido Sin Sentido",
+        desc: "Los lugares o conversaciones saturadas donde nadie escucha de verdad y todo se siente forzado."
+    },
+    {
+        title: "La Indiferencia Disfrazada",
+        desc: "Las promesas a medias y la gente que finge cercanía solo por costumbre o conveniencia."
+    },
+    {
+        title: "La Prisa Constante",
+        desc: "Tener que correr todo el tiempo sin poder detenerse a apreciar los detalles pequeños o una buena canción."
+    },
+    {
+        title: "Lo Superficial",
+        desc: "Cuando las cosas se hacen sin alma, sin cuidado estético y sin cariño por los detalles."
+    }
+];
+
+// ---------------------------------------------------------
+// 3. PREGUNTAS SOBRE MÍ (EPÍSTOLAS / FAQ)
+// ---------------------------------------------------------
+CODEX_DATA.faq = [
+    {
+        q: "01 // ¿Quién es Saphyniel y qué es este espacio?",
+        a: "Este códice es mi bitácora personal y mi refugio digital. Es un espacio donde reúno mi música, lo que juego en vivo, las estéticas que me inspiran y pequeños fragmentos de mi mundo."
+    },
+    {
+        q: "02 // ¿Qué tipo de música suelo escuchar?",
+        a: "Me encantan las bandas sonoras con carga emocional (como NieR, Persona o temas instrumentales con piano y coros), además de playlists tranquilas para acompañar las noches de lluvia o estudio."
+    },
+    {
+        q: "03 // ¿Qué juegos disfruto más?",
+        a: "Disfruto tanto los juegos competitivos como League of Legends (especialmente en la jungla con Kindred o Shyvana) como los juegos de historia profunda, dirección artística única y jefes memorables."
+    },
+    {
+        q: "04 // ¿Qué valoro más en una persona o amistad?",
+        a: "La lealtad silenciosa, la honestidad sin rodeos y la capacidad de compartir tanto una charla profunda de madrugada como un momento de silencio cómodo."
+    },
+    {
+        q: "05 // ¿Por qué hay elementos interactivos ocultos en la página?",
+        a: "Porque quería que mi biografía no fuera solo una lista estática de enlaces, sino un pequeño mundo vivo que premie la curiosidad de quienes se toman el tiempo de explorarlo."
+    },
+    {
+        q: "06 // ¿Cómo puedo ponerme en contacto?",
+        a: "Discord es mi canal principal. Puedes copiar mi usuario directamente desde el panel izquierdo o en la sección de Lecturas."
+    }
+];

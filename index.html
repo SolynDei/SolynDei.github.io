@@ -1,343 +1,399 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <link rel="icon" type="image/png" href="img/icons/icon.png">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>SAPHYNIEL // CODEX</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Press+Start+2P&family=Rajdhani:wght@300;500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/main.css">
-    <link rel="stylesheet" href="css/modules/achievements.css">
-    <link rel="stylesheet" href="css/modules/deck.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>SAPHYNIEL // ARCHIVE</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=JetBrains+Mono:wght@400;600;700;800&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/rework.css">
 </head>
-<body>
-    <iframe id="boss-frame" src="boss.html"></iframe>
+<body class="perf-full is-locked">
+    <canvas id="fx-grid-canvas" aria-hidden="true"></canvas>
+    <div class="bg-kanji-watermark" aria-hidden="true">認証</div>
+    <div class="scanlines-fx" aria-hidden="true"></div>
+    <div id="floating-stickers-layer" class="floating-stickers-layer" aria-hidden="true"></div>
 
-    <!-- REACT BITS: BALATRO WEBGL BACKGROUND CANVAS -->
-    <canvas id="balatro-canvas"></canvas>
-
-    <button type="button" class="hud-fullscreen-btn" id="fullscreen-toggle" title="Modo pantalla completa" aria-label="Alternar pantalla completa">⛶</button>
-
-    <div class="flash-overlay" id="flash-screen"></div>
-    <div class="orbital-laser-beam" id="orbital-beam"></div>
-    <div class="countdown-overlay" id="orbital-countdown">3</div>
-    <div class="orbital-ghost-target" id="ghost-target">
-        <div class="ghost-core"></div>
-    </div>
-    
-    <!-- Cinemática de obtención del Railgun -->
-    <div class="railgun-drop-overlay" id="railgun-drop">
-        <img src="img/icons/Orbitalcannon.png" alt="Railgun">
-    </div>
-
-    <div class="combo-counter-hud" id="combo-hud">COMBO x0</div>
-
-    <canvas id="particle-canvas"></canvas>
-    <div class="noise"></div>
-    <div class="scanlines"></div>
-    <div class="ambient-halo-1"></div>
-    <div class="ambient-halo-2"></div>
-
-    <div class="p5-dialogue-wrapper" id="p5-box">
-        <img id="p5-cutin-img" class="p5-char-cutin" src="img/portraits/saphyniel_normal.png" alt="Portrait">
-        <div class="p5-name-tag" id="p5-name">SAPHYNIEL</div>
-        <div class="p5-speech-bubble">
-            <div class="p5-speech-text" id="p5-text"></div>
-        </div>
-    </div>
-
-    <div class="orbital-crosshair" id="orbital-crosshair" title="Arrastra la cruceta al centro o sobre el avatar">
-        <div class="crosshair-ring"></div>
-        <div class="crosshair-core"></div>
-    </div>
-
-    <div class="danmaku-container" id="danmaku-box"></div>
-
-    <div class="pc-side-panel pc-panel-left destructible">
-        <div>[TELEMETRÍA]</div>
-        <div>SYS_MEM: <span id="sys-metric">0x----</span></div>
-        <div>ALLOC: STABLE</div>
-        <div>CANONICAL_INDEX: 0.89</div>
-        <div style="margin-top: 10px;">[FREQ_GRAPH]</div>
-        <div>||||||||| 89%</div>
-        <div>|||||| 62%</div>
-        <div>|||||||||||| 98%</div>
-    </div>
-
-    <div class="pc-side-panel pc-panel-right destructible">
-        <div>[REGISTROS_CANON]</div>
-        <div>MEMORIA: PRESERVADA</div>
-        <div>ENCRIPTACIÓN: ACTIVA</div>
-        <div>CANAL: DISCORD_LIVE</div>
-        <div style="margin-top: 10px;">[ESTADO]</div>
-        <div>RESONANCIA: 99.4%</div>
-        <div>SANCTUS: VER_3.5</div>
-    </div>
-
-    <!-- MODAL DE LOGROS NIER -->
-    <div id="achievementsModal" class="achievements-modal" onclick="if(event.target === this) toggleAchievementsModal()">
-        <div class="achievements-panel">
-            <div class="achievements-header">
-                <span>REGISTRO DE OPERACIÓN // ARCHIVOS</span>
-                <button class="ach-close-btn" onclick="toggleAchievementsModal()">[ CERRAR ]</button>
-            </div>
-            <div class="achievements-list" id="achievementsList"></div>
-        </div>
-    </div>
-
-    <!-- TOAST DE NOTIFICACIÓN DE LOGRO -->
-    <div id="achievementToast" class="achievement-toast">
-        <span style="font-size: 1.2rem; color: #ffd700;">◈</span>
-        <div>
-            <div style="font-size: 0.65rem; color: var(--accent-color); letter-spacing: 1px;">LOGRO DESBLOQUEADO</div>
-            <div id="toastTitle" style="font-size: 0.8rem; font-weight: bold; color: #fff;">-</div>
-        </div>
-    </div>
-
-    <div class="hud-modal-overlay" id="hud-modal-overlay" onclick="_mCls(event)">
-        <div class="hud-modal">
-            <div class="hud-modal-header">
-                <span id="modal-title">// CODEX NOTA</span>
-                <span style="color:var(--text-dim); font-size:0.7rem;">0x9A</span>
-            </div>
-            <div class="hud-modal-body" id="modal-body"></div>
-            <button class="hud-modal-btn" onclick="_mCls(null)">[ CERRAR ]</button>
-        </div>
-    </div>
-
-    <header class="telemetry-bar destructible">
-        <span>CODEX // LIBER PRIMUS</span>
-        <div style="display: flex; gap: 10px; align-items: center;">
-            <button class="ach-nav-btn" onclick="toggleAchievementsModal()" title="Ver Registro de Logros">
-                [ LOGROS <span id="ach-counter">0/6</span> ]
+    <!-- GATE DE ENTRADA: ACCESS -> AUTO-LOGIN -> ACCESS GRANTED -->
+    <div id="entry-gate" class="entry-gate">
+        <button type="button" class="gate-skip-btn" id="gate-skip-btn">[ SKIP &gt;&gt; ]</button>
+        <div id="gate-step-access" class="gate-step active">
+            <div class="gate-kicker">SOLYNDEI.GITHUB.IO // TERMINAL</div>
+            <button type="button" class="gate-access-btn rb-magnet" id="btn-gate-access">
+                <span>ACCESS</span>
+                <small>CLICK TO ESTABLISH LINK</small>
             </button>
-            <button class="clock-btn" onclick="_liturgicalChime()" title="Tocar Campana Canónica">
-                <span id="utc-clock">HORA CANÓNICA // 00:00:00:000 UTC</span> 🔔
+        </div>
+        <div id="gate-step-login" class="gate-step">
+            <div class="login-card">
+                <div class="login-card-head"><span>AUTHENTICATION // 認証</span><span>● AUTO</span></div>
+                <div class="hazard-strip"></div>
+                <div class="login-card-body">
+                    <div class="login-op-row">
+                        <div class="login-op-badge">S</div>
+                        <div>
+                            <div class="login-op-label">OPERATOR</div>
+                            <div class="login-op-name" id="login-op-name">SAPHYNIEL</div>
+                            <div class="login-op-uid">UID: SOLYNDEI</div>
+                        </div>
+                    </div>
+                    <div class="login-field-label">PASSCODE</div>
+                    <div class="login-input-row">
+                        <div class="login-fake-input" id="login-pass-field">&nbsp;</div>
+                        <div class="login-exec-pill" id="login-exec-pill">EXECUTE ▶</div>
+                    </div>
+                    <div class="login-sync-label" id="login-sync-label">SYNC RATE 000%</div>
+                    <div class="login-bar-track"><div class="login-bar-fill" id="login-bar-fill"></div></div>
+                    <div class="login-console" id="login-console">&gt; AWAITING HANDSHAKE_</div>
+                </div>
+            </div>
+        </div>
+        <div id="gate-step-granted" class="gate-step">
+            <div class="granted-title">ACCESS GRANTED</div>
+            <div class="granted-sub">認証完了 // CONSTRUCTING INTERFACE</div>
+            <div class="login-bar-track granted-track"><div class="login-bar-fill" id="granted-bar-fill"></div></div>
+        </div>
+    </div>
+
+    <!-- INTRO SENTIMENTAL DEL BOSSFIGHT -->
+    <div id="boss-intro-modal" class="boss-intro-modal" aria-hidden="true">
+        <div class="boss-intro-box">
+            <div class="boss-intro-tag">// MEMORIA SELLADA DETECTADA //</div>
+            <img src="img/portraits/saphyniel_normal.png" alt="Saphyniel" class="boss-intro-portrait">
+            <p class="boss-intro-dialogue">"Esa puerta guarda un silencio que costó mucho cerrar... ¿De verdad quieres volver a cruzarla?"</p>
+            <div class="boss-intro-actions">
+                <button type="button" class="tac-btn primary" id="boss-intro-confirm">[ ABRIR LA PUERTA ▶ ]</button>
+                <button type="button" class="tac-btn" id="boss-intro-cancel">[ VOLVER AL REFUGIO ]</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- OVERLAY DEL BOSSFIGHT / JUEGOS -->
+    <div id="game-stage-overlay" class="game-stage-overlay" aria-hidden="true">
+        <div class="game-stage-bar">
+            <span id="game-stage-title">ARCADE // MODULE</span>
+            <button type="button" class="tac-btn danger" id="game-stage-close">[ ✕ SALIR AL PERFIL ]</button>
+        </div>
+        <iframe id="game-stage-frame" src="about:blank" allow="autoplay; fullscreen"></iframe>
+    </div>
+
+    <!-- INSPECTOR DE MEDIA + FILTROS ARG -->
+    <div id="media-modal" class="media-modal" aria-hidden="true">
+        <div class="media-modal-box">
+            <div class="tac-window-header">
+                <span id="media-modal-title">MEDIA // INSPECTOR</span>
+                <button type="button" class="tac-btn-xs" id="media-modal-close">[ CERRAR ]</button>
+            </div>
+            <div class="media-filter-bar" id="media-filter-bar">
+                <span class="filter-bar-label">ANALYZER:</span>
+                <button type="button" class="tac-btn-xs primary" data-img-filter="none">NORMAL</button>
+                <button type="button" class="tac-btn-xs" data-img-filter="invert">INVERT</button>
+                <button type="button" class="tac-btn-xs" data-img-filter="contrast">HIGH CONTRAST</button>
+                <button type="button" class="tac-btn-xs" data-img-filter="red">RED SCAN</button>
+            </div>
+            <div class="media-modal-content" id="media-modal-content"></div>
+            <div class="media-modal-meta" id="media-modal-meta"></div>
+        </div>
+    </div>
+
+    <!-- TERMINAL ARG -->
+    <div id="arg-terminal-modal" class="media-modal" aria-hidden="true">
+        <div class="media-modal-box terminal-modal-box">
+            <div class="tac-window-header">
+                <span>PLAYGROUND // SECRET TERMINAL</span>
+                <button type="button" class="tac-btn-xs" id="arg-terminal-close">[ ESC ]</button>
+            </div>
+            <div class="arg-log" id="arg-log">
+                <div>&gt; SOLYNDEI ARCHIVE CONSOLE v2.1</div>
+                <div>&gt; Escribe <b>HELP</b> para ver comandos o introduce un código secreto.</div>
+            </div>
+            <form class="arg-form" id="arg-form">
+                <span>&gt;</span>
+                <input type="text" id="arg-input" class="arg-input" placeholder="COMANDO O CÓDIGO SECRETO..." autocomplete="off" spellcheck="false">
+            </form>
+        </div>
+    </div>
+
+    <div id="sys-toast" class="sys-toast" role="status" aria-live="polite"></div>
+
+    <!-- BARRA SUPERIOR: RELOJ + FRASES RANDOM + CONTROLES -->
+    <header class="top-hud-bar build-item">
+        <div class="top-hud-inner">
+            <div class="clock-module">
+                <div class="clock-time" id="hud-clock-time">00:00</div>
+                <div class="clock-date" id="hud-clock-date">UTC // SYS</div>
+            </div>
+            <button type="button" class="splash-quote-bar" id="splash-quote-btn" title="Clic para otra frase">
+                <span class="splash-prefix">&gt;</span>
+                <span class="splash-text" id="splash-quote-text">Loading archive...</span>
             </button>
+            <div class="hud-controls">
+                <button type="button" class="tac-btn-xs" id="btn-perf-toggle">PERF: FULL</button>
+                <button type="button" class="tac-btn-xs" id="btn-theme-invert">◐ INVERT</button>
+            </div>
         </div>
     </header>
 
-    <main class="hud-container" id="main-hud">
-        <div class="hud-corner-tr"></div>
-        <div class="hud-corner-bl"></div>
+    <!-- BARRA DE NAVEGACIÓN PC TIPO FACEBOOK (ALINEADA 100% AL ANCHO DEL CONTENIDO) -->
+    <div class="pc-nav-wrapper build-item">
+        <nav class="pc-fb-nav" aria-label="Navegación principal">
+            <button type="button" class="fb-tab active rb-magnet" data-view="view-profile">
+                <span class="inline-icon" data-icon="user"></span>
+                <span class="fb-tab-num">01</span>
+                <span>PERFIL</span>
+            </button>
+            <button type="button" class="fb-tab rb-magnet" data-view="view-about">
+                <span class="inline-icon" data-icon="sparkles"></span>
+                <span class="fb-tab-num">02</span>
+                <span>ABOUT</span>
+            </button>
+            <button type="button" class="fb-tab rb-magnet" data-view="view-posts">
+                <span class="inline-icon" data-icon="blog"></span>
+                <span class="fb-tab-num">03</span>
+                <span>POSTS</span>
+            </button>
+            <button type="button" class="fb-tab rb-magnet" data-view="view-arcade">
+                <span class="inline-icon" data-icon="gamepad"></span>
+                <span class="fb-tab-num">04</span>
+                <span>ARCADE</span>
+            </button>
+            <button type="button" class="fb-tab rb-magnet" data-view="view-media">
+                <span class="inline-icon" data-icon="media"></span>
+                <span class="fb-tab-num">05</span>
+                <span>MEDIA</span>
+            </button>
+            <button type="button" class="fb-tab fb-tab-cmd" id="btn-open-terminal" title="Terminal de Secretos (Ctrl+K)">
+                <span class="inline-icon" data-icon="terminal"></span>
+                <span>CMD</span>
+            </button>
+        </nav>
+    </div>
 
-        <button class="sound-toggle destructible" id="sound-btn" onclick="_sndTgl()">[ AUDIO: ACTIVO ]</button>
-        <div class="destructible" style="position: absolute; top: -22px; right: 0px; font-size: 0.65rem; color: var(--text-dim); letter-spacing: 1px; font-family: var(--font-mono);">LIBER SACER // TOMO III</div>
+    <!-- LAYOUT PRINCIPAL DE 2 COLUMNAS (MISMO ANCHO QUE LA BARRA SUPERIOR) -->
+    <div class="page-shell">
+        <aside class="profile-sidebar" id="profile-sidebar">
+            <section class="tac-window rb-spotlight build-item" data-module="identity">
+                <div class="tac-window-header">
+                    <span>OPERATOR // PROFILE</span>
+                    <span id="profile-mood-badge">● ONLINE</span>
+                </div>
+                <div class="profile-banner" id="profile-banner" data-editable-img="banner" style="display:none;"></div>
+                <div class="hazard-strip"></div>
+                <div class="operator-body">
+                    <div class="pfp-frame rb-tilt" id="pfp-easter-trigger" data-editable-img="avatar" title="Saphyniel">
+                        <img id="main-pfp" src="img/portraits/saphyniel_normal.png" alt="Avatar">
+                        <span class="pfp-status-dot" id="pfp-status-dot" data-status="offline"></span>
+                    </div>
+                    <div class="operator-meta">
+                        <div class="op-kicker" id="op-uid">UID: SOLYNDEI</div>
+                        <h1 class="op-name glitch-text" id="op-display-name" data-editable-text="name" data-text="SAPHYNIEL">SAPHYNIEL</h1>
+                        <div class="op-tags" id="op-pronouns" data-editable-text="pronouns">she / her // archive</div>
+                        <div class="op-mood" id="op-mood-text" data-editable-text="mood">Mood: ...</div>
+                    </div>
+                </div>
+                <p class="op-bio" id="op-bio-text" data-editable-text="bio"></p>
+                <div class="url-copy-bar">
+                    <span class="inline-icon" data-icon="link"></span>
+                    <code id="site-url-code">https://solyndei.github.io/</code>
+                    <button type="button" class="tac-btn-xs" id="btn-copy-url">COPY</button>
+                </div>
+            </section>
 
-        <header class="profile-header destructible" id="frag-header">
-            <div class="avatar-container" id="avatar-area">
-                <div class="anger-mark" id="anger-icon">💢</div>
-                <div class="avatar-frame"></div>
-                <div class="avatar-halo"></div>
-                <button type="button" class="avatar-btn" id="avatar-trigger" aria-label="Avatar">
-                    <img id="avatar-img" src="img/portraits/saphyniel_normal.png" alt="Avatar" class="avatar">
-                </button>
+            <section class="tac-window rb-spotlight build-item" data-module="discord" id="discord-panel">
+                <div class="tac-window-header">
+                    <span class="header-with-icon"><span class="inline-icon" data-icon="discord"></span> DISCORD // LIVE</span>
+                    <span id="dc-state-label">OFFLINE</span>
+                </div>
+                <div class="dc-body">
+                    <div class="dc-header-row">
+                        <img id="dc-avatar" class="dc-mini-pfp" src="img/portraits/saphyniel_normal.png" alt="Discord">
+                        <div class="dc-identity">
+                            <div class="dc-name" id="dc-name">Saphyniel</div>
+                            <div class="dc-handle" id="dc-handle">@tachydeuwi</div>
+                        </div>
+                        <button type="button" class="tac-btn-xs" id="btn-copy-discord">COPY</button>
+                    </div>
+                    <div class="dc-custom-note" id="dc-custom-note" style="display:none;"></div>
+                    <div class="dc-activities" id="dc-activities"><div class="dc-idle-msg">&gt; EN CALMA_</div></div>
+                </div>
+            </section>
+
+            <section class="tac-window rb-spotlight build-item" data-module="music" id="music-panel">
+                <div class="tac-window-header">
+                    <span class="header-with-icon"><span class="inline-icon" data-icon="music"></span> AUDIO_DECK</span>
+                    <span id="player-state-tag">STOP</span>
+                </div>
+                <div class="music-body">
+                    <div class="music-lcd">
+                        <div class="music-lcd-top">
+                            <span id="music-time-cur">00:00</span>
+                            <span id="music-track-index">TRK 01/03</span>
+                            <span id="music-time-dur">00:00</span>
+                        </div>
+                        <div class="music-track-title" id="music-track-title">SELECCIONA UNA PISTA</div>
+                        <div class="music-track-artist" id="music-track-artist">ARCHIVE</div>
+                    </div>
+                    <input type="range" id="music-seek" class="tac-range" min="0" max="100" value="0" aria-label="Progreso">
+                    <div class="music-controls-row">
+                        <button type="button" class="tac-btn-xs" id="music-prev">|&lt;</button>
+                        <button type="button" class="tac-btn-xs primary" id="music-play">▶ PLAY</button>
+                        <button type="button" class="tac-btn-xs" id="music-next">&gt;|</button>
+                        <div class="music-vol-wrap"><span>VOL</span><input type="range" id="music-vol" class="tac-range vol" min="0" max="1" step="0.05" value="0.45"></div>
+                    </div>
+                    <div class="music-playlist" id="music-playlist"></div>
+                    <audio id="bg-audio-el" preload="metadata"></audio>
+                </div>
+            </section>
+
+            <section class="tac-window rb-spotlight build-item" data-module="socials">
+                <div class="tac-window-header"><span>CONTACTING // LINKS</span><span>NET</span></div>
+                <div class="socials-grid" id="socials-grid"></div>
+            </section>
+        </aside>
+
+        <main class="main-stage">
+            <!-- 01: PERFIL -->
+            <div id="view-profile" class="stage-view active">
+                <section class="tac-window rb-spotlight build-item" data-module="latestPosts">
+                    <div class="tac-window-header">
+                        <span class="rb-decrypt" data-text="LATEST BLOG ENTRIES // REGISTROS">LATEST BLOG ENTRIES // REGISTROS</span>
+                        <button type="button" class="tac-btn-xs" data-jump-view="view-posts">[ VER POSTS ]</button>
+                    </div>
+                    <div class="latest-posts-strip" id="latest-posts-strip"></div>
+                </section>
+
+                <section class="tac-window rb-spotlight build-item" data-module="blurbs">
+                    <div class="tac-window-header">
+                        <span class="rb-decrypt" data-text="SAPHYNIEL'S BLURBS // PRESENTACIÓN">SAPHYNIEL'S BLURBS // PRESENTACIÓN</span>
+                        <button type="button" class="tac-btn-xs" data-jump-view="view-about">[ ABOUT ME → ]</button>
+                    </div>
+                    <div class="hazard-strip"></div>
+                    <div class="blurbs-content" id="blurbs-content"></div>
+                </section>
+
+                <section class="tac-window rb-spotlight build-item" data-module="featuredBoss">
+                    <div class="tac-window-header">
+                        <span class="header-with-icon"><span class="inline-icon" data-icon="gamepad"></span> SEALED MEMORY // BOSSFIGHT</span>
+                        <span>PLAYABLE</span>
+                    </div>
+                    <div class="featured-game-inner">
+                        <div class="featured-game-thumb rb-tilt">
+                            <img src="img/boss/core.png" alt="Saphyniel Bossfight" onerror="this.src='img/icons/icon.png'">
+                        </div>
+                        <div class="featured-game-info">
+                            <h2 class="rb-decrypt" data-text="SAPHYNIEL // ENCOUNTER">SAPHYNIEL // ENCOUNTER</h2>
+                            <p>Encuentro interactivo multi-fase con cinemáticas, escudo, Railgun y final secreto Fase [S].</p>
+                            <div class="featured-game-actions">
+                                <button type="button" class="tac-btn primary rb-magnet" id="quick-launch-boss">ABRIR MEMORIA ▶</button>
+                                <button type="button" class="tac-btn" data-jump-view="view-arcade">IR A ARCADE</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="tac-window rb-spotlight build-item" data-module="stamps">
+                    <div class="tac-window-header"><span>STAMPS &amp; SIGNALS</span><span>COLLECTION</span></div>
+                    <div class="stamps-wall" id="stamps-wall"></div>
+                </section>
             </div>
-            
-            <h1 class="name destructible shiny-text" id="display-name" data-scramble="SAPHYNIEL">SAPHYNIEL</h1>
-            <div class="designation destructible" id="display-role">
-                Saphyniel // <span class="redacted-text">she / her</span>
+
+            <!-- 02: ABOUT ME REACTIVO -->
+            <div id="view-about" class="stage-view">
+                <section class="tac-window rb-spotlight">
+                    <div class="tac-window-header">
+                        <span class="rb-decrypt" data-text="ABOUT ME // LEAGUE OF LEGENDS">ABOUT ME // LEAGUE OF LEGENDS</span>
+                        <a href="https://www.op.gg/summoners/lan/Tachy-YorHa" target="_blank" rel="noopener" class="tac-btn-xs">OP.GG ↗</a>
+                    </div>
+                    <div class="hazard-strip"></div>
+                    <div class="about-block-pad">
+                        <div class="champions-grid" id="about-champions-grid"></div>
+                        <div class="reactive-inspector" id="champ-inspector"><div class="dc-idle-msg">&gt; TOCA UN CAMPEÓN_</div></div>
+                    </div>
+                </section>
+
+                <section class="tac-window rb-spotlight">
+                    <div class="tac-window-header">
+                        <span class="header-with-icon"><span class="inline-icon" data-icon="music"></span> MÚSICA FAVORITA // REACTIVO</span>
+                        <span>CURATED</span>
+                    </div>
+                    <div class="about-block-pad"><div class="reactive-cards-grid" id="about-music-grid"></div></div>
+                </section>
+
+                <section class="tac-window rb-spotlight">
+                    <div class="tac-window-header">
+                        <span class="header-with-icon"><span class="inline-icon" data-icon="steam"></span> JUEGOS FAVORITOS &amp; STEAM</span>
+                        <a id="about-steam-link" href="https://steamcommunity.com/id/tachydeuwi/" target="_blank" rel="noopener" class="tac-btn-xs">STEAM ↗</a>
+                    </div>
+                    <div class="about-block-pad">
+                        <div class="reactive-cards-grid" id="about-games-grid"></div>
+                        <div class="steam-showcase" id="steam-showcase"></div>
+                    </div>
+                </section>
             </div>
-            
-            <div class="bio destructible" id="typewriter-text" data-bio="Lucerna pedibus meis verbum tuum et lumen semitis meis. \nIn silentio et in spe erit fortitudo vestra."></div>
-        </header>
 
-        <div class="data-divider destructible">+--- [ CÓDICE ] ---+</div>
-
-        <div class="tabs-header destructible" id="frag-tabs">
-            <button class="tab-btn active" onclick="_tSw('tab-links')">[LECTURAS]</button>
-            <button class="tab-btn" onclick="_tSw('tab-lol')">[REGISTRO]</button>
-            <button class="tab-btn" onclick="_tSw('tab-quotes')">[SALMOS]</button>
-            <button class="tab-btn" onclick="_tSw('tab-faq')">[EPÍSTOLAS]</button>
-            <button class="tab-btn" onclick="_tSw('tab-terminal')">[MANDATOS]</button>
-        </div>
-
-        <div id="tab-links" class="tab-pane active">
-            <nav class="links-grid" id="links-container">
-                <a onclick="navigator.clipboard.writeText(CODEX_DATA.discordUserCopy); _mShow('// COMUNICADO', 'Usuario <b>' + CODEX_DATA.discordUserCopy + '</b> copiado al portapapeles.');" class="link-btn destructible spotlight-card" data-platform="ds">
-                    <div class="link-left">
-                        <svg class="link-svg" viewBox="0 0 24 24"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.0777.0777 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg>
-                        <span class="link-title">DISCORD // COMUNICACIÓN</span>
+            <!-- 03: BLOG / POSTS -->
+            <div id="view-posts" class="stage-view">
+                <section class="tac-window">
+                    <div class="tac-window-header">
+                        <span class="rb-decrypt" data-text="BLOG // POSTS, FOTOS, VIDEOS, GIFS & EMBEDS">BLOG // POSTS, FOTOS, VIDEOS, GIFS &amp; EMBEDS</span>
+                        <span id="feed-source-badge">SUPABASE</span>
                     </div>
-                    <span class="link-tag">[COPIAR]</span>
-                    <div class="link-progress"></div>
-                </a>
-
-                <a href="https://steamcommunity.com/id/tachydeuwi/" target="_blank" class="link-btn destructible spotlight-card" data-platform="st">
-                    <div class="link-left">
-                        <svg class="link-svg" viewBox="0 0 24 24"><path d="M11.979 0C5.678 0 .511 4.86.022 11.037l6.432 2.658c.545-.371 1.203-.59 1.912-.59.063 0 .125.004.188.006l2.861-4.142V8.91c0-2.495 2.028-4.524 4.524-4.524 2.494 0 4.524 2.031 4.524 4.527s-2.03 4.525-4.524 4.525h-.105l-4.076 2.911c0 .052.005.105.005.159 0 1.875-1.515 3.396-3.39 3.396-1.635 0-3.016-1.173-3.331-2.727L.436 14.819C1.675 20.051 6.37 24 11.979 24c6.627 0 12-5.373 12-12s-5.373-12-12-12z"/></svg>
-                        <span class="link-title">STEAM // TACHYDEUWI</span>
+                    <div class="hazard-strip"></div>
+                    <div class="feed-toolbar">
+                        <div class="filter-pills" id="feed-filters">
+                            <button type="button" class="pill-btn active" data-filter="all">TODOS</button>
+                            <button type="button" class="pill-btn" data-filter="post">POSTS</button>
+                            <button type="button" class="pill-btn" data-filter="photo">FOTOS / GIFS</button>
+                            <button type="button" class="pill-btn" data-filter="video">VIDEOS</button>
+                            <button type="button" class="pill-btn" data-filter="story">HISTORIAS</button>
+                        </div>
+                        <button type="button" class="tac-btn-xs" id="btn-refresh-feed">↻ RECARGAR</button>
                     </div>
-                    <span class="link-tag">[JUEGOS]</span>
-                    <div class="link-progress"></div>
-                </a>
-
-                <a href="https://open.spotify.com/user/8yev45n3zz6g3e3vt7xitm0k7?si=f02dbbfd08954943" target="_blank" class="link-btn destructible spotlight-card" data-platform="sp">
-                    <div class="link-left">
-                        <svg class="link-svg" viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
-                        <span class="link-title">SPOTIFY // FRECUENCIAS</span>
-                    </div>
-                    <span class="link-tag">[AUDIO]</span>
-                    <div class="link-progress"></div>
-                </a>
-
-                <a href="https://www.tiktok.com/@sonieqwq" target="_blank" class="link-btn destructible spotlight-card" data-platform="tk">
-                    <div class="link-left">
-                        <svg class="link-svg" viewBox="0 0 24 24"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.24 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>
-                        <span class="link-title">TIKTOK // @SONIEQWQ</span>
-                    </div>
-                    <span class="link-tag">[REDES]</span>
-                    <div class="link-progress"></div>
-                </a>
-
-                <a href="https://www.youtube.com/watch?v=7x0aPZ8tQvA" target="_blank" class="link-btn destructible spotlight-card" data-platform="yt">
-                    <div class="link-left">
-                        <svg class="link-svg" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
-                        <span class="link-title">YOUTUBE // ARCHIVO VISUAL</span>
-                    </div>
-                    <span class="link-tag">[VIDEO]</span>
-                    <div class="link-progress"></div>
-                </a>
-            </nav>
-
-            <div class="rp-container destructible pixel-card" id="rp-widget">
-                <canvas class="pixel-card-canvas"></canvas>
-                <div class="rp-header">
-                    <span id="rp-status-text">ESTADO: REPOSO</span>
-                    <div class="platform-badges">
-                        <span class="platform-badge" id="badge-desktop">DSK</span>
-                        <span class="platform-badge" id="badge-mobile">MOB</span>
-                        <span class="platform-badge" id="badge-web">WEB</span>
-                    </div>
-                </div>
-
-                <div class="rp-body" id="rp-spotify-box" style="display:none;">
-                    <img id="rp-art" class="rp-album-art" src="" alt="Art" onerror="this.style.display='none';">
-                    <div class="rp-info">
-                        <div style="font-size:0.62rem; color:var(--text-dim); letter-spacing:1px;">[SPOTIFY // TRANSMISIÓN]</div>
-                        <div id="rp-title" class="rp-title">SIN ACTIVIDAD</div>
-                        <div id="rp-subtitle" class="rp-subtitle">SILENCIO</div>
-                    </div>
-                    <div class="eq-bar-container" id="rp-visualizer" style="display:none;">
-                        <div class="eq-bar"></div>
-                        <div class="eq-bar"></div>
-                        <div class="eq-bar"></div>
-                        <div class="eq-bar"></div>
-                    </div>
-                </div>
-
-                <div class="rp-body rp-body-game" id="rp-game-box" style="display:none;">
-                    <img id="rp-game-art" class="rp-album-art" src="" alt="Game Art" onerror="this.style.display='none';">
-                    <div class="rp-info">
-                        <div id="rp-game-label" style="font-size:0.62rem; color:var(--text-dim); letter-spacing:1px;">[JUGANDO]</div>
-                        <div id="rp-game-title" class="rp-title">SIN JUEGO</div>
-                        <div id="rp-game-subtitle" class="rp-subtitle">REPOSO</div>
-                    </div>
-                </div>
-
-                <div class="rp-body rp-body-idle" id="rp-idle-box">
-                    <div class="rp-info">
-                        <div class="rp-title">SIN ACTIVIDAD</div>
-                        <div class="rp-subtitle">SILENCIO // PROTOCOLO DE REPOSO</div>
-                    </div>
-                </div>
+                </section>
+                <div class="posts-feed-list" id="posts-feed-list"></div>
             </div>
-        </div>         
 
-        <div id="tab-lol" class="tab-pane">
-            <div class="lol-dossier destructible" id="frag-dossier">
-                <div class="lol-card destructible pixel-card" id="lol-card-trigger" onclick="_triggerChampInteraction(event)">
-                    <canvas class="pixel-card-canvas"></canvas>
-                    <img id="lol-splash-img" src="img/champions/kindred.jpg" alt="Champion" class="lol-card-bg">
-                    <div class="lol-card-content">
-                        <div class="lol-champ-title shiny-text" id="lol-champ-title">KINDRED // LOS CAZADORES ETERNOS</div>
-                        <div class="lol-champ-meta" id="lol-champ-meta">CAMPEÓN PRINCIPAL • MAESTRÍA 38 (385K PTS)</div>
+            <!-- 04: ARCADE & PLAYGROUND -->
+            <div id="view-arcade" class="stage-view">
+                <section class="tac-window">
+                    <div class="tac-window-header">
+                        <span class="rb-decrypt" data-text="ARCADE & PLAYGROUND">ARCADE &amp; PLAYGROUND</span>
+                        <span id="secrets-progress-badge">SECRETS: 0/3</span>
                     </div>
-                </div>
-
-                <div class="champion-selector destructible">
-                    <button class="champ-tab-btn active" onclick="_selectChamp('kindred')">KINDRED</button>
-                    <button class="champ-tab-btn" onclick="_selectChamp('shyvana')">SHYVANA</button>
-                    <button class="champ-tab-btn" onclick="_selectChamp('kayle')">KAYLE</button>
-                </div>
-
-                <div class="lol-stats-grid destructible">
-                    <div class="lol-stat-box spotlight-card">
-                        <div class="lol-stat-label">INVOCADOR</div>
-                        <div class="lol-stat-val" id="lol-summoner-val">TACHY #YORHA (LAN)</div>
-                    </div>
-                    <div class="lol-stat-box spotlight-card">
-                        <div class="lol-stat-label">RANGO ACTUAL</div>
-                        <div class="lol-stat-val">ESMERALDA IV (ELO HELL // JG DIFF)</div>
-                    </div>
-                    <div class="lol-stat-box spotlight-card">
-                        <div class="lol-stat-label">ROL PRINCIPAL</div>
-                        <div class="lol-stat-val" id="lol-stat-role">JUNGLA / HIPERCARGADOR</div>
-                    </div>
-                    <div class="lol-stat-box spotlight-card">
-                        <div class="lol-stat-label">PUNTOS DE MAESTRÍA</div>
-                        <div class="lol-stat-val" id="lol-stat-pts">385,000 PTS (NVL 38)</div>
-                    </div>
-                </div>
-                <a href="https://www.op.gg/summoners/lan/Tachy-YorHa" target="_blank" class="link-btn destructible spotlight-card" style="padding: 9px; font-size: 0.75rem; text-align: center; justify-content: center;">
-                    [ VER PERFIL EN OP.GG ]
-                </a>
+                    <div class="hazard-strip"></div>
+                    <p class="arcade-intro">Zona de juegos, terminal de comandos secretos y próximos puzzles interactivos.</p>
+                </section>
+                <div class="arcade-grid" id="arcade-grid"></div>
             </div>
-        </div>
 
-        <!-- PESTAÑA SALMOS: BARAJA DE CARTAS EN ABANICO INTERACTIVA -->
-        <div id="tab-quotes" class="tab-pane">
-            <div class="quotes-container">
-                <div class="deck-hand-wrapper" id="deck-hand-area">
-                    <div class="card-fan-container" id="quotes-deck"></div>
-                </div>
-                <div class="deck-controls">
-                    <button class="reroll-btn destructible spotlight-card" onclick="_rerollVerses()">[ ❖ BARAJAR NUEVA MANO SACRA ]</button>
-                </div>
+            <!-- 05: MEDIA -->
+            <div id="view-media" class="stage-view">
+                <section class="tac-window">
+                    <div class="tac-window-header">
+                        <span class="rb-decrypt" data-text="MEDIA ARCHIVE // GALERÍA & INSPECTOR">MEDIA ARCHIVE // GALERÍA &amp; INSPECTOR</span>
+                        <span>CLICK TO ANALYZE</span>
+                    </div>
+                    <div class="hazard-strip"></div>
+                    <div class="media-gallery-grid" id="media-gallery-grid"></div>
+                </section>
             </div>
-        </div>
+        </main>
+    </div>
 
-        <div id="tab-faq" class="tab-pane">
-            <div class="faq-list" id="faq-container-list"></div>
-        </div>
+    <!-- BARRA INFERIOR MÓVIL -->
+    <nav class="mobile-bottom-nav" aria-label="Navegación móvil">
+        <button type="button" class="mob-nav-btn active" data-view="view-profile"><span class="inline-icon" data-icon="user"></span><span>PERFIL</span></button>
+        <button type="button" class="mob-nav-btn" data-view="view-about"><span class="inline-icon" data-icon="sparkles"></span><span>ABOUT</span></button>
+        <button type="button" class="mob-nav-btn" data-view="view-posts"><span class="inline-icon" data-icon="blog"></span><span>POSTS</span></button>
+        <button type="button" class="mob-nav-btn" data-view="view-arcade"><span class="inline-icon" data-icon="gamepad"></span><span>ARCADE</span></button>
+        <button type="button" class="mob-nav-btn" data-view="view-media"><span class="inline-icon" data-icon="media"></span><span>MEDIA</span></button>
+    </nav>
 
-        <div id="tab-terminal" class="tab-pane">
-            <div class="terminal-module destructible" id="frag-terminal">
-                <div class="terminal-log" id="terminal-log">
-                    <div class="terminal-log-entry sys">[CÓDICE] Registro abierto. Mandatos sagrados en línea.</div>
-                    <div class="terminal-log-entry">[INFO] Escribe 'HELP' para ver mandatos. Pulsa ↑ para repetir el último comando.</div>
-                </div>
-                <div class="cmd-box">
-                    <span class="cmd-prompt">></span>
-                    <input type="text" id="terminal-cmd" class="cmd-input" placeholder="ESCRIBIR MANDATO..." autocomplete="off" spellcheck="false">
-                </div>
-            </div>
-        </div>
-
-        <div class="data-divider destructible" style="margin-top:10px;">LIBER SANCTUS // REGISTRO VIVO</div>
-        <div class="destructible" id="discord-status-hud" style="font-size: 0.65rem; color: var(--text-dim); font-weight: bold; letter-spacing: 1px; font-family: var(--font-mono); text-align: center;">DISCORD: SINCRONIZANDO...</div>
-
-        <div class="secret-message" id="secret">
-            SOLI DEO GLORIA
-        </div>
-    </main>
-
-    <!-- Configuración y Núcleo -->
-    <script src="js/config/data.js"></script>
-    <script src="js/core/audio.js"></script>
-    <script src="js/core/shaders.js"></script>
-    <script src="js/core/particles.js"></script>
-    <script src="js/core/dialogue.js"></script>
-
-    <!-- Módulos del Hub -->
-    <script src="js/modules/destruction.js"></script>
-    <script src="js/modules/orbital.js"></script>
-    <script src="js/modules/terminal.js"></script>
-    <script src="js/modules/lanyard.js"></script>
-    <script src="js/modules/deck.js"></script>
-    <script src="js/modules/achievements.js"></script>
-
-    <!-- Script Principal -->
-    <script src="js/app.js"></script>
+    <script src="js/modules/icons.js"></script>
+    <script src="js/modules/reactbits-fx.js"></script>
+    <script src="js/modules/blog-feed.js"></script>
+    <script src="js/rework-app.js"></script>
 </body>
 </html>

@@ -1,103 +1,116 @@
+// =========================================================
+// SISTEMA DE FRACTURA Y RESTAURACIÓN DEL CÓDICE
+// =========================================================
 const DestructionModule = {
-    combo: 0,
     score: 0,
+    combo: 0,
     comboTimer: null,
-    rebuildTimer: null,
+    destroyedElements: new Set(),
 
     init() {
-        const savedScore = localStorage.getItem('codex_score');
-        if (savedScore) {
-            this.score = parseInt(savedScore, 10) || 0;
-        }
-
-        window.addEventListener('contextmenu', (e) => {
-            if (window._cinematicActive || window._bossActive) return;
-            e.preventDefault();
-            const target = e.target.closest('.destructible') ||
-                           e.target.closest('.link-btn') ||
-                           e.target.closest('.quote-card') ||
-                           e.target.closest('.lol-card');
-            if (target && !target.closest('#frag-header')) {
-                this.destroyElement(target, e.clientX, e.clientY);
-            }
-        });
-
-        let lastTap = 0;
-        window.addEventListener('touchend', (e) => {
-            if (window._cinematicActive || window._bossActive) return;
-            const now = Date.now();
-            if (now - lastTap < 300) {
-                const touch = e.changedTouches[0];
-                const target = document.elementFromPoint(touch.clientX, touch.clientY);
-                const dest = target && (target.closest('.destructible') ||
-                                        target.closest('.link-btn') ||
-                                        target.closest('.quote-card') ||
-                                        target.closest('.lol-card'));
-                if (dest && !dest.closest('#frag-header')) {
-                    this.destroyElement(dest, touch.clientX, touch.clientY);
-                }
-            }
-            lastTap = now;
-        });
+        const savedScore = parseInt(localStorage.getItem('codex_score') || '0', 10);
+        this.score = isNaN(savedScore) ? 0 : savedScore;
+        this.combo = 0;
+        this.updateComboHud();
     },
 
-    destroyElement(el, x, y) {
-        if (!el || el.classList.contains('destroyed-block') ||
-            el.id === 'orbital-crosshair' || el.id === 'avatar-area' || el.id === 'frag-header') return;
+    destroyElement(el, impactX = null, impactY = null) {
+        // Regla estricta: solo se puede destruir cuando la Railgun ha sido desbloqueada
+        if (typeof OrbitalModule === 'undefined' || !OrbitalModule.hasRailgun) return false;
+        if (!el || el.classList.contains('destroyed-block')) return false;
+
+        const r = el.getBoundingClientRect();
+        const cx = impactX !== null ? impactX : (r.left + r.width / 2);
+        const cy = impactY !== null ? impactY : (r.top + r.height / 2);
 
         el.style.setProperty('--rx', Math.random().toFixed(2));
         el.style.setProperty('--ry', Math.random().toFixed(2));
         el.style.setProperty('--rr', Math.random().toFixed(2));
+        el.classList.remove('restoring-block');
         el.classList.add('destroyed-block');
 
+        this.destroyedElements.add(el);
         this.combo++;
-        const basePts = 100;
-        const earnedPts = basePts * this.combo;
-        this.score += earnedPts;
-        localStorage.setItem('codex_score', this.score.toString());
+        const pts = 100 * this.combo;
+        this.score += pts;
+        localStorage.setItem('codex_score', String(this.score));
 
-        let tierColor = '#dad4bb';
-        let tierText = `x${this.combo} (+${earnedPts})`;
-        if (this.combo >= 2 && this.combo < 5) tierColor = '#43b581';
-        else if (this.combo >= 5 && this.combo < 9) tierColor = '#00b0f4';
-        else if (this.combo >= 9 && this.combo < 14) tierColor = '#ff73fa';
-        else if (this.combo >= 14) {
-            tierColor = '#ffd700';
-            tierText = `DIVINO x${this.combo} (+${earnedPts})`;
+        this.updateComboHud();
+        this.spawnComboPopup(cx, cy, `FRAGMENTO -${pts}`);
+
+        if (typeof ParticleEngine !== 'undefined') {
+            ParticleEngine.explode(cx, cy, '#dad4bb', 18);
+        }
+        if (typeof BalatroEngine !== 'undefined') {
+            BalatroEngine.triggerHit(cx, cy, 0.75);
         }
 
-        this.showComboPopup(x, y, tierText, tierColor);
-        this.updateComboHud();
+        // Diálogos conmovedores de Saphyniel al ver su bitácora fracturarse
+        const d = (typeof CODEX_DATA !== 'undefined' && CODEX_DATA.railgunDialogues) ? CODEX_DATA.railgunDialogues : {};
+        if (this.destroyedElements.size === 1 && d.firstDestroy) {
+            DialogueSystem.show({
+                text: d.firstDestroy,
+                speaker: "SAPHYNIEL",
+                tone: "low",
+                autoHideTime: 3400
+            });
+        } else if (this.combo === 3 && d.comboDestroy) {
+            DialogueSystem.show({
+                text: d.comboDestroy,
+                speaker: "SAPHYNIEL",
+                tone: "low",
+                autoHideTime: 3200
+            });
+        }
 
-        if (this.combo === 10 && typeof OrbitalModule !== 'undefined' && !OrbitalModule.hasRailgun) {
-            OrbitalModule.unlockRailgun('combo');
+        if (typeof AchievementSystem !== 'undefined' && this.combo >= 3) {
+            AchievementSystem.unlock('ui_destroyer');
         }
 
         clearTimeout(this.comboTimer);
         this.comboTimer = setTimeout(() => {
             this.combo = 0;
             this.updateComboHud();
-        }, 4000);
+        }, 5000);
 
-        ParticleEngine.explode(x, y, tierColor, 12);
-        AudioManager.beep(220 + (this.combo * 15), 0.15, 'sawtooth');
-
-        clearTimeout(this.rebuildTimer);
-        this.rebuildTimer = setTimeout(() => {
-            this.restoreAll();
-            this.combo = 0;
-            this.updateComboHud();
-        }, 3000);
+        return true;
     },
 
-    showComboPopup(x, y, text, color) {
+    restoreAll() {
+        const blocks = document.querySelectorAll('.destroyed-block');
+        if (blocks.length === 0) {
+            if (typeof AudioManager !== 'undefined') AudioManager.beep(520, 0.06, 'sine');
+            return;
+        }
+        blocks.forEach((el, idx) => {
+            setTimeout(() => {
+                el.classList.remove('destroyed-block');
+                el.classList.add('restoring-block');
+                setTimeout(() => el.classList.remove('restoring-block'), 550);
+            }, idx * 40);
+        });
+        this.destroyedElements.clear();
+        if (typeof AudioManager !== 'undefined') AudioManager.liturgicalChime();
+
+        const d = (typeof CODEX_DATA !== 'undefined' && CODEX_DATA.railgunDialogues) ? CODEX_DATA.railgunDialogues : {};
+        if (d.restored) {
+            DialogueSystem.show({
+                text: d.restored,
+                speaker: "SAPHYNIEL",
+                tone: "mid",
+                autoHideTime: 2800
+            });
+        }
+    },
+
+    spawnComboPopup(x, y, text) {
         const pop = document.createElement('div');
         pop.className = 'combo-popup';
         pop.style.left = `${x}px`;
         pop.style.top = `${y}px`;
-        pop.style.color = color;
-        pop.style.fontSize = Math.min(1.4, 0.8 + (this.combo * 0.05)) + 'rem';
-        pop.style.textShadow = `0 0 12px ${color}`;
+        pop.style.color = '#dad4bb';
+        pop.style.fontSize = '0.68rem';
+        pop.style.textShadow = '0 0 8px #000';
         pop.textContent = text;
         document.body.appendChild(pop);
         setTimeout(() => pop.remove(), 800);
@@ -106,51 +119,13 @@ const DestructionModule = {
     updateComboHud() {
         const hud = document.getElementById('combo-hud');
         if (!hud) return;
-        if (this.combo > 1) {
+        if (this.combo > 0) {
+            hud.textContent = `FRAGMENTOS x${this.combo}`;
             hud.classList.add('active');
-            hud.textContent = `COMBO x${this.combo} // PTS: ${this.score}`;
-            if (this.combo >= 14) {
-                hud.style.color = '#ffd700';
-                hud.style.textShadow = '0 0 15px #ffd700, 0 0 30px #fff';
-            } else if (this.combo >= 9) {
-                hud.style.color = '#ff73fa';
-                hud.style.textShadow = '0 0 12px #ff73fa';
-            } else {
-                hud.style.color = '#43b581';
-                hud.style.textShadow = '0 0 10px #43b581';
-            }
         } else {
             hud.classList.remove('active');
         }
-    },
-
-    restoreAll() {
-        const destroyed = document.querySelectorAll('.destroyed-block');
-        if (destroyed.length === 0) return;
-
-        destroyed.forEach(el => {
-            el.classList.remove('destroyed-block');
-            el.classList.add('restoring-block');
-            setTimeout(() => el.classList.remove('restoring-block'), 550);
-        });
-
-        AudioManager.legoClickPop();
-        AudioManager.playAudio(CODEX_DATA.sounds.legoPop);
-    },
-
-    triggerTotalDestruction() {
-        const allBlocks = document.querySelectorAll('.destructible, .link-btn, .quote-card, .lol-card, .tab-btn, .pc-side-panel');
-        allBlocks.forEach(el => {
-            el.style.setProperty('--rx', Math.random().toFixed(2));
-            el.style.setProperty('--ry', Math.random().toFixed(2));
-            el.style.setProperty('--rr', Math.random().toFixed(2));
-            el.classList.add('destroyed-block');
-            const r = el.getBoundingClientRect();
-            ParticleEngine.explode(r.left + r.width / 2, r.top + r.height / 2, '#dad4bb', 12);
-        });
-
-        AudioManager.beep(110, 0.5, 'sawtooth', 0.09);
-        clearTimeout(this.rebuildTimer);
-        this.rebuildTimer = setTimeout(() => this.restoreAll(), 2500);
     }
 };
+
+window.DestructionModule = DestructionModule;

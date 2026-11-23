@@ -1,0 +1,7 @@
+_studio/
+_backup_codex/
+sttfia.py
+upttc.py
+project_snapshot*.txt
+update*.txt
+__pycache__/

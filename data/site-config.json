@@ -1,0 +1,380 @@
+{
+  "profile": {
+    "name": "SAPHYNIEL",
+    "uid": "SOLYNDEI",
+    "pronouns": "she / her // digital archive",
+    "mood": "compilando ideas entre música y código",
+    "avatar": "img/portraits/saphyniel_normal.png",
+    "banner": "",
+    "bio": "Archivo personal, blog visual y laboratorio interactivo de juegos, música y experimentos web.",
+    "siteUrl": "https://solyndei.github.io/",
+    "discordId": "409107659153735680",
+    "discordHandle": "tachydeuwi",
+    "steamUrl": "https://steamcommunity.com/id/tachydeuwi/",
+    "steamProxyUrl": "https://billowing-mountain-74c3steam-proxy.tachyondeuwi.workers.dev/",
+    "blurbs": [
+      {
+        "heading": "ABOUT // BIENVENIDA",
+        "text": "Espacio personal diseñado como sistema modular. Aquí conviven mi blog con fotos, videos, embeds e historias, mi música favorita, mis juegos y secretos ocultos entre archivos."
+      },
+      {
+        "heading": "SYSTEM // NOTA",
+        "text": "Activa PERF: LITE arriba si usas una PC sin aceleración de hardware. Toca cualquier imagen para abrir el Inspector de Análisis."
+      }
+    ]
+  },
+  "splashQuotes": [
+    "Also try NieR:Automata!",
+    "Furina C6 F2P certified.",
+    "0% algoritmos, 100% código a mano.",
+    "Now with 100% less hardware acceleration needed!",
+    "Kindred never misses a mark... almost.",
+    "Have you checked RED SCAN on that image?",
+    "Shelter // Everything Goes On.",
+    "Project Zomboid: esta es la historia de cómo moriste.",
+    "Type 'HELP' in the Playground terminal."
+  ],
+  "themeTokens": {
+    "uiScale": 1,
+    "sidebarWidth": 325,
+    "avatarSize": 92,
+    "borderWidth": 2,
+    "shadowOffset": 4
+  },
+  "effects": {
+    "squaresGrid": true,
+    "clickSpark": true,
+    "spotlight": true,
+    "glitchTitle": true,
+    "scanlines": false,
+    "neoBruteLoaders": true
+  },
+  "layout": {
+    "showIntroLogin": true,
+    "showSplashQuotes": true,
+    "showDiscordWidget": true,
+    "showMusicPlayer": true,
+    "showSocials": true,
+    "showLatestPostsOnProfile": true,
+    "showFeaturedBoss": true,
+    "showStamps": true,
+    "sidebarOrder": [
+      "identity",
+      "discord",
+      "music",
+      "socials",
+      "stamps"
+    ],
+    "profileOrder": [
+      "latestPosts",
+      "blurbs",
+      "featuredBoss"
+    ]
+  },
+  "socials": [
+    {
+      "id": "discord",
+      "label": "DISCORD",
+      "icon": "discord",
+      "action": "copy",
+      "value": "tachydeuwi",
+      "enabled": true
+    },
+    {
+      "id": "steam",
+      "label": "STEAM",
+      "icon": "steam",
+      "url": "https://steamcommunity.com/id/tachydeuwi/",
+      "enabled": true
+    },
+    {
+      "id": "spotify",
+      "label": "SPOTIFY",
+      "icon": "spotify",
+      "url": "https://open.spotify.com/user/8yev45n3zz6g3e3vt7xitm0k7?si=f02dbbfd08954943",
+      "enabled": true
+    },
+    {
+      "id": "tiktok",
+      "label": "TIKTOK",
+      "icon": "tiktok",
+      "url": "https://www.tiktok.com/@sonieqwq",
+      "enabled": true
+    },
+    {
+      "id": "youtube",
+      "label": "YOUTUBE",
+      "icon": "youtube",
+      "url": "https://www.youtube.com/watch?v=7x0aPZ8tQvA",
+      "enabled": true
+    },
+    {
+      "id": "opgg",
+      "label": "OP.GG",
+      "icon": "gamepad",
+      "url": "https://www.op.gg/summoners/lan/Tachy-YorHa",
+      "enabled": true
+    }
+  ],
+  "aboutMe": {
+    "champions": [
+      {
+        "name": "KINDRED",
+        "title": "Los Cazadores Eternos",
+        "role": "JUNGLA // MAIN",
+        "mastery": "Nivel 38 • 385,000 pts",
+        "rank": "Esmeralda IV",
+        "quote": "Nunca uno... sin el otro.",
+        "img": "img/champions/kindred.jpg"
+      },
+      {
+        "name": "SHYVANA",
+        "title": "La Hija del Dragón",
+        "role": "JUNGLA / BRUISER",
+        "mastery": "Nivel 22 • 216,000 pts",
+        "rank": "Esmeralda IV",
+        "quote": "Nacida entre brasas, forjada en furia.",
+        "img": "img/champions/shyvana.jpg"
+      },
+      {
+        "name": "KAYLE",
+        "title": "La Justiciera",
+        "role": "TOP // HYPER-SCALING",
+        "mastery": "Nivel 15 • 138,000 pts",
+        "rank": "Esmeralda IV",
+        "quote": "Incluso la luz más alta proyecta sombras.",
+        "img": "img/champions/kayle.jpg"
+      }
+    ],
+    "favoriteMusic": [
+      {
+        "title": "Everything Goes On",
+        "artist": "Porter Robinson",
+        "vibe": "Melancólico / Electrónica",
+        "note": "De esas canciones que se quedan resonando de madrugada.",
+        "url": "https://open.spotify.com/track/3W5x9p5dK0oX38zG3h23W5"
+      },
+      {
+        "title": "Hero / Iron Lotus",
+        "artist": "Mili",
+        "vibe": "Orquestal / Bossfight",
+        "note": "Energía pura para diseñar fases de jefes.",
+        "url": "https://open.spotify.com/search/Mili%20Hero"
+      },
+      {
+        "title": "Relayouter",
+        "artist": "inabakumori",
+        "vibe": "Vocaloid / Monocromo",
+        "note": "Estética blanco y negro hecha canción.",
+        "url": "https://open.spotify.com/search/inabakumori%20Relayouter"
+      },
+      {
+        "title": "Tek It",
+        "artist": "Cafuné",
+        "vibe": "Indie / Shoegaze",
+        "note": "Perfecta para sesiones largas de modding o dibujo.",
+        "url": "https://open.spotify.com/search/Cafune%20Tek%20It"
+      }
+    ],
+    "favoriteGames": [
+      {
+        "name": "Project Zomboid",
+        "tag": "SURVIVAL // MODDED",
+        "detail": "Build 42 con mods tácticos, armas y RV Interior."
+      },
+      {
+        "name": "Helldivers 2",
+        "tag": "CO-OP // MODDING",
+        "detail": "Farm de Super Credits, shaders y mods propios."
+      },
+      {
+        "name": "Genshin Impact & ZZZ",
+        "tag": "ACTION RPG",
+        "detail": "Furina C6 F2P y rotaciones infinitas en Nueva Eridu."
+      },
+      {
+        "name": "NieR:Automata & Persona 5",
+        "tag": "INSPIRACIÓN UI",
+        "detail": "La columna vertebral estética de todo este archivo."
+      }
+    ],
+    "steamHighlights": {
+      "handle": "tachydeuwi",
+      "statusText": "Perfil público de Steam // Conecta tu Cloudflare Worker para stats en vivo",
+      "featuredAchievements": [
+        {
+          "game": "NieR:Automata",
+          "title": "Ending [E] — The [E]nd of YoRHa",
+          "rarity": "LEGENDARY"
+        },
+        {
+          "game": "Elden Ring",
+          "title": "Blade of Miquella",
+          "rarity": "RARE"
+        },
+        {
+          "game": "Project Zomboid",
+          "title": "150+ Horas Sobreviviendo",
+          "rarity": "VETERAN"
+        }
+      ]
+    }
+  },
+  "playlist": [
+    {
+      "title": "Ending // Sanctuary",
+      "artist": "Saphyniel Archive",
+      "src": "audio/bgm/ending.mp3"
+    },
+    {
+      "title": "Encounter — Phase I",
+      "artist": "Saphyniel OST",
+      "src": "audio/bgm/boss-music-fase1.mp3"
+    },
+    {
+      "title": "Phase [S] — Alternative",
+      "artist": "Saphyniel OST",
+      "src": "audio/bgm/boss-music-fase-alternativa.mp3"
+    }
+  ],
+  "stamps": [
+    {
+      "type": "chip",
+      "text": "HAND-CRAFTED"
+    },
+    {
+      "type": "chip",
+      "text": "NO TRACKERS"
+    },
+    {
+      "type": "chip",
+      "text": "FULL & LITE MODE"
+    },
+    {
+      "type": "chip",
+      "text": "NEO-BRUTE LOADER"
+    },
+    {
+      "type": "chip",
+      "text": "SOLYNDEI.GITHUB.IO"
+    }
+  ],
+  "floatingStickers": [],
+  "supabase": {
+    "url": "https://rlvxyekfmamyyuxrdczw.supabase.co",
+    "anonKey": "sb_publishable_l_AssEzuN8k2_vBl0cW_Jg_tlgVU7zk"
+  },
+  "samplePosts": [
+    {
+      "id": "entry-005",
+      "title": "REWORK v2 // BARRA SUPERIOR, EMBEDS Y STUDIO INTERACTIVO",
+      "category": "post",
+      "published_at": "2026-11-22T18:10:00",
+      "content": "Los posts ahora se ordenan automáticamente por fecha (los más antiguos quedan al fondo) y aceptan fotos, GIFs, videos MP4, YouTube, TikTok y Spotify directo en el feed.\n\nPista ARG: abre CMD arriba a la derecha o presiona Ctrl+K y escribe HELP.",
+      "media_url": "",
+      "tags": [
+        "update",
+        "blog",
+        "studio"
+      ],
+      "likes_count": 5
+    },
+    {
+      "id": "entry-004",
+      "title": "CLIP DE YOUTUBE EMBEBIDO // ARCHIVO AUDIOVISUAL",
+      "category": "video",
+      "published_at": "2026-11-21T20:00:00",
+      "content": "Prueba de reproductor de YouTube integrado directo en un post con marco neo-brutalist de carga.",
+      "media_url": "https://www.youtube.com/watch?v=7x0aPZ8tQvA",
+      "tags": [
+        "youtube",
+        "video",
+        "music"
+      ],
+      "likes_count": 3
+    },
+    {
+      "id": "entry-003",
+      "title": "GIF EN MOVIMIENTO // CORE FASE 3",
+      "category": "photo",
+      "published_at": "2026-11-19T16:40:00",
+      "content": "Soporte nativo para GIFs animados y fotos con el Inspector de Análisis (toca la imagen para probar INVERT o RED SCAN).",
+      "media_url": "img/boss/boos_fase3.gif",
+      "tags": [
+        "gif",
+        "bossfight",
+        "pixel"
+      ],
+      "likes_count": 6
+    },
+    {
+      "id": "entry-002",
+      "title": "TRACK EN ROTACIÓN // SPOTIFY EMBED",
+      "category": "story",
+      "published_at": "2026-11-16T23:15:00",
+      "content": "También puedes pegar links de canciones o playlists de Spotify y se incrustan con reproductor directo aquí mismo.",
+      "media_url": "https://open.spotify.com/track/2WfaOiMkCvy7F5fcp2zZ8L",
+      "tags": [
+        "spotify",
+        "music",
+        "vibe"
+      ],
+      "likes_count": 4
+    },
+    {
+      "id": "entry-001",
+      "title": "PRUEBA DE ERROR 404 NEO-BRUTALIST (POST ANTIGUO)",
+      "category": "photo",
+      "published_at": "2026-11-10T12:00:00",
+      "content": "Este post más antiguo queda al fondo por fecha y además demuestra cómo se ve el fallback neo-brutalist cuando una imagen no se encuentra (puedes tocarla en el Studio para reemplazarla).",
+      "media_url": "img/uploads/archivo_inexistente_demo.png",
+      "tags": [
+        "demo",
+        "neobrute",
+        "404"
+      ],
+      "likes_count": 1
+    }
+  ],
+  "arcade": [
+    {
+      "id": "saphyniel-bossfight",
+      "title": "SAPHYNIEL // ENCOUNTER",
+      "status": "SEALED MEMORY",
+      "type": "bossfight",
+      "src": "boss.html",
+      "thumb": "img/boss/core.png",
+      "description": "Memoria sellada del códice anterior. Bullet-heaven de 3 fases + ruta secreta Fase [S] con intro narrativa.",
+      "tags": [
+        "BOSSFIGHT",
+        "NARRATIVE",
+        "PC / MÓVIL"
+      ]
+    },
+    {
+      "id": "arg-terminal",
+      "title": "PLAYGROUND // TERMINAL DE SECRETOS",
+      "status": "ACTIVE",
+      "type": "terminal",
+      "thumb": "img/icons/eye.png",
+      "description": "Consola interactiva para ingresar códigos descubiertos en posts, frases aleatorias e imágenes.",
+      "tags": [
+        "PUZZLE",
+        "ARG",
+        "COMANDOS"
+      ]
+    },
+    {
+      "id": "future-puzzle-slot",
+      "title": "ARCHIVO_03 // GRAN PUZZLE",
+      "status": "COMING SOON",
+      "type": "placeholder",
+      "thumb": "img/icons/icon.png",
+      "description": "Ranura reservada para futuros puzzles multicapa y minijuegos HTML5.",
+      "tags": [
+        "EXTENSIBLE",
+        "MYSTERY"
+      ]
+    }
+  ]
+}
