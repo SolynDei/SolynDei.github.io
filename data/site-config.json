@@ -261,7 +261,15 @@
       "text": "SOLYNDEI.GITHUB.IO"
     }
   ],
-  "floatingStickers": [],
+  "floatingStickers": [
+    {
+      "src": "https://upload-os-bbs.hoyolab.com/upload/2025/09/14/302168781/9e856a446f74a86c84b250482b6d2360_3539030346988044756.gif",
+      "top": "42%",
+      "left": "88%",
+      "width": "68px",
+      "duration": "6s"
+    }
+  ],
   "supabase": {
     "url": "https://rlvxyekfmamyyuxrdczw.supabase.co",
     "anonKey": "sb_publishable_l_AssEzuN8k2_vBl0cW_Jg_tlgVU7zk"
