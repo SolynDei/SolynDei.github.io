@@ -1100,3 +1100,5 @@ body::-webkit-scrollbar,
 .nb-vp-spacer { flex: 1; min-width: 4px; }
 .nb-vp-vol { width: 62px; accent-color: var(--accent); cursor: pointer; }
 @media (max-width: 560px) { .nb-vp-vol, .nb-vp-status { display: none; } .nb-vp-row { gap: 5px; padding: 6px 7px; } .nb-vp-btn { height: 26px; padding: 0 7px; min-width: 30px; font-size: 0.6rem; } .nb-vp-time { font-size: 0.58rem; } }
+/* === NO_DATES_POSTS_V1 === */
+.latest-post-date, .nb-hidden-post-date { display: none !important; }
