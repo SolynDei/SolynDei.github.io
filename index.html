@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=JetBrains+Mono:wght@400;600;700;800&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/rework.css?v=20261123c">
+    <link rel="stylesheet" href="css/rework.css?v=20261123d">
 </head>
 <body class="perf-full is-locked">
     <canvas id="fx-grid-canvas" aria-hidden="true"></canvas>
@@ -206,41 +206,6 @@
         </div>
     </header>
 
-    <!-- BARRA DE NAVEGACIÓN PC TIPO FACEBOOK (ALINEADA 100% AL ANCHO DEL CONTENIDO) -->
-    <div class="pc-nav-wrapper build-item">
-        <nav class="pc-fb-nav" aria-label="Navegación principal">
-            <button type="button" class="fb-tab active rb-magnet" data-view="view-profile">
-                <span class="inline-icon" data-icon="user"></span>
-                <span class="fb-tab-num">01</span>
-                <span>PERFIL</span>
-            </button>
-            <button type="button" class="fb-tab rb-magnet" data-view="view-about">
-                <span class="inline-icon" data-icon="sparkles"></span>
-                <span class="fb-tab-num">02</span>
-                <span>ABOUT</span>
-            </button>
-            <button type="button" class="fb-tab rb-magnet" data-view="view-posts">
-                <span class="inline-icon" data-icon="blog"></span>
-                <span class="fb-tab-num">03</span>
-                <span>POSTS</span>
-            </button>
-            <button type="button" class="fb-tab rb-magnet" data-view="view-arcade">
-                <span class="inline-icon" data-icon="gamepad"></span>
-                <span class="fb-tab-num">04</span>
-                <span>ARCADE</span>
-            </button>
-            <button type="button" class="fb-tab rb-magnet" data-view="view-media">
-                <span class="inline-icon" data-icon="media"></span>
-                <span class="fb-tab-num">05</span>
-                <span>MEDIA</span>
-            </button>
-            <button type="button" class="fb-tab fb-tab-cmd" id="btn-open-terminal" title="Terminal de Secretos (Ctrl+K)">
-                <span class="inline-icon" data-icon="terminal"></span>
-                <span>CMD</span>
-            </button>
-        </nav>
-    </div>
-
     <!-- LAYOUT PRINCIPAL DE 2 COLUMNAS (MISMO ANCHO QUE LA BARRA SUPERIOR) -->
     <div class="page-shell">
         <aside class="profile-sidebar" id="profile-sidebar">
@@ -324,6 +289,17 @@
         </aside>
 
         <main class="main-stage">
+            <!-- PC_NAV_START -->
+            <div class="pc-nav-wrapper build-item">
+                <nav class="pc-fb-nav" aria-label="Navegación principal">
+                    <button type="button" class="fb-tab active rb-magnet" data-view="view-profile"><span class="inline-icon" data-icon="user"></span><span class="fb-tab-num">01</span><span>PERFIL</span></button>
+                    <button type="button" class="fb-tab rb-magnet" data-view="view-about"><span class="inline-icon" data-icon="sparkles"></span><span class="fb-tab-num">02</span><span>ABOUT</span></button>
+                    <button type="button" class="fb-tab rb-magnet" data-view="view-posts"><span class="inline-icon" data-icon="blog"></span><span class="fb-tab-num">03</span><span>POSTS</span></button>
+                    <button type="button" class="fb-tab rb-magnet" data-view="view-arcade"><span class="inline-icon" data-icon="gamepad"></span><span class="fb-tab-num">04</span><span>ARCADE</span></button>
+                    <button type="button" class="fb-tab rb-magnet" data-view="view-media"><span class="inline-icon" data-icon="media"></span><span class="fb-tab-num">05</span><span>MEDIA</span></button>
+                </nav>
+            </div>
+            <!-- PC_NAV_END -->
             <!-- 01: PERFIL -->
             <div id="view-profile" class="stage-view active">
                 <section class="tac-window rb-spotlight build-item" data-module="latestPosts">
@@ -475,6 +451,15 @@
                     </div>
                     <div class="hazard-strip"></div>
                     <p class="arcade-intro">Zona de juegos, terminal de comandos secretos y próximos puzzles interactivos.</p>
+                    <!-- CMD_DOCK_START -->
+                    <div class="arcade-cmd-dock">
+                        <div class="arcade-cmd-info">
+                            <span class="arcade-cmd-prompt">&gt;_</span>
+                            <div><div class="arcade-cmd-title">CMD // PLAYGROUND TERMINAL</div><div class="arcade-cmd-sub">Consola de comandos ocultos y secretos del archivo (atajo Ctrl+K)</div></div>
+                        </div>
+                        <button type="button" class="tac-btn primary arcade-cmd-btn" id="btn-open-terminal" title="Terminal de Secretos (Ctrl+K)"><span class="inline-icon" data-icon="terminal"></span><span>ABRIR CMD ▶</span></button>
+                    </div>
+                    <!-- CMD_DOCK_END -->
                 </section>
                 <div class="arcade-grid" id="arcade-grid"></div>
             </div>
@@ -507,6 +492,6 @@
     <script src="js/modules/blog-feed.js?v=20261123b"></script>
     <script src="js/rework-app.js?v=20261123b"></script>
     <script src="js/modules/about-and-board.js?v=20261123b"></script>
-    <script src="js/modules/ui-polish.js?v=20261123c"></script>
+    <script src="js/modules/ui-polish.js?v=20261123d"></script>
 </body>
 </html>
