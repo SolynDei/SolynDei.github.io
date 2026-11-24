@@ -62,15 +62,15 @@
     "sidebarOrder": [
       "identity",
       "discord",
-      "music",
       "socials",
-      "stamps"
+      "latestPosts",
+      "featuredBoss"
     ],
     "profileOrder": [
-      "latestPosts",
       "blurbs",
       "steamCard",
-      "featuredBoss"
+      "music",
+      "stamps"
     ],
     "showSteamCard": true
   },
